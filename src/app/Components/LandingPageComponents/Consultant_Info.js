@@ -66,11 +66,14 @@ const Consultant_Info = () => {
                     {consultantData.experience}
                   </p>
                   <p className="blockquote-footer-source mb-6">
-                    {consultantData.role}
+                    {consultantData.role} <br/>
+                     {consultantData.certificates}
                   </p>
+                 
                   <p className="blockpara text-gray-800 justify-evenly fs-6 lh-base ">
                     {consultantData.description}
                   </p>
+                    
                 </div>
               </div>
               <ul className="navbar-nav">

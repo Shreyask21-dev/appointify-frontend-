@@ -10,6 +10,12 @@ export const appointmentStatusMap = {
   3: 'Rescheduled',
 };
 
+export const paymentStatusMap = {
+  0: 'Captured',
+  1: 'Failed',
+  2: 'Refunded',
+};
+
 export const appointmentActionMap = {
   0: 'Pending',
   1: 'Mark As Completed',
@@ -139,6 +145,7 @@ const AppointmentList = () => {
                   <th>Plan</th>
                   <th>Amount</th>
                   <th>Payment ID</th>
+                  <th>Payment Status</th>
                   <th>Appointment Status</th>
                   <th>Actions</th>
                 </tr>
@@ -155,6 +162,11 @@ const AppointmentList = () => {
                     <td>{appt.plan}</td>
                     <td>{appt.amount}</td>
                     <td>{appt.paymentId}</td>
+                    <td>
+                      <span className={`badge bg-${appt.paymentStatus === 'Captured' ? 'primary' : 'danger'}`}>
+                        {paymentStatusMap[appt.paymentStatus]}
+                      </span>
+                    </td>
                     <td>
                       <span className={`badge bg-${appt.appointmentStatus === 'Confirmed' ? 'primary' : 'danger'}`}>
                         {appointmentStatusMap[appt.appointmentStatus]}
