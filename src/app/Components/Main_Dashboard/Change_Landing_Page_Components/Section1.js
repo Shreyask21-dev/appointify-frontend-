@@ -214,6 +214,15 @@ const Section1 = () => {
                 onChange={(e) => handleInputChange("hospitalClinicAddress", e.target.value)}
               />
             </div>
+             <div className="mb-3">
+              <label className="form-label fw-semibold">Clinic Address URL</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editableData.locationURL}
+                onChange={(e) => handleInputChange("hospitalClinicAddress", e.target.value)}
+              />
+            </div>
           </div>
         </div>
 

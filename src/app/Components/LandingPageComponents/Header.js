@@ -32,9 +32,9 @@ const Header = () => {
             <ul className="navbar-nav me-md-3">
               <li className="nav-item">
                 <a className="btn btn-light font-semibold btn-xs text-xs"
-                   href={ConsultantData.hospitalClinicAddress}
+                   href={ConsultantData.locationURL}
                    target="_blank" rel="noopener noreferrer">
-                  🏥 Apollo Hospital, Mumbai
+                  🏥 {ConsultantData.hospitalClinicAddress}
                 </a>
               </li>
             </ul>
@@ -43,7 +43,7 @@ const Header = () => {
                 <a className="btn btn-light btn-xs text-xs font-extrabold"
                    href={`mailto:${ConsultantData.email}`}
                    target="_blank" rel="noopener noreferrer">
-                  📧 contact@drjohndoe.com
+                  📧 {ConsultantData.email}
                 </a>
               </li>
             </ul>
