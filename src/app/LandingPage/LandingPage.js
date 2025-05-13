@@ -13,6 +13,8 @@ import Stats from '../Components/LandingPageComponents/Stats';
 import Contact_Calender from '../Components/LandingPageComponents/Contact_Calender';
 // import LeafletMap from '../Components/LandingPageComponents/LeafletMap';
 import Footer from '../Components/LandingPageComponents/Footer';
+import LeafletMap from '../Components/LandingPageComponents/LeafletMap';
+import FAQSection from '../Components/LandingPageComponents/FAQSection';
 
 const LandingPage = () => {
  
@@ -35,7 +37,8 @@ const LandingPage = () => {
             <Stats/>
             <Plans/>
             <Contact_Calender/>
-            {/* <LeafletMap/> */}
+            <FAQSection/>
+            <LeafletMap/>
             <Footer/>
       
       

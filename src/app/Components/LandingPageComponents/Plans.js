@@ -66,7 +66,7 @@ const Plans = () => {
 
       {/* Plan Cards */}
       <div className="container mt-n5 mt-lg-n5">
-        <div className="row">
+        <div className="row justify-content-center">
         {plans.map((plan) => (
   <div className="col-md col-lg-4 col-md-6 col-12 mb-3 mb-md-0" key={plan.planId}>
     <div className="card h-100 zi-1 bg-primary text-white">

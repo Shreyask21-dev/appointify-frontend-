@@ -3,37 +3,56 @@ import React, { useState, useEffect } from "react";
 import '../../../../../dist/assets/vendor/aos/dist/aos.css';
 import '../../../../../dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css';
 import axios from "axios";
+import validator from 'validator';
 
 const Section2 = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     role: "",
     experience: "",
-    certificates: "",
+    certificates: "", // Empty by default
     description: "",
     section2_Tagline: "",
-    facebookId: "",
-    instagramId: "",
-    twitterId: "",
-    youtubeId: "",
     section2_Image: "/assets/img/160x160/img8.jpg",
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+  const [errors, setErrors] = useState({});
 
-  const fetchProfile = async () => {
-    try {
-      const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
-      if (!response.ok) throw new Error("Failed to fetch consultant data");
-      const result = await response.json();
-      const profile = result[0] || {};
-      console.log("section2", profile);
-      setFormData(prev => ({ ...prev, ...profile }));
-    } catch (error) {
-      console.error("Error fetching consultant data:", error);
-    }
-  };
+const fetchProfile = async () => {
+  try {
+    const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
+    if (!response.ok) throw new Error("Failed to fetch consultant data");
+
+    const result = await response.json();
+    const profile = result[0] || {};
+
+    // Explicitly set certificates to an empty string if it's null
+    const certificates = profile.certificates === "null" ? "" : profile.certificates;
+
+    setFormData(prev => ({
+      ...prev,
+      fullName: profile.fullName || "",
+      role: profile.role || "",
+      experience: profile.experience || "",
+      certificates: certificates, // Now ensures an empty string if null
+      description: profile.description || "",
+      section2_Tagline: profile.section2_Tagline || "",
+      section2_Image: profile.section2_Image || "/assets/img/160x160/img8.jpg"
+    }));
+
+    setStatusMessage({ type: '', text: '' });
+  } catch (error) {
+    console.error("Error fetching consultant data:", error);
+    setStatusMessage({ type: 'error', text: 'Failed to fetch section 2 content.' });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchProfile();
@@ -45,11 +64,6 @@ const Section2 = () => {
     setIsEditing(true);
   };
 
-  const handleSocialLinkChange = (platform, value) => {
-    setFormData(prev => ({ ...prev, [platform]: value }));
-    setIsEditing(true);
-  };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -58,56 +72,90 @@ const Section2 = () => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      const updatedFormData = new FormData();
+  const handleValidation = () => {
+    const newErrors = {};
 
-      for (const key in formData) {
-        if (key !== "section2_Image") {
-          updatedFormData.append(key, formData[key]);
-        }
-      }
-
-      if (imageFile) {
-        updatedFormData.append("section2_Image", imageFile);
-      }
-
-      const response = await axios.patch(
-        "http://localhost:5056/api/ConsultantProfile/updateConsultantProfile",
-        updatedFormData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      if (response.status === 200) {
-        alert("Profile updated successfully!");
-        setIsEditing(false);
-        setImageFile(null);
-        await fetchProfile(); // 🔁 Refresh to get updated image path
-      } else {
-        alert("Failed to update profile.");
-      }
-
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("An error occurred while updating the profile.");
+    if (!formData.fullName) {
+      newErrors.fullName = 'Full name is required.';
     }
+    if (!formData.role) {
+      newErrors.role = 'Role is required.';
+    }
+    if (!formData.experience) {
+      newErrors.experience = 'Experience is required.';
+    }
+
+    // Certificates field is not validated
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
+
+ const handleSave = async () => {
+  if (!handleValidation()) return; // Exit if validation fails
+
+  setLoading(true);
+  try {
+    // Prepare the form data to be sent
+    const updatedFormData = new FormData();
+
+    // Loop through formData and append each value to FormData
+    for (const key in formData) {
+      if (key !== "section2_Image") {
+        // If the certificates field is empty, set it to null before sending
+        updatedFormData.append(
+          key,
+          key === "certificates" && formData[key] === "" ? null : formData[key]
+        );
+      }
+    }
+
+    // Handle the image file if present
+    if (imageFile) {
+      updatedFormData.append("section2_Image", imageFile);
+    }
+
+    // Send the data to the backend
+    const response = await axios.patch(
+      "http://localhost:5056/api/ConsultantProfile/updateConsultantProfile",
+      updatedFormData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    // Handle successful response
+    if (response.status === 200) {
+      setIsEditing(false);
+      setImageFile(null);
+      await fetchProfile(); // 🔁 Refresh to get updated image path
+      setStatusMessage({ type: 'success', text: 'Section 2 updated successfully!' });
+    } else {
+      setStatusMessage({ type: 'error', text: 'Failed to update section 2.' });
+    }
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    setStatusMessage({ type: 'error', text: "An error occurred while updating the profile." });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
       <h5 className="text-muted mt-5 mb-4">Section 2 - Manage Consultant Info</h5>
+      
+      {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
+        </div>
+      )}
       <div className="card p-4 shadow-sm">
 
         {/* Profile Image Upload */}
         <div className="text-center mb-4">
           <img
-            src={
-              formData.section2_Image
-                ? `http://localhost:5056${formData.section2_Image}`
-                : "/assets/img/160x160/img8.jpg"
-            }
+            src={formData.section2_Image ? `http://localhost:5056${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
             alt="Section 2 Preview"
             id="section2_Image"
             className="rounded-circle border border-secondary"
@@ -136,10 +184,11 @@ const Section2 = () => {
                   <input
                     type="text"
                     id={field}
-                    className="form-control editable"
+                    className={`form-control editable ${errors[field] ? 'is-invalid' : ''}`}
                     value={formData[field] || ""}
                     onChange={handleChange}
                   />
+                  {errors[field] && <div className="invalid-feedback">{errors[field]}</div>}
                 </div>
               </div>
             ))}
@@ -150,47 +199,24 @@ const Section2 = () => {
               <label className="form-label fw-semibold">Description:</label>
               <textarea
                 id="description"
-                className="form-control editable"
+                className={`form-control editable ${errors.description ? 'is-invalid' : ''}`}
                 rows="3"
                 value={formData.description || ""}
                 onChange={handleChange}
               ></textarea>
+              {errors.description && <div className="invalid-feedback">{errors.description}</div>}
             </div>
             <div className="mb-3">
               <label className="form-label fw-semibold">Tagline:</label>
               <input
                 type="text"
                 id="section2_Tagline"
-                className="form-control editable"
+                className={`form-control editable ${errors.section2_Tagline ? 'is-invalid' : ''}`}
                 value={formData.section2_Tagline || ""}
                 onChange={handleChange}
               />
+              {errors.section2_Tagline && <div className="invalid-feedback">{errors.section2_Tagline}</div>}
             </div>
-          </div>
-        </div>
-
-        {/* Social Media Links */}
-        <div className="mt-4">
-          <label className="form-label fw-semibold mb-2">Social Media:</label>
-          <div className="row g-3">
-            {[
-              { platform: 'facebookId', icon: 'bi-facebook' },
-              { platform: 'instagramId', icon: 'bi-instagram' },
-              { platform: 'twitterId', icon: 'bi-twitter' },
-              { platform: 'youtubeId', icon: 'bi-youtube' },
-            ].map(({ platform, icon }) => (
-              <div className="input-group mb-2" key={platform}>
-                <span className="input-group-text">
-                  <i className={`bi ${icon}`}></i>
-                </span>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formData[platform] || ''}
-                  onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
-                />
-              </div>
-            ))}
           </div>
         </div>
 
@@ -198,10 +224,10 @@ const Section2 = () => {
         <div className="text-center mt-4">
           <button
             className="btn btn-primary px-4 rounded-pill mt-3"
-            disabled={!isEditing}
+            disabled={!isEditing || loading}
             onClick={handleSave}
           >
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

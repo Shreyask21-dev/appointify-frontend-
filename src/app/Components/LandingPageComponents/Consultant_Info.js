@@ -67,7 +67,7 @@ const Consultant_Info = () => {
                   </p>
                   <p className="blockquote-footer-source mb-6">
                     {consultantData.role} <br/>
-                     {consultantData.certificates}
+                      {consultantData.certificates === "null" ? "" : consultantData.certificates}
                   </p>
                  
                   <p className="blockpara text-gray-800 justify-evenly fs-6 lh-base ">

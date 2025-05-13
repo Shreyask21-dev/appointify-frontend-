@@ -1,136 +1,157 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const Section7 = () => {
-  const [lat, setLat] = useState('');
-  const [lng, setLng] = useState('');
-  const [locations, setLocations] = useState([]);
-  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [iframeUrl, setIframeUrl] = useState('');
+  const [savedUrl, setSavedUrl] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
-  const mapSrc =
-    lat && lng
-      ? `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-      : '';
-
-  const handleAddOrUpdate = () => {
-    if (!lat || !lng) return;
-
-    const newLocation = { lat, lng };
-
-    if (selectedIndex !== null) {
-      // Update existing location
-      const updatedLocations = [...locations];
-      updatedLocations[selectedIndex] = newLocation;
-      setLocations(updatedLocations);
-      setSelectedIndex(null);
-    } else {
-      // Add new location
-      setLocations([...locations, newLocation]);
+  // Fetch iframe URL
+  const fetchIframeUrl = async () => {
+    try {
+      const res = await axios.get('http://localhost:5056/api/Location');
+      if (res.data?.iFrameURL) {
+        setSavedUrl(res.data.iFrameURL);
+        setIframeUrl(res.data.iFrameURL);
+      }
+    } catch (err) {
+      console.error('Error fetching iframe URL:', err);
+      setStatusMessage({ type: 'error', text: 'Failed to fetch map URL.' });
     }
-
-    setLat('');
-    setLng('');
   };
 
-  const handleEdit = (index) => {
-    setLat(locations[index].lat);
-    setLng(locations[index].lng);
-    setSelectedIndex(index);
+  useEffect(() => {
+    fetchIframeUrl();
+  }, []);
+
+  // Save iframe URL
+  const handleSave = async () => {
+    if (!iframeUrl.trim()) return;
+
+    try {
+      const payload = { iframeUrl: iframeUrl.trim() };
+
+      if (savedUrl) {
+        await axios.put('http://localhost:5056/api/Location/6', payload);
+        setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
+      } else {
+        await axios.post('http://localhost:5056/api/Location', payload);
+        setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
+      }
+
+      setIsEditMode(false);
+      fetchIframeUrl();
+    } catch (err) {
+      console.error('Save failed:', err);
+      setStatusMessage({ type: 'error', text: 'Failed to save map URL.' });
+    }
   };
 
-  const handleDelete = (index) => {
-    const updated = locations.filter((_, i) => i !== index);
-    setLocations(updated);
-    if (selectedIndex === index) {
-      setSelectedIndex(null);
-      setLat('');
-      setLng('');
+  // Delete iframe URL
+  const handleDelete = async () => {
+    try {
+      await axios.delete('http://localhost:5056/api/Location/1');
+      setIframeUrl('');
+      setSavedUrl('');
+      setStatusMessage({ type: 'success', text: 'Map URL deleted.' });
+    } catch (err) {
+      console.error('Delete failed:', err);
+      setStatusMessage({ type: 'error', text: 'Failed to delete map URL.' });
     }
   };
 
   return (
-    <div className="card p-4 mt-5">
-      <h5 className="mb-3 text-muted">Select Location Manually</h5>
-
-      <p className="small text-muted">
-        👉 Open{' '}
-        <a
-          href="https://www.google.com/maps"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Google Maps
-        </a>{' '}
-        → Right-click on a location → Copy coordinates → Paste below
-      </p>
-
-      <div className="row mb-3">
-        <div className="col">
-          <input
-            type="text"
-            placeholder="Latitude"
-            className="form-control"
-            value={lat}
-            onChange={(e) => setLat(e.target.value)}
-          />
-        </div>
-        <div className="col">
-          <input
-            type="text"
-            placeholder="Longitude"
-            className="form-control"
-            value={lng}
-            onChange={(e) => setLng(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <button className="btn btn-primary mb-4" onClick={handleAddOrUpdate}>
-        {selectedIndex !== null ? '✏️ Update Location' : '➕ Add Location'}
-      </button>
-
-      {mapSrc && (
-        <div style={{ width: '100%', height: '400px' }} className="mb-4">
-          <iframe
-            title="User Selected Map"
-            src={mapSrc}
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            allowFullScreen=""
-            loading="lazy"
-          ></iframe>
+    <div className="card p-4 mt-5 shadow rounded">
+      {/* Status Message */}
+      {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
         </div>
       )}
 
-      {locations.length > 0 && (
+      <h5 className="mb-3 text-muted">Paste Google Maps Iframe URL</h5>
+      <p className="small text-muted">
+        👉 Go to <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Google Maps</a> → Search location → 
+        Click "Share" → Select "Embed a map" → Copy  the <strong>IFrame URL</strong> and paste below.
+      </p>
+
+      {/* Edit Mode */}
+      {(isEditMode || !savedUrl) && (
         <>
-          <h6 className="text-muted">Saved Locations:</h6>
-          <ul className="list-group">
-            {locations.map((loc, index) => (
-              <li
-                className="list-group-item d-flex justify-content-between align-items-center"
-                key={index}
+          <textarea
+            className="form-control mb-3"
+            rows={3}
+            placeholder="Paste only iframe src URL like https://www.google.com/maps/embed?..."
+            value={iframeUrl}
+            onChange={(e) => {
+              const value = e.target.value.trim();
+              const match = value.match(/src\s*=\s*["']([^"']+)["']/);
+              setIframeUrl(match ? match[1] : value);
+            }}
+          />
+
+          {/* Live Preview */}
+          {iframeUrl && (
+            <div className="mt-3">
+              <h6 className="text-muted">Preview:</h6>
+              <iframe
+                title="Google Map Preview"
+                src={iframeUrl}
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                className="my-4 rounded"
+              />
+            </div>
+          )}
+
+          <div className="d-flex gap-2 mt-2">
+            <button className="btn btn-sm btn-primary" onClick={handleSave}>
+              {savedUrl ? 'Update Map URL' : 'Save Map URL'}
+            </button>
+            {savedUrl && (
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={() => {
+                  setIframeUrl(savedUrl);
+                  setIsEditMode(false);
+                }}
               >
-                <span>
-                  📍 Lat: {loc.lat}, Lng: {loc.lng}
-                </span>
-                <span>
-                  <button
-                    className="btn btn-sm btn-warning me-2"
-                    onClick={() => handleEdit(index)}
-                  >
-                    ✏️ Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(index)}
-                  >
-                    🗑️ Delete
-                  </button>
-                </span>
-              </li>
-            ))}
-          </ul>
+                Cancel
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Display Saved Map */}
+      {savedUrl && !isEditMode && (
+        <>
+          <h6 className="text-muted">Saved Map Preview:</h6>
+          <iframe
+            title="Google Map View"
+            src={savedUrl}
+            width="100%"
+            height="400"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            className="my-4 rounded"
+          />
+
+          <div className="d-flex gap-2">
+            <button className="btn btn-sm btn-outline-warning" onClick={() => setIsEditMode(true)}>
+              ✏️ Edit
+            </button>
+            <button className="btn btn-sm btn-outline-danger" onClick={handleDelete}>
+              🗑️ Delete
+            </button>
+          </div>
         </>
       )}
     </div>

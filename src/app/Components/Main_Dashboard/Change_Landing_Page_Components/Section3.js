@@ -8,6 +8,11 @@ const Section3 = () => {
   const [relatedImage, setRelatedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('/assets/img/stethoscope.jpg');
   const [isEdited, setIsEdited] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+  const [isTaglineValid, setIsTaglineValid] = useState(true);
+  const [isDescriptionValid, setIsDescriptionValid] = useState(true);
+  const [isImageValid, setIsImageValid] = useState(true); // Image validation state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,11 +27,14 @@ const Section3 = () => {
           setTagline(section3Data?.section3_Tagline || '');
           setDescription(section3Data?.section3_Description || '');
           setPreviewUrl(section3Data?.section3_Image ? `http://localhost:5056${section3Data.section3_Image}` : '/assets/img/stethoscope.jpg');
+          setStatusMessage({ type: '', text: '' });
         } else {
-          console.log('No data available for section 3');
+          setStatusMessage({ type: 'error', text: 'No data available for section 3' });
         }
-      } catch (error) {
-        console.log('Error fetching section 3 data:', error);
+      } catch (err) {
+          setStatusMessage({ type: 'error', text: 'Failed to fetch section 3 content.' });
+      } finally {
+          setLoading(false);
       }
     };
 
@@ -45,15 +53,35 @@ const Section3 = () => {
 
   // SAVE TO DATABASE
   const handleSave = async () => {
+    // Validate fields
+    if (!tagline.trim()) {
+      setIsTaglineValid(false);
+      return;
+    } else {
+      setIsTaglineValid(true);
+    }
+
+    if (!description.trim()) {
+      setIsDescriptionValid(false);
+      return;
+    } else {
+      setIsDescriptionValid(true);
+    }
+
+    if (!relatedImage) {
+      setIsImageValid(false);  // Image is required validation
+      return;
+    } else {
+      setIsImageValid(true);
+    }
+
     try {
       const formData = new FormData();
       formData.append('Section3_Tagline', tagline);
       formData.append('section3_Description', description);
+      formData.append('section3_Image', relatedImage); // ✅ added image
 
-      if (relatedImage) {
-        formData.append('section3_Image', relatedImage); // ✅ corrected key
-      }
-
+      setLoading(true);
       const response = await axios.patch(
         'http://localhost:5056/api/ConsultantProfile/updateConsultantProfile',
         formData,
@@ -65,21 +93,27 @@ const Section3 = () => {
       );
 
       if (response.status === 200) {
-        alert('Section 3 updated successfully!');
+        setStatusMessage({ type: 'success', text: 'Section 3 updated successfully!' });
         setIsEdited(false);
       } else {
-        alert('Failed to update Section 3.');
+        setStatusMessage({ type: 'error', text: 'Failed to update Section 3' });
       }
     } catch (error) {
       console.error('Error updating section 3:', error);
-      alert('An error occurred while saving Section 3.');
+      setStatusMessage({ type: 'error', text: 'An error occurred while saving Section 3.' });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
       <h5 className="text-start mb-4 text-muted mt-5">Section 3 - Manage Consultant Info</h5>
-
+       {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
+        </div>
+      )}
       <div className="card p-4">
         {/* Image Upload */}
         <div className="row align-items-center mb-4">
@@ -93,31 +127,35 @@ const Section3 = () => {
             </div>
             <input
               type="file"
-              className="form-control mt-3 w-75 mx-auto"
+              className={`form-control mt-3 w-75 mx-auto ${!isImageValid ? 'is-invalid' : ''}`}  // Image validation
               accept="image/*"
               onChange={handleImageChange}
             />
+            {!isImageValid && <div className="invalid-feedback">Image is required.</div>}  {/* Image error message */}
             <p className="mt-2 text-muted">Recommended size: 150x150</p>
           </div>
 
           <div className="col-md-8">
+            {/* Tagline Input */}
             <div className="mb-4">
               <label className="form-label fw-semibold">Tagline:</label>
               <input
                 type="text"
-                className="form-control editable"
+                className={`form-control editable ${!isTaglineValid ? 'is-invalid' : ''}`}
                 value={tagline}
                 onChange={(e) => {
                   setTagline(e.target.value);
                   setIsEdited(true);
                 }}
               />
+              {!isTaglineValid && <div className="invalid-feedback">Tagline is required.</div>}
             </div>
 
+            {/* Description Input */}
             <div>
               <label className="form-label fw-semibold">Description:</label>
               <textarea
-                className="form-control editable"
+                className={`form-control editable ${!isDescriptionValid ? 'is-invalid' : ''}`}
                 rows="4"
                 value={description}
                 onChange={(e) => {
@@ -125,6 +163,7 @@ const Section3 = () => {
                   setIsEdited(true);
                 }}
               />
+              {!isDescriptionValid && <div className="invalid-feedback">Description is required.</div>}
             </div>
           </div>
         </div>
@@ -134,9 +173,9 @@ const Section3 = () => {
           <button
             className="btn btn-primary px-4 py-2 rounded-pill mt-3"
             onClick={handleSave}
-            disabled={!isEdited}
+            disabled={!isEdited || loading}
           >
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

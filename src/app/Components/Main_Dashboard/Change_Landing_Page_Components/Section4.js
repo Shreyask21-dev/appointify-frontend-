@@ -3,6 +3,7 @@ import axios from 'axios';
 
 const ConsultantSection4 = () => {
   const [stats, setStats] = useState([]);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // 🔽 Fetch stats on component mount
   useEffect(() => {
@@ -10,12 +11,16 @@ const ConsultantSection4 = () => {
       .then(response => {
         const apiStats = response.data.map(stat => ({
           ...stat,
-          editedValue: '',
-          editedDescription: '',
+          editedValue: stat.value.replace('%', ''),
+          editedDescription: stat.description || '',  // Ensure description is an empty string if not provided
         }));
         setStats(apiStats);
+        setStatusMessage({ type: '', text: '' });
       })
-      .catch(error => console.error('Error fetching stats:', error));
+      .catch((error) => {
+        console.log(error);
+        setStatusMessage({ type: 'error', text: 'Error fetching stats.' });
+      });
   }, []);
 
   const handleStatChange = (index, newValue) => {
@@ -36,41 +41,51 @@ const ConsultantSection4 = () => {
     setStats(updatedStats);
   };
 
-  const handleSave = (index) => {
+  const handleSave = (index, value) => {
     const updatedStats = [...stats];
     const stat = updatedStats[index];
 
-    if (stat.editedValue) {
-      stat.value = stat.editedValue + '%';
-      stat.editedValue = '';
-    }
-    if (stat.editedDescription) {
-      stat.description = stat.editedDescription;
-      stat.editedDescription = '';
+    // Validate Value: Must not be empty or non-numeric
+    if (!stat.editedValue || isNaN(stat.editedValue) || stat.editedValue <= 0) {
+      setStatusMessage({ type: 'error', text: 'Value must be a positive number.' });
+      return;
     }
 
-    setStats(updatedStats);
+    // Validate Description: Must not be empty
+    if (!stat.editedDescription.trim()) {
+      setStatusMessage({ type: 'error', text: 'Description cannot be empty.' });
+      return; // Prevent save if description is empty
+    }
 
     const dataToSend = {
       id: stat.id,
-      value: stat.value,
-      description: stat.description,
+      value: stat.editedValue ? stat.editedValue + '%' : stat.value,
+      description: stat.editedDescription || '',  // Allow empty description if it is cleared
       icon: stat.icon,
     };
 
-    // 🔼 Send updated stat to backend
     axios.put(`http://localhost:5056/api/Stat/${stat.id}`, dataToSend)
       .then(() => {
-        console.log('Stat updated:', dataToSend);
+        // Update local state after successful save
+        stat.value = dataToSend.value;
+        stat.description = dataToSend.description;
+        setStats(updatedStats);
+        setStatusMessage({ type: 'success', text: `Stat ${value} updated successfully!` });
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error updating stat:', error);
+        setStatusMessage({ type: 'error', text: 'Error updating stat' });
       });
   };
 
   return (
     <div>
       <h5 className="text-start mb-3 text-muted mt-5">Section 4 - Manage Stats</h5>
+      {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
+        </div>
+      )}
       <div className="card p-4 shadow-sm mt-4">
         <div className="row">
           {stats.map((stat, index) => (
@@ -96,10 +111,10 @@ const ConsultantSection4 = () => {
                       type="number"
                       className="form-control"
                       placeholder="e.g. 50"
-                      value={stat.editedValue}
+                      value={stat.editedValue || stat.value}
                       onChange={(e) => handleStatChange(index, e.target.value)}
                     />
-                    <button className="btn btn-outline-success mt-2 w-100" onClick={() => handleSave(index)}>
+                    <button className="btn btn-outline-success mt-2 w-100" onClick={() => handleSave(index, "Value")}>
                       Save Value
                     </button>
                   </div>
@@ -122,10 +137,10 @@ const ConsultantSection4 = () => {
                       className="form-control"
                       rows="3"
                       placeholder="Write new description"
-                      value={stat.editedDescription}
+                      value={stat.editedDescription || ""}
                       onChange={(e) => handleDescChange(index, e.target.value)}
                     ></textarea>
-                    <button className="btn btn-primary mt-2 w-100" onClick={() => handleSave(index)}>
+                    <button className="btn btn-primary mt-2 w-100" onClick={() => handleSave(index, "Description")}>
                       Save Description
                     </button>
                   </div>

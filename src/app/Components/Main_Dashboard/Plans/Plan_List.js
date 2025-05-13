@@ -13,6 +13,13 @@ const Plan_List = () => {
     description: '',
     features: '',
   });
+  const [errors, setErrors] = useState({
+    name: '',
+    price: '',
+    duration: '',
+    description: '',
+    features: '',
+  });
   const editorRef = useRef(null);
 
   useEffect(() => {
@@ -90,70 +97,88 @@ const Plan_List = () => {
     }
   };
 
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {};
+
+    // Validate name
+    if (!editedPlan.name) {
+      newErrors.name = 'Name is required';
+      isValid = false;
+    }
+
+    // Validate price
+    if (!editedPlan.price || isNaN(editedPlan.price) || parseFloat(editedPlan.price) <= 0) {
+      newErrors.price = 'Please enter a valid price greater than 0';
+      isValid = false;
+    }
+
+    // Validate duration
+    if (!editedPlan.duration) {
+      newErrors.duration = 'Duration is required';
+      isValid = false;
+    }
+
+    // Validate description
+    if (!editedPlan.description) {
+      newErrors.description = 'Description is required';
+      isValid = false;
+    }
+
+    // Validate features (check if content is entered in the editor)
+    if (!editorRef.current || !editorRef.current.innerHTML.trim()) {
+      newErrors.features = 'Features are required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleSave = async () => {
-    // Check if editingIndex is valid
-    if (editingIndex < 0 || editingIndex >= plans.length) {
-        console.warn('Invalid editing index:', editingIndex);
-        return; // Exit if there's no valid index
+    // Check if form is valid
+    if (!validateForm()) {
+      return; // If form is invalid, don't proceed with the save
     }
 
     // Retrieve the token for authorization
     const token = localStorage.getItem('token');
-    
-    // Retrieve the planId based on the editingIndex
-    const planId = plans[editingIndex].planId; // This needs to be defined correctly
+    const planId = plans[editingIndex].planId;
 
-    // Construct the plan object for the update
     const updatedPlan = {
-        planId, // Send the planId that needs to be updated
-        planName: editedPlan.name, 
-        planPrice: parseFloat(editedPlan.price) || 0,
-        planDuration: editedPlan.duration, 
-        planDescription: editedPlan.description,
-        planFeatures: editorRef.current.innerHTML,
+      planId,
+      planName: editedPlan.name,
+      planPrice: parseFloat(editedPlan.price) || 0,
+      planDuration: editedPlan.duration,
+      planDescription: editedPlan.description,
+      planFeatures: editorRef.current.innerHTML,
     };
 
-    // Debug log to review the updated plan structure
-    console.log('Updated Plan:', updatedPlan);
-
     try {
-        // Sending the PUT request to update the plan
-        const response = await fetch(`http://localhost:5056/api/ConsultationPlan/update/${planId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(updatedPlan),
-        });
+      const response = await fetch(`http://localhost:5056/api/ConsultationPlan/update/${planId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedPlan),
+      });
 
-        // Handle response
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('Update failed with status', response.status, errorData);
-            throw new Error(`Update failed with status ${response.status}: ${errorData.message || response.statusText}`);
-        }
-
-        // Update the plan in the local state
+      if (response.ok) {
         const updatedPlans = [...plans];
-        updatedPlans[editingIndex] = { ...updatedPlan, planId }; // Replace with the updated plan details
-        setPlans(updatedPlans); // Update state with the new plans
+        updatedPlans[editingIndex] = { ...updatedPlan, planId };
+        setPlans(updatedPlans);
+        setEditingIndex(null);
 
-        setEditingIndex(null); // Clear editing index on success
-
-        // Hide the modal after successfully saving
         const editModal = window.bootstrap.Modal.getInstance(document.getElementById('editModal'));
         editModal.hide();
-        
+      } else {
+        console.error('Update failed');
+      }
     } catch (error) {
-        // Log any errors that occur during the fetch
-        console.error('Error updating plan:', error);
+      console.error('Error updating plan:', error);
     }
-};
-
-
-
-
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -168,47 +193,43 @@ const Plan_List = () => {
     <div className="container py-4">
       <Plan_Widget />
       <div className="row">
-  {plans.length === 0 ? (
-    <div>No plans available.</div>
-  ) : (
-    plans.map((plan, index) => (
-      <div className="col-md mb-3 mb-md-0 col-lg-4 col-md-6 col-12 mt-4" key={plan.planId}>
-        <div className="card h-100 shadow-sm border-0 rounded-4 px-0" >
-          <div className="card-header text-center text-black">
-            <div className="mb-2">
-              <span id={`pricingCount${index}`} className="fs-2 text-dark fw-semibold">
-                {plan.planDuration}
-              <span className='fs-5'> min</span>
-              </span>
+        {plans.length === 0 ? (
+          <div>No plans available.</div>
+        ) : (
+          plans.map((plan, index) => (
+            <div className="col-md mb-3 mb-md-0 col-lg-4 col-md-6 col-12 mt-4" key={plan.planId}>
+              <div className="card h-100 shadow-sm border-0 rounded-4 px-0">
+                <div className="card-header text-center text-black">
+                  <div className="mb-2">
+                    <span id={`pricingCount${index}`} className="fs-2 text-dark fw-semibold">
+                      {plan.planDuration}
+                      <span className="fs-5"> min</span>
+                    </span>
+                  </div>
+                  <h3 className="card-title fs-5 mt-1 lh-1">{plan.planName}</h3>
+                  <p className="card-text justify-start mt-2">{plan.planDescription}</p>
+                </div>
+
+                <div className="card-body d-flex flex-column align-items-center py-0">
+                  <h5 className="text-dark fw-bold mt-3">Price: ₹{plan.planPrice}</h5>
+
+                  <div className="text-black" dangerouslySetInnerHTML={{ __html: plan.planFeatures }} />
+                </div>
+
+                <div className="card-footer text-center">
+                  <button type="button" className="btn btn-ghost-light bg-warning text-white me-2" onClick={() => handleEdit(index)}>
+                    Edit
+                  </button>
+
+                  <button type="button" className="btn btn-ghost-light bg-danger text-white" onClick={() => handleDelete(index)}>
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>
-            <h3 className="card-title fs-5 mt-1 lh-1">{plan.planName}</h3> {/* Added margin to separate from duration */}
-            <p className="card-text justify-start mt-2">{plan.planDescription}</p> {/* Adjusted margin for better separation */}
-          </div>
-
-          <div className="card-body d-flex flex-column align-items-center py-0">
-            <h5 className="text-dark fw-bold mt-3">Price: ₹{plan.planPrice}</h5>
-            
-            <div className=" text-black" dangerouslySetInnerHTML={{ __html: plan.planFeatures }} />
-          </div>
-
-          <div className="card-footer text-center">
-            <button type="button" className="btn btn-ghost-light bg-warning text-white me-2" onClick={() => handleEdit(index)}>
-              Edit
-            </button>
-
-            <button type="button" className="btn btn-ghost-light bg-danger text-white" onClick={() => handleDelete(index)}>
-              Delete
-            </button>
-          </div>
-        </div>
+          ))
+        )}
       </div>
-    ))
-  )}
-</div>
-
-
-
-
 
       {/* Edit Modal */}
       <div className="modal fade" id="editModal" tabIndex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -222,7 +243,7 @@ const Plan_List = () => {
               <div className="form-floating mb-4">
                 <input
                   type="text"
-                  className="form-control rounded-3"
+                  className={`form-control rounded-3 ${errors.name ? 'border-danger' : ''}`}
                   id="planName"
                   name="name"
                   value={editedPlan.name}
@@ -230,6 +251,7 @@ const Plan_List = () => {
                   placeholder="Plan Name"
                 />
                 <label htmlFor="planName">Plan Name</label>
+                {errors.name && <div className="text-danger">{errors.name}</div>}
               </div>
 
               <div className="row g-4">
@@ -237,7 +259,7 @@ const Plan_List = () => {
                   <div className="form-floating">
                     <input
                       type="number"
-                      className="form-control rounded-3"
+                      className={`form-control rounded-3 ${errors.price ? 'border-danger' : ''}`}
                       id="planPrice"
                       name="price"
                       value={editedPlan.price}
@@ -245,6 +267,7 @@ const Plan_List = () => {
                       placeholder="Price"
                     />
                     <label htmlFor="planPrice">Plan Price (₹)</label>
+                    {errors.price && <div className="text-danger">{errors.price}</div>}
                   </div>
                 </div>
 
@@ -252,7 +275,7 @@ const Plan_List = () => {
                   <div className="form-floating">
                     <input
                       type="text"
-                      className="form-control rounded-3"
+                      className={`form-control rounded-3 ${errors.duration ? 'border-danger' : ''}`}
                       id="planDuration"
                       name="duration"
                       value={editedPlan.duration}
@@ -260,6 +283,7 @@ const Plan_List = () => {
                       placeholder="Duration"
                     />
                     <label htmlFor="planDuration">Plan Duration (e.g. 30 minutes)</label>
+                    {errors.duration && <div className="text-danger">{errors.duration}</div>}
                   </div>
                 </div>
               </div>
@@ -267,7 +291,7 @@ const Plan_List = () => {
               <div className="form-floating mt-4">
                 <input
                   type="text"
-                  className="form-control rounded-3"
+                  className={`form-control rounded-3 ${errors.description ? 'border-danger' : ''}`}
                   id="planDescription"
                   name="description"
                   value={editedPlan.description}
@@ -275,47 +299,23 @@ const Plan_List = () => {
                   placeholder="Description"
                 />
                 <label htmlFor="planDescription">Plan Description</label>
+                {errors.description && <div className="text-danger">{errors.description}</div>}
               </div>
 
-              {/* Features Toolbar */}
-              <div className="mt-5">
-                <label className="mb-2 fw-semibold text-dark">Plan Features</label>
-                <div className="d-flex gap-2 flex-wrap mb-3 p-2 bg-light shadow-sm rounded-3 justify-content-start">
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => formatText('bold')} title="Bold">
-                    <i className="fas fa-bold"></i>
-                  </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => formatText('italic')} title="Italic">
-                    <i className="fas fa-italic"></i>
-                  </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => formatText('underline')} title="Underline">
-                    <i className="fas fa-underline"></i>
-                  </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => formatText('insertOrderedList')} title="Numbered List">
-                    <i className="fas fa-list-ol"></i>
-                  </button>
-                  <button type="button" className="btn btn-outline-primary btn-sm" onClick={() => formatText('insertUnorderedList')} title="Bullet List">
-                    <i className="fas fa-list-ul"></i>
-                  </button>
-                </div>
-
-                {/* Features Editor */}
+              <div className="mt-4">
+                <label htmlFor="planFeatures" className="form-label">Plan Features</label>
                 <div
-                  ref={editorRef}
+                  id="planFeatures"
+                  className={`border p-2 ${errors.features ? 'border-danger' : ''}`}
                   contentEditable
-                  className="form-control p-4 rounded-3"
-                  style={{
-                    minHeight: '200px',
-                    outline: 'none',
-                    backgroundColor: '#fff',
-                    boxShadow: 'inset 0 1px 4px rgba(0, 0, 0, 0.1)',
-                    border: '1px solid #dee2e6',
-                  }}
-                ></div>
+                  ref={editorRef}
+                />
+                {errors.features && <div className="text-danger">{errors.features}</div>}
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" className="btn btn-primary" onClick={handleSave}>Save Changes</button>
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" className="btn btn-primary" onClick={handleSave}>Save changes</button>
             </div>
           </div>
         </div>

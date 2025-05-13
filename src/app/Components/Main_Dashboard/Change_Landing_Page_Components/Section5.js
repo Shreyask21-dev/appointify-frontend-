@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -12,6 +13,10 @@ const Section5 = () => {
   const [isEdited, setIsEdited] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+
+  const [isTaglineValid, setIsTaglineValid] = useState(true);
+  const [isDescriptionValid, setIsDescriptionValid] = useState(true);
+  const [isHeadingValid, setIsHeadingValid] = useState(true);
 
   // Fetch Section 5 data on mount
   useEffect(() => {
@@ -46,14 +51,44 @@ const Section5 = () => {
     setEditedData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Validate the fields before saving
+  const validateFields = () => {
+    let isValid = true;
+
+    if (!editedData.tagline.trim()) {
+      setIsTaglineValid(false);
+      isValid = false;
+    } else {
+      setIsTaglineValid(true);
+    }
+
+    if (!editedData.mainDescription.trim()) {
+      setIsDescriptionValid(false);
+      isValid = false;
+    } else {
+      setIsDescriptionValid(true);
+    }
+
+    if (!editedData.mainHeading.trim()) {
+      setIsHeadingValid(false);
+      isValid = false;
+    } else {
+      setIsHeadingValid(true);
+    }
+
+    return isValid;
+  };
+
   // Handle Save
   const handleSave = async () => {
+    if (!validateFields()) return;  // Prevent save if validation fails
+
     try {
       setLoading(true);
       await axios.put('http://localhost:5056/api/Section5/api/section5', editedData);
       setFormData(editedData);
       setIsEdited(false);
-      setStatusMessage({ type: 'success', text: 'Section updated successfully!' });
+      setStatusMessage({ type: 'success', text: 'Section 5 updated successfully!' });
     } catch (err) {
       setStatusMessage({ type: 'error', text: 'Failed to update section.' });
     } finally {
@@ -69,7 +104,7 @@ const Section5 = () => {
   };
 
   return (
-    <div className="container my-5">
+    <div className="my-5">
       <h5 className="text-muted mb-4">Section 5 - Manage Plan Taglines</h5>
 
       {statusMessage.text && (
@@ -83,33 +118,36 @@ const Section5 = () => {
           <label className="form-label fw-semibold">Tagline</label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${!isTaglineValid ? 'is-invalid' : ''}`}
             value={editedData.tagline}
             disabled={loading}
             onChange={e => handleChange('tagline', e.target.value)}
           />
+          {!isTaglineValid && <div className="invalid-feedback">Tagline cannot be empty.</div>}
         </div>
 
         <div className="mb-3">
           <label className="form-label fw-semibold">Description</label>
           <textarea
             rows="4"
-            className="form-control"
+            className={`form-control ${!isDescriptionValid ? 'is-invalid' : ''}`}
             value={editedData.mainDescription}
             disabled={loading}
             onChange={e => handleChange('mainDescription', e.target.value)}
           />
+          {!isDescriptionValid && <div className="invalid-feedback">Description cannot be empty.</div>}
         </div>
 
         <div className="mb-3">
           <label className="form-label fw-semibold">Heading</label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${!isHeadingValid ? 'is-invalid' : ''}`}
             value={editedData.mainHeading}
             disabled={loading}
             onChange={e => handleChange('mainHeading', e.target.value)}
           />
+          {!isHeadingValid && <div className="invalid-feedback">Heading cannot be empty.</div>}
         </div>
 
         <div className="d-flex justify-content-end gap-2 mt-4">

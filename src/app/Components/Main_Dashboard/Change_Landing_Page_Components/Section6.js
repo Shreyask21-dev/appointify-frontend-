@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
@@ -10,14 +11,18 @@ const ConsultantSection6 = () => {
   const [editQuestion, setEditQuestion] = useState('');
   const [editAnswer, setEditAnswer] = useState('');
   const [showModal, setShowModal] = useState(false);
-
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
   const API_BASE = 'http://localhost:5056/api/Faq';
 
   // Load FAQs from API on mount
   useEffect(() => {
     axios.get(API_BASE)
-      .then(res => setFaqs(res.data))
-      .catch(err => console.error('Error fetching FAQs:', err));
+      .then((res) =>{ setFaqs(res.data)
+      setStatusMessage({ type: '', text: '' })
+      })
+      .catch((err) => {console.error('Error fetching FAQs:', err)
+        setStatusMessage({ type: 'error', text: 'Error fetching FAQs' });
+      });
   }, []);
 
   const handleAddFAQ = async () => {
@@ -31,8 +36,10 @@ const ConsultantSection6 = () => {
       setFaqs([...faqs, res.data]);
       setQuestion('');
       setAnswer('');
+      setStatusMessage({ type: 'success', text: 'FAQ added successfully!' });
     } catch (err) {
       console.error('Error adding FAQ:', err);
+     setStatusMessage({ type: 'error', text: 'Error adding FAQ' });
     }
   };
 
@@ -56,8 +63,10 @@ const ConsultantSection6 = () => {
       updatedFaqs[editIndex] = res.data;
       setFaqs(updatedFaqs);
       setShowModal(false);
+      setStatusMessage({ type: 'success', text: 'FAQ updated successfully!' });
     } catch (err) {
       console.error('Error updating FAQ:', err);
+        setStatusMessage({ type: 'error', text: 'Error adding FAQ' });
     }
   };
 
@@ -66,14 +75,22 @@ const ConsultantSection6 = () => {
     try {
       await axios.delete(`${API_BASE}/${id}`);
       setFaqs(faqs.filter((_, i) => i !== index));
+       setStatusMessage({ type: 'success', text: `FAQ index - ${index} deleted successfully!` });
+
     } catch (err) {
       console.error('Error deleting FAQ:', err);
+       setStatusMessage({ type: 'error', text: 'Error adding FAQ' });
     }
   };
 
   return (
     <div>
       <h5 className="text-start mb-3 text-muted mt-8">Section 6 - Manage FAQs</h5>
+       {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
+        </div>
+      )}
       <div className="card p-4 mt-8">
         <div className="container mt-5">
           {/* FAQ Form */}

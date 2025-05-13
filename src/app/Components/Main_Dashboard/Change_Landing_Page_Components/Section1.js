@@ -5,12 +5,13 @@ import '../../../../../dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.c
 import axios from "axios";
 
 const Section1 = () => {
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
   const [data, setData] = useState(null);
   const [editableData, setEditableData] = useState(null);
   const [isEdited, setIsEdited] = useState(false);
-
-  const [backgroundImageFile, setBackgroundImageFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,11 +19,15 @@ const Section1 = () => {
         const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
-        console.log("result",result[0]);
+        console.log("result", result[0]);
         setData(result[0]);
         setEditableData(result[0]);
+        setStatusMessage({ type: '', text: '' });
       } catch (error) {
         console.error("Error fetching consultant data:", error);
+        setStatusMessage({ type: 'error', text: 'Failed to fetch section content.' });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,26 +47,49 @@ const Section1 = () => {
     setIsEdited(true);
   };
 
+  const validateForm = () => {
+    let formErrors = {};
+    // Basic validation for required fields
+    if (!editableData.fullName) formErrors.fullName = "Full Name is required";
+    if (!editableData.role) formErrors.role = "Designation is required";
+    if (!editableData.experience) formErrors.experience = "Experience is required";
+    if (!editableData.email || !/\S+@\S+\.\S+/.test(editableData.email)) formErrors.email = "Valid Email is required";
+    if (!editableData.hospitalClinicAddress) formErrors.hospitalClinicAddress = "Clinic Address is required";
+    if (!editableData.locationURL || !/^(ftp|http|https):\/\/[^ "]+$/.test(editableData.locationURL)) {
+      formErrors.locationURL = "Valid Clinic Address URL is required";
+    }
+    // Validate social media URLs
+    ['facebookId', 'instagramId', 'twitterId', 'youtubeId'].forEach(platform => {
+      if (editableData[platform] && !/^(ftp|http|https):\/\/[^ "]+$/.test(editableData[platform])) {
+        formErrors[platform] = `Valid URL is required for ${platform}`;
+      }
+    });
+    // Validate taglines
+    ["tagline1", "tagline2", "tagline3"].forEach((tagline) => {
+      if (!editableData[tagline]) formErrors[tagline] = `${tagline} is required`;
+    });
+
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) return;
+
     try {
       const formData = new FormData();
-  
+
       // Append normal fields
       Object.entries(editableData).forEach(([key, value]) => {
-        // Skip undefined values entirely
         if (value !== undefined) {
           formData.append(key, value ?? ''); // convert null to empty string
         }
       });
-  
-      // Append images if selected
-      if (backgroundImageFile) {
-        formData.append('backgroundImage', backgroundImageFile);
-      }
+
       if (profileImageFile) {
         formData.append('profileImage', profileImageFile);
       }
-  
+
       const response = await axios.patch(
         "http://localhost:5056/api/ConsultantProfile/updateConsultantProfile",
         formData,
@@ -71,19 +99,18 @@ const Section1 = () => {
           },
         }
       );
-  
+
       if (response.status === 200) {
-        alert("Profile updated successfully!");
+        setStatusMessage({ type: 'success', text: 'Section 1 updated successfully!' });
         setIsEdited(false);
       } else {
-        alert("Failed to update profile.");
+        setStatusMessage({ type: 'error', text: 'Failed to update profile!' });
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("An error occurred while updating the profile.");
+      setStatusMessage({ type: 'error', text: "An error occurred while updating the profile." });
     }
   };
-  
 
   if (!editableData) {
     return <div className="text-center mt-5">Loading...</div>;
@@ -92,55 +119,15 @@ const Section1 = () => {
   return (
     <div className="mb-5">
       <h5 className="mb-4 text-muted">Section 1 - Manage Banner Info</h5>
+      {statusMessage.text && (
+        <div className={`alert ${statusMessage.type === 'success' ? 'alert-success' : 'alert-danger'}`}>
+          {statusMessage.text}
+        </div>
+      )}
       <div className="card p-4 shadow-sm rounded-4">
 
-        {/* Images Section */}
+        {/* Profile Image */}
         <div className="row g-4 justify-content-center mb-4">
-
-          {/* Background Image */}
-          <div className="col-md-6 text-center">
-            <div
-              className="position-relative rounded overflow-hidden mx-auto"
-              style={{
-                maxWidth: "100%",
-                height: "200px",
-                backgroundColor: "#f0f0f0",
-                border: "2px dashed #ccc",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src={
-                  editableData.backgroundImage
-                    ? `http://localhost:5056${editableData.backgroundImage}`  // Add the base URL for the background image
-                    : '/assets/img/1920x400/img1.jpg'
-                }
-                alt="Background Preview"
-                className="w-100 h-100"
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-            <input
-              type="file"
-              className="form-control w-75 mx-auto mt-3"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  setBackgroundImageFile(file);
-                  setEditableData((prev) => ({
-                    ...prev,
-                    backgroundImage: URL.createObjectURL(file),
-                  }));
-                  setIsEdited(true);
-                }
-              }}
-            />
-          </div>
-
-          {/* Profile Image */}
           <div className="col-md-6 text-center">
             <img
               src={
@@ -154,7 +141,6 @@ const Section1 = () => {
               className="border border-secondary rounded-circle"
               style={{ width: "150px", height: "150px", objectFit: "cover" }}
             />
-
             <input
               type="file"
               className="form-control w-75 mx-auto mt-3"
@@ -187,10 +173,11 @@ const Section1 = () => {
                 <label className="form-label fw-semibold">{label}</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${errors[field] ? 'is-invalid' : ''}`}
                   value={editableData[field]}
                   onChange={(e) => handleInputChange(field, e.target.value)}
                 />
+                {errors[field] && <div className="invalid-feedback">{errors[field]}</div>}
               </div>
             ))}
           </div>
@@ -200,28 +187,31 @@ const Section1 = () => {
               <label className="form-label fw-semibold">Email</label>
               <input
                 type="email"
-                className="form-control"
+                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
                 value={editableData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
               />
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
             <div className="mb-3">
               <label className="form-label fw-semibold">Clinic Address</label>
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${errors.hospitalClinicAddress ? 'is-invalid' : ''}`}
                 value={editableData.hospitalClinicAddress}
                 onChange={(e) => handleInputChange("hospitalClinicAddress", e.target.value)}
               />
+              {errors.hospitalClinicAddress && <div className="invalid-feedback">{errors.hospitalClinicAddress}</div>}
             </div>
-             <div className="mb-3">
+            <div className="mb-3">
               <label className="form-label fw-semibold">Clinic Address URL</label>
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${errors.locationURL ? 'is-invalid' : ''}`}
                 value={editableData.locationURL}
-                onChange={(e) => handleInputChange("hospitalClinicAddress", e.target.value)}
+                onChange={(e) => handleInputChange("locationURL", e.target.value)}
               />
+              {errors.locationURL && <div className="invalid-feedback">{errors.locationURL}</div>}
             </div>
           </div>
         </div>
@@ -243,10 +233,11 @@ const Section1 = () => {
                 </span>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${errors[platform] ? 'is-invalid' : ''}`}
                   value={editableData[platform] || ''}
                   onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
                 />
+                {errors[platform] && <div className="invalid-feedback">{errors[platform]}</div>}
               </div>
             ))}
           </div>
@@ -259,10 +250,11 @@ const Section1 = () => {
                 <label className="form-label">{`Tagline ${idx + 1}`}</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${errors[tagline] ? 'is-invalid' : ''}`}
                   value={editableData[tagline] || ""}
                   onChange={(e) => handleInputChange(tagline, e.target.value)}
                 />
+                {errors[tagline] && <div className="invalid-feedback">{errors[tagline]}</div>}
               </div>
             ))}
           </div>
@@ -272,10 +264,10 @@ const Section1 = () => {
         <div className="text-center mt-4">
           <button
             className="btn btn-primary px-4 py-2 rounded-pill"
-            disabled={!isEdited}
+            disabled={!isEdited || loading}
             onClick={handleSave}
           >
-            Save Changes
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
 

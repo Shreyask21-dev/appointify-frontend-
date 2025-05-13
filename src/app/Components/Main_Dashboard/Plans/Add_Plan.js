@@ -24,10 +24,8 @@ const Add_Plan = () => {
     document.execCommand(command, false, value);
   };
 
-  const handleSubmit = async(e) => {
-    e.preventDefault();
+  const validateForm = () => {
     const htmlContent = editorRef.current?.innerHTML || '';
-
     if (
       !formData.planName ||
       !formData.planPrice ||
@@ -36,8 +34,33 @@ const Add_Plan = () => {
       !htmlContent.trim()
     ) {
       toast.error('Please fill all fields before submitting the plan.');
-      return;
+      return false;
     }
+
+    if (isNaN(formData.planPrice) || formData.planPrice <= 0) {
+      toast.error('Please enter a valid plan price.');
+      return false;
+    }
+
+    if (isNaN(formData.planDuration) || formData.planDuration.trim() === '') {
+      toast.error('Please enter a valid duration.');
+      return false;
+    }
+
+    if (!htmlContent.trim()) {
+      toast.error('Please add at least one feature.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    const htmlContent = editorRef.current?.innerHTML || '';
 
     const planData = {
       planName: formData.planName,
@@ -54,25 +77,25 @@ const Add_Plan = () => {
       planDescription: '',
       planFeatures: '',
     });
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5056/api/ConsultationPlan/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Uncomment this if your API needs a token
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(planData),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to add plan. Please check your credentials or server.');
       }
-  
+
       const result = await response.json();
       toast.success(result.message || 'Plan added successfully!');
-  
+
       // Reset form
       setFormData({
         planName: '',
@@ -81,13 +104,12 @@ const Add_Plan = () => {
         planDescription: '',
         planFeatures: '',
       });
-  
+
       editorRef.current.innerHTML = '';
-  
+
     } catch (error) {
       toast.error(error.message);
     }
-
 
     console.log('Form Data:', { ...formData, planFeatures: htmlContent });
   };
