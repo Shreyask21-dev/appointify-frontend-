@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import './Plans.css'
 
 
-const Plans = () => {
+
+const Plans = (props) => {
   const [formData, setFormData] = useState({
     tagline: '',
     mainDescription: '',
@@ -90,6 +91,13 @@ const Plans = () => {
         <button
           type="button"
           className="btn ms-3 btn-ghost-primary bg-light text-black bookAppointment"
+           onClick={() =>
+    props.scrollToSection({
+      planName: plan.planName,
+      planPrice: plan.planPrice,
+      planDuration: plan.planDuration,
+    })
+  }
         >
           Book Now
         </button>

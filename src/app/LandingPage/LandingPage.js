@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect } from 'react'
+import React, { useEffect , useRef,useState } from 'react'
 import '../../../dist/assets/css/theme.min.css'
 // import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import '../../../dist/assets/css/theme.min.css'
@@ -17,7 +17,17 @@ import LeafletMap from '../Components/LandingPageComponents/LeafletMap';
 import FAQSection from '../Components/LandingPageComponents/FAQSection';
 
 const LandingPage = () => {
- 
+   const targetRef = useRef(null);
+  const [selectedPlan, setSelectedPlan] = useState({
+  planName: '',
+  planPrice: '',
+  planDuration: '',
+});
+    const scrollToSection = (planData) => {
+    targetRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setSelectedPlan(planData)
+  };
+
 
   return (
     <>
@@ -35,8 +45,8 @@ const LandingPage = () => {
             <Consultant_Info/>
             <EmpoweringMinds/>
             <Stats/>
-            <Plans/>
-            <Contact_Calender/>
+            <Plans scrollToSection={scrollToSection}/>
+            <Contact_Calender ref={targetRef}  prefillData={selectedPlan}/>
             <FAQSection/>
             <LeafletMap/>
             <Footer/>

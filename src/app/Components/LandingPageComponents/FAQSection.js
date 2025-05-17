@@ -27,13 +27,13 @@ const FAQSection = () => {
   const column2 = faqs.slice(midIndex);
 
   return (
-    <section className="py-5 my-5" style={{ minHeight: '60vh' }}>
+    <section className="py-5 my-5" style={{ minHeight: '80vh' }}>
       <div className="container" style={{ maxWidth: '1600px' }}>
-        <div className="text-center my-5">
-          <h2 className="fw-bold text-dark">
-            <FaQuestionCircle className="me-2 text-primary" />
+        <div className="text-center mb-5">
+          <h3 className="fw-bold text-dark ">
+            {/* <FaQuestionCircle className="me-2 text-primary" /> */}
             Frequently Asked Questions
-          </h2>
+          </h3>
           <p className="text-muted ">Answers to the most common questions</p>
         </div>
 
