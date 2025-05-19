@@ -171,7 +171,7 @@ const AppointmentList = () => {
                   <td>{appt.appointmentTime}</td>
                   <td>{appt.appointmentDate}</td>
                   <td>{appt.paymentMethod}</td>
-                  <td>{appt.paymentId}</td>
+                  <td>{appt.paymentId === null ? "None" : appt.paymentId }</td>
                   <td>
                     <span className={`badge bg-${appt.paymentStatus === 0 ? 'primary' :
                         appt.paymentStatus === 1 ? 'success' :

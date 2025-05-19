@@ -18,6 +18,7 @@ import FAQSection from '../Components/LandingPageComponents/FAQSection';
 
 const LandingPage = () => {
    const targetRef = useRef(null);
+     const targetRefHeader = useRef(null);
   const [selectedPlan, setSelectedPlan] = useState({
   planName: '',
   planPrice: '',
@@ -26,6 +27,9 @@ const LandingPage = () => {
     const scrollToSection = (planData) => {
     targetRef.current?.scrollIntoView({ behavior: 'smooth' });
       setSelectedPlan(planData)
+  };
+   const scrollToSectionHeader = () => {
+    targetRefHeader.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
 
@@ -40,12 +44,12 @@ const LandingPage = () => {
      <div>
 
       {/* Content */}
-           <Header/>
-            <Hero/>
+           <Header  />
+            <Hero scrollToSectionHeader={scrollToSectionHeader} />
             <Consultant_Info/>
             <EmpoweringMinds/>
             <Stats/>
-            <Plans scrollToSection={scrollToSection}/>
+            <Plans scrollToSection={scrollToSection} ref={targetRefHeader}/>
             <Contact_Calender ref={targetRef}  prefillData={selectedPlan}/>
             <FAQSection/>
             <LeafletMap/>

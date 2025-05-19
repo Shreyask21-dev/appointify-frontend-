@@ -11,7 +11,7 @@ const dummyData = {
   images: ['img3', 'img5', 'img11'],
 };
 
-const Hero = () => {
+const Hero = ({ scrollToSectionHeader }) => {
   const [consultantData, setConsultantData] = useState({});
   const [taglines, setTaglines] = useState([]);
   Swiper.use([Pagination, Thumbs, EffectFade, Autoplay]);
@@ -118,7 +118,7 @@ const Hero = () => {
                         {taglines[index]}
                       </h2>
                     </div>
-                    <button className="btn btn-primary btn-transition scrollBtn" type="button">
+                    <button className="btn btn-primary btn-transition scrollBtn" type="button" onClick={()=>{scrollToSectionHeader()}}>
                       Book Appointment <i className="bi-chevron-right small ms-1"></i>
                     </button>
                   </div>

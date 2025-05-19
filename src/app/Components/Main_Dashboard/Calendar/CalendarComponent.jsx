@@ -14,6 +14,16 @@ export default function CalendarComponent() {
   const [plans, setPlans] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [selectedPlans, setSelectedPlans] = useState([]);
+  const [slotStartTime, setSlotStartTime] = useState(new Date());
+  const [slotEndTime, setSlotEndTime] = useState(new Date());
+  const [startHour, setStartHour] = useState("10");
+  const [startMinute, setStartMinute] = useState("00");
+  const [startPeriod, setStartPeriod] = useState("AM");
+
+  const [endHour, setEndHour] = useState("11");
+  const [endMinute, setEndMinute] = useState("00");
+  const [endPeriod, setEndPeriod] = useState("AM");
+
 
   const getColorClass = (index) => {
     const colors = [
@@ -25,6 +35,8 @@ export default function CalendarComponent() {
     ];
     return colors[index % colors.length];
   };
+
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -102,11 +114,63 @@ export default function CalendarComponent() {
     e.preventDefault();
     return false;
   };
+// Extract booked times for the selected date
+
+
 
   return (
     <div>
+      <div className="container">
+        <div className="row mb-1 mt-5 justify-between ">
+          <div className="col-6">
+            <div className="col-md-2 d-flex align-items-center">
+              <label className="form-label mb-0">Start Time</label>
+            </div>
+            <div className="col-md-10 d-flex gap-3">
+              <select className="form-select w-auto" value={startHour} onChange={e => setStartHour(e.target.value)}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
+                  <option key={hour} value={hour}>{hour}</option>
+                ))}
+              </select>
+              <select className="form-select w-auto" value={startMinute} onChange={e => setStartMinute(e.target.value)}>
+                {['00', '15', '30', '45'].map(min => (
+                  <option key={min} value={min}>{min}</option>
+                ))}
+              </select>
+              <select className="form-select w-auto" value={startPeriod} onChange={e => setStartPeriod(e.target.value)}>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+
+
+          <div className="col-6 ">
+            <div className="col-md-2 d-flex align-items-center">
+              <label className="form-label mb-0">End Time</label>
+            </div>
+            <div className="col-md-10 d-flex gap-3">
+              <select className="form-select w-auto" value={endHour} onChange={e => setEndHour(e.target.value)}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
+                  <option key={hour} value={hour}>{hour}</option>
+                ))}
+              </select>
+              <select className="form-select w-auto" value={endMinute} onChange={e => setEndMinute(e.target.value)}>
+                {['00', '15', '30', '45'].map(min => (
+                  <option key={min} value={min}>{min}</option>
+                ))}
+              </select>
+              <select className="form-select w-auto" value={endPeriod} onChange={e => setEndPeriod(e.target.value)}>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
+
         <div className="card app-calendar-wrapper">
           <div className="row g-0">
             <div className="col app-calendar-sidebar border-end" id="app-calendar-sidebar">
@@ -230,7 +294,20 @@ export default function CalendarComponent() {
                     aria-label="Close"></button>
                 </div>
                 <div className="offcanvas-body">
-                  <AppointmentForm plans={plans} />
+                  <AppointmentForm
+                    plans={plans}
+                    slotStartTime={slotStartTime}
+                    slotEndTime={slotEndTime}
+                    setSlotStartTime={setSlotStartTime}
+                    setSlotEndTime={setSlotEndTime}
+                    startHour={startHour}
+                    startMinute={startMinute}
+                    startPeriod={startPeriod}
+                    endHour={endHour}
+                    endMinute={endMinute}
+                    endPeriod={endPeriod}
+                  />
+
                 </div>
               </div>
             </div>

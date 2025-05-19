@@ -2,356 +2,485 @@
 import React, { useEffect, useState } from 'react';
 import validator from 'validator';
 
-const availableTimeSlots = {
-    '2025-05-10': [
-        { start: '09:00 AM', end: '10:00 AM' },
-        { start: '10:00 AM', end: '11:00 AM' },
-        { start: '11:00 AM', end: '12:00 PM' },
-    ],
-    '2025-05-14': [
-        { start: '02:00 PM', end: '03:00 PM' },
-        { start: '03:00 PM', end: '04:00 PM' },
-    ],
-    '2025-05-18': [
-        { start: '12:00 PM', end: '01:00 PM' },
-        { start: '01:00 PM', end: '02:00 PM' },
-    ],
-    '2025-05-22': [
-        { start: '04:00 PM', end: '05:00 PM' },
-        { start: '05:00 PM', end: '06:00 PM' },
-    ],
-};
+export default function AppointmentForm({
+  plans,
+  slotStartTime,
+  slotEndTime,
+  setSlotStartTime,
+  setSlotEndTime,
+  startHour,
+  startMinute,
+  startPeriod,
+  endHour,
+  endMinute,
+  endPeriod
+}) {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    details: '',
+    appointmentDate: '',
+    appointmentTime: '',
+    plan: '',
+    amount: '',
+    duration: '',
+  });
+    const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [timeOptions, setTimeOptions] = useState([]);
+  const [paymentStatus, setPaymentStatus] = useState('');
 
-// const plans = [
-//   { name: 'Basic Plan', price: 500, duration: '30 mins' },
-//   { name: 'Premium Plan', price: 1000, duration: '1 hour' },
-// ];
+  const validate = () => {
+    const errs = {};
+    if (!formData.firstName.trim()) errs.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errs.lastName = 'Last name is required';
+    if (!formData.email.trim()) errs.email = 'Email is required';
+    else if (!validator.isEmail(formData.email)) errs.email = 'Invalid email';
 
-export default function AppointmentForm({ plans }) {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        details: '',
-        appointmentDate: '',
-        appointmentTime: '',
+    if (!formData.phoneNumber.trim()) errs.phoneNumber = 'Phone number is required';
+    else if (!/^\d{10}$/.test(formData.phoneNumber)) errs.phoneNumber = 'Must be 10 digits';
+
+    if (!formData.plan) errs.plan = 'Plan is required';
+    if (!formData.amount) errs.amount = 'Amount is required';
+    if (!formData.duration) errs.duration = 'Duration is required';
+    if (!formData.appointmentDate) errs.appointmentDate = 'Date is required';
+    if (!formData.appointmentTime) errs.appointmentTime = 'Time is required';
+    return errs;
+  };
+
+  // When date changes, update date in formData and reset time selection
+ 
+
+  // When time slot clicked
+  const handleTimeChange = (time) => {
+    setFormData((prev) => ({
+      ...prev,
+      appointmentTime: time,
+    }));
+  };
+
+  // When user selects a plan, update plan details
+  const handlePlanChange = (e) => {
+    const selectedPlan = plans.find((plan) => plan.planName === e.target.value);
+    if (selectedPlan) {
+      setFormData((prev) => ({
+        ...prev,
+        plan: selectedPlan.planName,
+        amount: selectedPlan.planPrice,
+        duration: selectedPlan.planDuration,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
         plan: '',
         amount: '',
         duration: '',
-    });
+      }));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+ const handleTimeSelect = (timeSlot) => {
+    setFormData({ ...formData, appointmentTime: timeSlot });
+  };
+  // Form submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    setErrors({});
+
+    try {
+      const response = await fetch('http://localhost:5056/api/CustomerAppointment/CreateAppointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        alert('Failed to book the appointment.');
+        return;
+      }
+
+      const appointment = await response.json();
+
+      // Razorpay payment options
+      const razorpayOptions = {
+        key: 'rzp_test_G5ZTKDD6ejrInm',
+        amount: appointment.amount, // Amount in paise
+        currency: 'INR',
+        name: 'Consultation Appointment',
+        description: 'Book your appointment',
+        order_id: appointment.orderId,
+        handler: function (response) {
+          verifyPayment(appointment.appointmentId, response);
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phoneNumber,
+        },
+        theme: {
+          color: '#3399cc',
+        },
+      };
+
+      const rzp1 = new window.Razorpay(razorpayOptions);
+      rzp1.open();
+    } catch (error) {
+      alert('An error occurred while booking the appointment.');
+      console.error(error);
+    }
+  };
+
+  // Verify payment status and update UI accordingly
+  const verifyPayment = async (appointmentId, paymentResponse) => {
+    try {
+      const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          AppointmentId: appointmentId,
+          PaymentId: paymentResponse.razorpay_payment_id,
+          OrderId: paymentResponse.razorpay_order_id,
+          Signature: paymentResponse.razorpay_signature,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(result.Message || 'Payment verified successfully.');
+
+        // Reset form and payment status success
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          details: '',
+          appointmentDate: '',
+          appointmentTime: '',
+          plan: '',
+          amount: '',
+          duration: '',
+        });
+       setPaymentStatus('Payment successful! Thank you.');
+        setErrors({});
+      } else {
+        alert('Payment verification failed.');
+        setPaymentStatus('failure');
+      }
+    } catch (error) {
+      alert('An error occurred while verifying the payment.');
+      setPaymentStatus(`Payment failed: ${error.message}`);
+      console.error(error);
+    }
+  };
+
+  // then format it when needed for display.
+  const handleDateSelect = (e) => {
+    const selectedDate = e.target.value; // this is in yyyy-mm-dd format
+    // Optional: block past dates
+    const today = new Date().toISOString().split('T')[0];
+    if (selectedDate < today) {
+      alert("Please select a future date.");
+      return;
+    }
+    // Save the raw date string (or format it later for display)
+    setFormData({ ...formData, appointmentDate: selectedDate, appointmentTime: '' });
+    // Optionally, fetch booked slots for this date & plan from your backend
+    // For demo, we'll clear bookedTimeSlots here
+    setBookedTimeSlots([]);
+  };
+
+  // Format a date in dd-mm-yyyy for display purposes
+  const formatDateDisplay = (dateString) => {
+    if(!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  // Generate time slots based on plan duration.
+ const generateTimeSlots = (durationInMinutes) => {
+  const slots = [];
+  let start = new Date();
+  start.setHours(10, 0, 0, 0);
+  const end = new Date();
+  end.setHours(22, 0, 0, 0);
+
+  while (start < end) {
+    let slotStart = new Date(start);
+    let slotEnd = new Date(slotStart.getTime() + durationInMinutes * 60000);
+    if (slotEnd > end) break;
+
+    const slotString = `${formatTime(slotStart)} - ${formatTime(slotEnd)}`;
+
+    if (!bookedTimeSlots.includes(slotString)) {
+      slots.push({
+        start: formatTime(slotStart),
+        end: formatTime(slotEnd),
+        slotString,
+      });
+    }
+
+    start = slotEnd;
+  }
+
+  return slots;
+};
+
+
+  // Helper function to format time in hh:mm AM/PM
+  const formatTime = (date) => {
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}:${minutesStr} ${ampm}`;
+  };
+
+    
+
     useEffect(() => {
+  const hour = parseInt(startHour);
+  const minute = parseInt(startMinute);
+  let actualHour = startPeriod === "PM" && hour !== 12 ? hour + 12 : hour;
+  actualHour = startPeriod === "AM" && hour === 12 ? 0 : actualHour;
 
-        console.log("plans", plans)
-    }, [])
+  const date = new Date();
+  date.setHours(actualHour);
+  date.setMinutes(minute);
+  date.setSeconds(0);
+  setSlotStartTime(date);
+}, [startHour, startMinute, startPeriod]);
 
-    const [errors, setErrors] = useState({});
-    const [timeOptions, setTimeOptions] = useState([]);
-    const [paymentStatus, setPaymentStatus] = useState('');
+useEffect(() => {
+  const hour = parseInt(endHour);
+  const minute = parseInt(endMinute);
+  let actualHour = endPeriod === "PM" && hour !== 12 ? hour + 12 : hour;
+  actualHour = endPeriod === "AM" && hour === 12 ? 0 : actualHour;
 
+  const date = new Date();
+  date.setHours(actualHour);
+  date.setMinutes(minute);
+  date.setSeconds(0);
+  setSlotEndTime(date);
+}, [endHour, endMinute, endPeriod]);
 
-    const validate = () => {
-        const errs = {};
-        if (!formData.firstName.trim()) errs.firstName = 'First name is required';
-        if (!formData.lastName.trim()) errs.lastName = 'Last name is required';
-        if (!formData.email.trim()) errs.email = 'Email is required';
-        else if (!validator.isEmail(formData.email)) errs.email = 'Invalid email';
+const getBookedTimeSlots = (date) => {
+  const selectedDateStr = new Date(date).toDateString();
 
-        if (!formData.phoneNumber.trim()) errs.phoneNumber = 'Phone number is required';
-        else if (!/^\d{10}$/.test(formData.phoneNumber)) errs.phoneNumber = 'Must be 10 digits';
+  return appointments
+    .filter(app => new Date(app.appointmentDate).toDateString() === selectedDateStr)
+    .map(app => {
+      const start = new Date(app.appointmentDate);
+      const end = new Date(app.endTime); // if you have an endTime, otherwise calculate from duration
+      return { start, end };
+    });
+};
 
-        if (!formData.plan) errs.plan = 'Plan is required';
-        if (!formData.amount) errs.amount = 'Amount is required';
-        if (!formData.duration) errs.duration = 'Duration is required';
-        if (!formData.appointmentDate) errs.appointmentDate = 'Date is required';
-        if (!formData.appointmentTime) errs.appointmentTime = 'Time is required';
-        return errs;
-    };
+ const timeSlots = (formData.appointmentDate && formData.duration)
+    ? generateTimeSlots(Number(formData.duration))
+    : [];
+useEffect(() => {
+  if (formData.appointmentDate && formData.plan) {
+    fetch(`http://localhost:5056/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}&plan=${formData.plan}`)
+      .then(res => res.json())
+      .then(data => setBookedTimeSlots(data)) // data should be an array of slot strings
+      .catch(err => console.error("Error fetching booked slots:", err));
+  }
+}, [formData.appointmentDate, formData.plan]);
 
-    const handleDateChange = (date) => {
-        setFormData({
-            ...formData,
-            appointmentDate: date,
-            appointmentTime: '',
-        });
-        setTimeOptions(availableTimeSlots[date] || []);
-    };
+  return (
+    <>
+   <form onSubmit={handleSubmit} className="container py-3" style={{ maxWidth: 600 }}>
+  <div className="row mb-3">
+    <div className="col-sm-6">
+      <label htmlFor="firstName" className="form-label">
+        First Name
+      </label>
+      <input
+        id="firstName"
+        name="firstName"
+        className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
+        value={formData.firstName}
+        onChange={handleInputChange}
+        placeholder="Enter your first name"
+      />
+      {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
+    </div>
+    <div className="col-sm-6">
+      <label htmlFor="lastName" className="form-label">
+        Last Name
+      </label>
+      <input
+        id="lastName"
+        name="lastName"
+        className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
+        value={formData.lastName}
+        onChange={handleInputChange}
+        placeholder="Enter your last name"
+      />
+      {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
+    </div>
+  </div>
 
-    const handleTimeChange = (time) => {
-        setFormData({
-            ...formData,
-            appointmentTime: time,
-        });
-    };
+  <div className="mb-3">
+    <label htmlFor="email" className="form-label">
+      Email
+    </label>
+    <input
+      id="email"
+      name="email"
+      type="email"
+      className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+      value={formData.email}
+      onChange={handleInputChange}
+      placeholder="Enter your email address"
+    />
+    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+  </div>
 
-    const handlePlanChange = (e) => {
-        const selectedPlan = plans.find((plan) => plan.planName === e.target.value);
-        if (selectedPlan) {
-            setFormData({
-                ...formData,
-                plan: selectedPlan.planName,
-                amount: selectedPlan.planPrice,
-                duration: selectedPlan.planDuration,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                plan: '',
-                amount: '',
-                duration: '',
-            });
-        }
-    };
+  <div className="mb-3">
+    <label htmlFor="phoneNumber" className="form-label">
+      Phone Number
+    </label>
+    <input
+      id="phoneNumber"
+      name="phoneNumber"
+      className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
+      value={formData.phoneNumber}
+      onChange={handleInputChange}
+      placeholder="Enter your phone number"
+    />
+    {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
+  </div>
 
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+  <div className="mb-3">
+    <label htmlFor="plan" className="form-label">
+      Plan
+    </label>
+    <select
+      id="plan"
+      name="plan"
+      className={`form-select ${errors.plan ? 'is-invalid' : ''}`}
+      value={formData.plan}
+      onChange={handlePlanChange}
+    >
+      <option value="">Select a Plan</option>
+      {plans.map((p, i) => (
+        <option key={i} value={p.planName}>
+          {p.planName}
+        </option>
+      ))}
+    </select>
+    {errors.plan && <div className="invalid-feedback">{errors.plan}</div>}
+  </div>
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  <div className="mb-3">
+    <label htmlFor="amount" className="form-label">
+      Amount
+    </label>
+    <input
+      id="amount"
+      name="amount"
+      className={`form-control ${errors.amount ? 'is-invalid' : ''}`}
+      value={formData.amount}
+      readOnly
+      placeholder="Auto-calculated amount"
+    />
+    {errors.amount && <div className="invalid-feedback">{errors.amount}</div>}
+  </div>
 
-        const errors = validate();
-        if (Object.keys(errors).length > 0) {
-            setErrors(errors);
-            return;
-        }
+  <div className="mb-3">
+    <label htmlFor="appointmentDate" className="form-label">
+      Choose a Date
+    </label>
+    <input
+      id="appointmentDate"
+      name="appointmentDate"
+      type="date"
+      className={`form-control form-control-sm ${errors.appointmentDate ? 'is-invalid' : ''}`}
+      value={formData.appointmentDate}
+      onChange={handleDateSelect}
+      min={new Date().toISOString().split('T')[0]}
+    />
+    {errors.appointmentDate && <div className="invalid-feedback">{errors.appointmentDate}</div>}
+  </div>
 
-        setErrors({}); // Clear previous errors
+  {formData.appointmentDate && timeSlots.length > 0 && (
+    <div className="mb-3">
+      <label className="form-label">Choose a Time</label>
+      <div className="d-flex flex-wrap gap-2">
+        {timeSlots.map(({ slotString }, idx) => (
+          <button
+            type="button"
+            key={idx}
+            onClick={() => handleTimeChange(slotString)}
+            className={`btn btn-sm ${
+              formData.appointmentTime === slotString ? 'btn-primary' : 'btn-outline-primary'
+            }`}
+          >
+            {slotString}
+          </button>
+        ))}
+      </div>
+      {errors.appointmentTime && (
+        <div className="text-danger small mt-1">{errors.appointmentTime}</div>
+      )}
+    </div>
+  )}
 
-        try {
-            const response = await fetch('http://localhost:5056/api/CustomerAppointment/CreateAppointment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+  <div className="mb-3">
+    <label htmlFor="duration" className="form-label">
+      Duration (minutes)
+    </label>
+    <input
+      id="duration"
+      name="duration"
+      className={`form-control ${errors.duration ? 'is-invalid' : ''}`}
+      value={formData.duration}
+      readOnly
+      placeholder="Duration will be set automatically"
+    />
+    {errors.duration && <div className="invalid-feedback">{errors.duration}</div>}
+  </div>
 
-            console.log('Appointment request sent:', formData);
+  <div className="mb-3">
+    <label htmlFor="details" className="form-label">
+      Additional Details
+    </label>
+    <textarea
+      id="details"
+      name="details"
+      className="form-control"
+      rows={3}
+      value={formData.details}
+      onChange={handleInputChange}
+      placeholder="Add any notes or details (optional)"
+    />
+  </div>
 
-            if (response.ok) {
-                const appointment = await response.json();
-                console.log('Appointment created:', appointment);
+  <button type="submit" className="btn btn-success w-100 mb-3">
+    Pay Now {formData.amount ? `₹${formData.amount}` : ''}
+  </button>
 
-                // Configure Razorpay payment
-                const razorpayOptions = {
-                    key: 'rzp_test_G5ZTKDD6ejrInm',
-                    amount: appointment.amount, // Amount in paise
-                    currency: 'INR',
-                    name: 'Consultation Appointment',
-                    description: 'Book your appointment',
-                    order_id: appointment.orderId, // From backend
-                    handler: function (response) {
-                        console.log('Payment success:', response);
-                        verifyPayment(appointment.appointmentId, response);
-                    },
-                    prefill: {
-                        name: `${formData.firstName} ${formData.lastName}`,
-                        email: formData.email,
-                        contact: formData.phoneNumber,
-                    },
-                    theme: {
-                        color: '#3399cc',
-                    },
-                };
+  {paymentStatus && <div className="alert alert-info">{paymentStatus}</div>}
+</form>
 
-                const rzp1 = new window.Razorpay(razorpayOptions);
-                rzp1.open();
-            } else {
-                console.error('Failed to create appointment:', response.status);
-                alert('Failed to book the appointment.');
-            }
-        } catch (error) {
-            console.error('Error creating appointment:', error);
-            alert('An error occurred while booking the appointment.');
-        }
-    };
-
-    const verifyPayment = async (appointmentId, paymentResponse) => {
-        try {
-            const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    AppointmentId: appointmentId,
-                    PaymentId: paymentResponse.razorpay_payment_id,
-                    OrderId: paymentResponse.razorpay_order_id,
-                    Signature: paymentResponse.razorpay_signature,
-                }),
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Payment Verification Result:', result);
-                alert(result.Message || 'Payment verified successfully.');
-
-                // Clear the form on successful verification
-                setFormData({
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    phoneNumber: '',
-                    details: '',
-                    appointmentDate: '',
-                    appointmentTime: '',
-                    plan: '',
-                    amount: '',
-                    duration: '',
-                });
-
-                setErrors({});
-            } else {
-                const errorText = await response.text();
-                console.error('Verification failed:', errorText);
-                alert('Payment verification failed.');
-            }
-        } catch (error) {
-            console.error('Error verifying payment:', error);
-            alert('An error occurred while verifying the payment.');
-        }
-    };
-
-    return (
-        <>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-2">
-                    <label>First Name</label>
-                    <input
-                        className="form-control"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                    />
-                    {errors.firstName && <small className="text-danger">{errors.firstName}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Last Name</label>
-                    <input
-                        className="form-control"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                    />
-                    {errors.lastName && <small className="text-danger">{errors.lastName}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Email</label>
-                    <input
-                        className="form-control"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                    />
-                    {errors.email && <small className="text-danger">{errors.email}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Phone Number</label>
-                    <input
-                        className="form-control"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleInputChange}
-                    />
-                    {errors.phoneNumber && <small className="text-danger">{errors.phoneNumber}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Plan</label>
-                    <select
-                        className="form-select"
-                        value={formData.planName}
-                        onChange={handlePlanChange}
-                        name="plan"
-                    >
-                        <option value="">Select a Plan</option>
-                        {plans.map((p, i) => (
-                            <option key={i} value={p.planName}>
-                                {p.planName}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.plan && <small className="text-danger">{errors.plan}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Amount</label>
-                    <input className="form-control" name="amount" value={formData.amount} readOnly />
-                    {errors.amount && <small className="text-danger">{errors.amount}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label>Duration</label>
-                    <input className="form-control" name="duration" value={formData.duration} readOnly />
-                    {errors.duration && <small className="text-danger">{errors.duration}</small>}
-                </div>
-
-                <div className="mb-2">
-                    <label className="form-label" htmlFor="appointmentDate">Choose a Date</label>
-                    <select
-                        className="form-control form-control-sm"
-                        name="appointmentDate"
-                        value={formData.appointmentDate}
-                        onChange={(e) => handleDateChange(e.target.value)}
-                    >
-                        <option value="">Select a date</option>
-                        {Object.keys(availableTimeSlots).map((date) => (
-                            <option key={date} value={date}>{date}</option>
-                        ))}
-                    </select>
-                    {errors.appointmentDate && <div className="text-danger small mt-1">{errors.appointmentDate}</div>}
-                </div>
-                {formData.appointmentDate && (
-                    <div className="mb-2">
-                        <label className="form-label" htmlFor="appointmentTime">Choose a Time Slot</label>
-                        <div className="list-group">
-                            {timeOptions.map((slot, index) => {
-                                const slotLabel = `${slot.start} - ${slot.end}`;
-                                const isSelected = formData.appointmentTime === slotLabel;
-                                return (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        className={`list-group-item list-group-item-action ${isSelected ? 'active' : ''}`}
-                                        onClick={() => handleTimeChange(slotLabel)}
-                                    >
-                                        {slotLabel}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        {errors.appointmentTime && <div className="text-danger small mt-1">{errors.appointmentTime}</div>}
-                    </div>
-                )}
-
-
-                <div className="mb-2">
-                    <label>Additional Details (Optional)</label>
-                    <textarea
-                        className="form-control"
-                        name="details"
-                        value={formData.details}
-                        onChange={handleInputChange}
-                    />
-                </div>
-
-                <button type="submit" className="btn btn-primary mt-2">Book Appointment</button>
-            </form>
-
-            {paymentStatus === 'success' && (
-                <div className="alert alert-success mt-3">
-                    ✅ Payment verified and appointment booked successfully!
-                </div>
-            )}
-            {paymentStatus === 'failure' && (
-                <div className="alert alert-danger mt-3">
-                    ❌ Payment verification failed. Please try again.
-                </div>
-            )}
-        </>
-    );
+    </>
+  );
 }

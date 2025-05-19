@@ -1,11 +1,11 @@
 'use client';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import './Plans.css'
 
 
 
-const Plans = (props) => {
+const Plans = forwardRef((props, ref) =>  {
   const [formData, setFormData] = useState({
     tagline: '',
     mainDescription: '',
@@ -57,7 +57,7 @@ const Plans = (props) => {
         style={{ backgroundImage: 'url(dist/assets/svg/components/card-11.svg)' }}
       >
         <div className="container content-space-t-3 content-space-t-lg-5 content-space-b-2 content-space-b-lg-1">
-          <div className="w-md-75 w-lg-70 text-center mx-auto mb-9" id="target-plans">
+          <div className="w-md-75 w-lg-70 text-center mx-auto mb-9" id="target-plans" ref={ref} >
             <h2>{formData.tagline}</h2>
             <p>{formData.mainDescription}</p>
             <h3 className="mt-9 mb-0">{formData.mainHeading}</h3>
@@ -66,7 +66,7 @@ const Plans = (props) => {
       </div>
 
       {/* Plan Cards */}
-      <div className="container mt-n5 mt-lg-n5">
+      <div className="container mt-n5 mt-lg-n5" >
         <div className="row justify-content-center">
         {plans.map((plan) => (
   <div className="col-md col-lg-4 col-md-6 col-12 mb-3 mb-md-0" key={plan.planId}>
@@ -110,6 +110,6 @@ const Plans = (props) => {
       </div>
     </div>
   );
-};
+});
 
 export default Plans;
