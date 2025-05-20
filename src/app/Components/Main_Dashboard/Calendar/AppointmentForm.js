@@ -4,7 +4,7 @@ import validator from 'validator';
 
 export default function AppointmentForm({
   plans,
-  slotStartTime,
+  slotMaxTime,
   slotEndTime,
   setSlotStartTime,
   setSlotEndTime,
@@ -34,6 +34,8 @@ export default function AppointmentForm({
   const [errors, setErrors] = useState({});
   const [timeOptions, setTimeOptions] = useState([]);
   const [paymentStatus, setPaymentStatus] = useState('');
+ const [appointments, setAppointments] = useState([]);
+ const [timeSlots, setTimeSlots] = useState([]);
 
 
 
@@ -62,8 +64,8 @@ export default function AppointmentForm({
   setErrors({});
 }, [formData]);
 useEffect(() => {
-  // setAddAppointment(false)
-  if (selectedAppointment && addAppointment === false) {
+  if (!addAppointment && selectedAppointment) {
+    // Editing an existing appointment
     setFormData({
       firstName: selectedAppointment.firstName || '',
       lastName: selectedAppointment.lastName || '',
@@ -76,9 +78,8 @@ useEffect(() => {
       amount: selectedAppointment.amount || '',
       duration: selectedAppointment.duration || '',
     });
-  } else {
-    // Clear
-    //  form for new appointment
+  } else if (addAppointment) {
+    // Creating a new appointment, reset the form
     setFormData({
       firstName: '',
       lastName: '',
@@ -92,7 +93,7 @@ useEffect(() => {
       duration: '',
     });
   }
-}, [selectedAppointment]);
+}, [selectedAppointment, addAppointment]);
 
 
   // When time slot clicked
@@ -131,57 +132,58 @@ useEffect(() => {
     setFormData({ ...formData, appointmentTime: timeSlot });
   };
   // Form submit handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+  setErrors({});
+
+  try {
+    const response = await fetch('http://localhost:5056/api/CustomerAppointment/CreateAppointment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      // Optional: Show error modal here
+      const errorModal = new bootstrap.Modal(document.getElementById('failureModal'));
+      errorModal.show();
       return;
     }
-    setErrors({});
 
-    try {
-      const response = await fetch('http://localhost:5056/api/CustomerAppointment/CreateAppointment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+    const newAppointment = await response.json();
 
-      if (!response.ok) {
-        alert('Failed to book the appointment.');
-        return;
-      }
+    setAppointments((prev) => [...prev, newAppointment]);
 
-      const appointment = await response.json();
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      details: '',
+      appointmentDate: '',  // yyyy-mm-dd format from input
+      appointmentTime: '',
+      plan: '',
+      amount: '',
+      duration: '',
+    });
 
-      // Razorpay payment options
-      const razorpayOptions = {
-        key: 'rzp_test_G5ZTKDD6ejrInm',
-        amount: appointment.amount, // Amount in paise
-        currency: 'INR',
-        name: 'Consultation Appointment',
-        description: 'Book your appointment',
-        order_id: appointment.orderId,
-        handler: function (response) {
-          verifyPayment(appointment.appointmentId, response);
-        },
-        prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phoneNumber,
-        },
-        theme: {
-          color: '#3399cc',
-        },
-      };
+    setAddAppointment(false);
 
-      const rzp1 = new window.Razorpay(razorpayOptions);
-      rzp1.open();
-    } catch (error) {
-      alert('An error occurred while booking the appointment.');
-      console.error(error);
-    }
-  };
+    // Show success modal
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    successModal.show();
+
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    const errorModal = new bootstrap.Modal(document.getElementById('failureModal'));
+    errorModal.show();
+  }
+};
 
  
 
@@ -212,12 +214,13 @@ useEffect(() => {
   };
 
   // Generate time slots based on plan duration.
- const generateTimeSlots = (durationInMinutes) => {
+const generateTimeSlots = (durationInMinutes) => {
   const slots = [];
-  let start = new Date();
-  start.setHours(10, 0, 0, 0);
-  const end = new Date();
-  end.setHours(22, 0, 0, 0);
+
+  if (!slotMaxTime || !slotEndTime) return slots; // Ensure values exist
+
+  let start = new Date(slotMaxTime); // Start of working hours
+  const end = new Date(slotEndTime); // End of working hours
 
   while (start < end) {
     let slotStart = new Date(start);
@@ -239,6 +242,7 @@ useEffect(() => {
 
   return slots;
 };
+
 
 
   // Helper function to format time in hh:mm AM/PM
@@ -295,9 +299,15 @@ const getBookedTimeSlots = (date) => {
     });
 };
 
- const timeSlots = (formData.appointmentDate && formData.duration)
-    ? generateTimeSlots(Number(formData.duration))
-    : [];
+useEffect(() => {
+  if (formData.appointmentDate && formData.duration) {
+    const slots = generateTimeSlots(Number(formData.duration));
+    setTimeSlots(slots);
+  } else {
+    setTimeSlots([]);
+  }
+}, [formData.appointmentDate, formData.duration, bookedTimeSlots]);
+
 useEffect(() => {
   if (formData.appointmentDate && formData.plan) {
     fetch(`http://localhost:5056/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}&plan=${formData.plan}`)
@@ -424,28 +434,35 @@ useEffect(() => {
     {errors.appointmentDate && <div className="invalid-feedback">{errors.appointmentDate}</div>}
   </div>
 
-  {formData.appointmentDate && timeSlots.length > 0 && (
-    <div className="mb-3">
-      <label className="form-label">Choose a Time</label>
-      <div className="d-flex flex-wrap gap-2">
-        {timeSlots.map(({ slotString }, idx) => (
-          <button
-            type="button"
-            key={idx}
-            onClick={() => handleTimeChange(slotString)}
-            className={`btn btn-sm ${
-              formData.appointmentTime === slotString ? 'btn-primary' : 'btn-outline-primary'
-            }`}
-          >
-            {slotString}
-          </button>
-        ))}
-      </div>
-      {errors.appointmentTime && (
-        <div className="text-danger small mt-1">{errors.appointmentTime}</div>
-      )}
+ { addAppointment && formData.appointmentDate && timeSlots.length > 0 && (
+  <div className="mb-3">
+    <label className="form-label">Choose a Time</label>
+    <div className="d-flex flex-wrap gap-2">
+      { timeSlots.map(({ slotString }, idx) => (
+        <button
+          type="button"
+          key={idx}
+          onClick={() => handleTimeChange(slotString)}
+          className={`btn btn-sm ${
+            formData.appointmentTime === slotString ? 'btn-primary' : 'btn-outline-primary'
+          }`}
+        >
+          {slotString}
+        </button>
+      ))}
     </div>
-  )}
+    {errors.appointmentTime && (
+      <div className="text-danger small mt-1">{errors.appointmentTime}</div>
+    )}
+  </div>
+)}
+
+    {/* 👇 Display selected time */}
+    {formData.appointmentTime && (
+      <div className="my-2 btn btn-sm btn-primary">
+        Selected Time: {formData.appointmentTime}
+      </div>
+    )}
 
   <div className="mb-3">
     <label htmlFor="duration" className="form-label">
@@ -477,12 +494,35 @@ useEffect(() => {
     />
   </div>
 
-  <button type="submit" className="btn btn-success w-100 mb-3">
+  {/* {addAppointment `<button type="submit" className="btn btn-success w-100 mb-3">
     Book Appointment 
+  </button> `} */}
+  {addAppointment && (
+  <button type="submit" className="btn btn-success w-100 mb-3" onClick={() => setAddAppointment(false)}>
+    Add Appointment
   </button>
+)}
 
   {paymentStatus && <div className="alert alert-info">{paymentStatus}</div>}
 </form>
+
+<div className="modal fade" id="successModal" tabIndex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div className="modal-dialog modal-dialog-centered">
+    <div className="modal-content text-center">
+      <div className="modal-header">
+        <h5 className="modal-title w-100" id="successModalLabel">Appointment Booked</h5>
+        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div className="modal-body">
+        Your appointment has been successfully booked.
+      </div>
+      <div className="modal-footer justify-content-center">
+        <button type="button" className="btn btn-success" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
     </>
   );

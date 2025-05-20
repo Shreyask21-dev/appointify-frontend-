@@ -7,6 +7,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import "react-datepicker/dist/react-datepicker.css";
 import './Calendar.css'
 import AppointmentForm from './AppointmentForm'
+import WorkSession from './WorkSession'
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRef } from 'react';
@@ -24,8 +25,8 @@ export default function CalendarComponent() {
   const [startHour, setStartHour] = useState("10");
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState("AM");
-  const[addAppointment,setAddAppointment] = useState(false)
-const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [addAppointment, setAddAppointment] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const [endHour, setEndHour] = useState("11");
   const [endMinute, setEndMinute] = useState("00");
@@ -43,25 +44,24 @@ const [selectedAppointment, setSelectedAppointment] = useState(null);
     return colors[index % colors.length];
   };
 
-useEffect(() => {
-  const offcanvasElement = offcanvasRef.current;
+  useEffect(() => {
+    const offcanvasElement = offcanvasRef.current;
 
-  const handleOffcanvasHidden = () => {
-    setErrors({});
-    setAddAppointment(false);
-        setSelectedAppointment(null);// optional: in case you’re toggling the UI via state
-  };
+    const handleOffcanvasHidden = () => {
+      setAddAppointment(false);
+      setSelectedAppointment(null);// optional: in case you’re toggling the UI via state
+    };
 
-  if (offcanvasElement) {
-    offcanvasElement.addEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
-  }
-
-  return () => {
     if (offcanvasElement) {
-      offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
+      offcanvasElement.addEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
     }
-  };
-}, []);
+
+    return () => {
+      if (offcanvasElement) {
+        offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
+      }
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -140,88 +140,77 @@ useEffect(() => {
     e.preventDefault();
     return false;
   };
-// Extract booked times for the selected date
+  // Extract booked times for the selected date
 
-const handleEventClick = (info) => {
-  const clickedTitle = info.event.title;
-  const clickedDate = info.event.start;
+  const handleEventClick = (info) => {
+    const clickedTitle = info.event.title;
+    const clickedDate = info.event.start;
 
-  // Helper to format Date object to 'YYYY-MM-DD'
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are zero-based
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    // Helper to format Date object to 'YYYY-MM-DD'
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // months are zero-based
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    // Find the matching appointment by comparing name and date string
+    const matchingAppointment = appointments.find(
+      (a) =>
+        `${a.firstName} ${a.lastName}` === clickedTitle &&
+        a.appointmentDate === formatDate(clickedDate)
+    );
+    console.log("matchingAppointment", matchingAppointment)
+    if (matchingAppointment) {
+      setSelectedAppointment(matchingAppointment);
+      console.log("selectedAppointment", selectedAppointment)
+      // Show the offcanvas (Bootstrap)
+      const offcanvasEl = document.getElementById('addEventSidebar');
+      const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+      bsOffcanvas.show();
+    }
   };
 
-  // Find the matching appointment by comparing name and date string
-  const matchingAppointment = appointments.find(
-    (a) =>
-      `${a.firstName} ${a.lastName}` === clickedTitle &&
-      a.appointmentDate === formatDate(clickedDate)
-  );
-console.log("matchingAppointment",matchingAppointment)
-  if (matchingAppointment) {
-    setSelectedAppointment(matchingAppointment);
-console.log("selectedAppointment",selectedAppointment)
-    // Show the offcanvas (Bootstrap)
-    const offcanvasEl = document.getElementById('addEventSidebar');
-    const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
-    bsOffcanvas.show();
-  }
+  const to24HourTime = (hour, minute, period) => {
+    let h = parseInt(hour);
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${minute}:00`;
+  };
+const buildDateTime = (hour, minute, period) => {
+  let hr = parseInt(hour);
+  if (period === 'PM' && hr !== 12) hr += 12;
+  if (period === 'AM' && hr === 12) hr = 0;
+
+  const now = new Date(); // or use a specific date
+  const datePart = now.toISOString().split('T')[0]; // e.g., "2025-05-20"
+  const timePart = `${hr.toString().padStart(2, '0')}:${minute}:00`;
+
+  return `${datePart}T${timePart}`; // Final output: "2025-05-20T22:30:00"
 };
 
+  const minTime = buildDateTime(startHour, startMinute, startPeriod); // e.g., "10:00:00"
+  const maxTime = buildDateTime(endHour, endMinute, endPeriod);       // e.g., "18:00:00"
+
+const dataToSend = {
+  minTime,
+  maxTime
+};
+
+useEffect(() => {
+  const dataToSend = {
+    minTime,
+    maxTime
+  };
+
+  axios.post("http://localhost:5056/api/WorkSession", dataToSend)
+    .then(res => console.log("Success", res))
+    .catch(err => console.error("Error", err));
+}, [minTime, maxTime]); // Runs only when minTime or maxTime changes
 
   return (
     <div>
-      <div className="container">
-        <div className="row mb-1 mt-5 justify-between ">
-          <div className="col-6">
-            <div className="col-md-2 d-flex align-items-center">
-              <label className="form-label mb-0">Start Time</label>
-            </div>
-            <div className="col-md-10 d-flex gap-3">
-              <select className="form-select w-auto" value={startHour} onChange={e => setStartHour(e.target.value)}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
-                  <option key={hour} value={hour}>{hour}</option>
-                ))}
-              </select>
-              <select className="form-select w-auto" value={startMinute} onChange={e => setStartMinute(e.target.value)}>
-                {['00', '15', '30', '45'].map(min => (
-                  <option key={min} value={min}>{min}</option>
-                ))}
-              </select>
-              <select className="form-select w-auto" value={startPeriod} onChange={e => setStartPeriod(e.target.value)}>
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-            </div>
-          </div>
-
-
-          <div className="col-6 ">
-            <div className="col-md-2 d-flex align-items-center">
-              <label className="form-label mb-0">End Time</label>
-            </div>
-            <div className="col-md-10 d-flex gap-3">
-              <select className="form-select w-auto" value={endHour} onChange={e => setEndHour(e.target.value)}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
-                  <option key={hour} value={hour}>{hour}</option>
-                ))}
-              </select>
-              <select className="form-select w-auto" value={endMinute} onChange={e => setEndMinute(e.target.value)}>
-                {['00', '15', '30', '45'].map(min => (
-                  <option key={min} value={min}>{min}</option>
-                ))}
-              </select>
-              <select className="form-select w-auto" value={endPeriod} onChange={e => setEndPeriod(e.target.value)}>
-                <option value="AM">AM</option>
-                <option value="PM">PM</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
+     
 
       <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
 
@@ -230,7 +219,7 @@ console.log("selectedAppointment",selectedAppointment)
             <div className="col app-calendar-sidebar border-end" id="app-calendar-sidebar">
               <div className="p-5 my-sm-0 mb-4 border-bottom">
                 <button
-                   onClick={()=>setAddAppointment(true)}
+                  onClick={() => setAddAppointment(true)}
                   className="btn btn-primary btn-toggle-sidebar w-100"
                   data-bs-toggle="offcanvas"
                   data-bs-target="#addEventSidebar"
@@ -315,8 +304,13 @@ console.log("selectedAppointment",selectedAppointment)
                     initialView="dayGridMonth"
                     initialDate={appointments.length > 0 ? new Date(appointments[0].appointmentDate) : new Date()}
                     events={filteredAppointments}
-                 eventClick={(info) => handleEventClick(info)}
-                    onClick={()=>setAddAppointment(false)  }
+                    slotMinTime={minTime}
+                    slotMaxTime={maxTime}
+                    eventClick={(info) => handleEventClick(info)}
+                    dateClick={(info) => {
+                      setAddAppointment(false);
+                      console.log("Date clicked, addAppointment:", addAppointment);
+                    }}
                     headerToolbar={{
                       left: 'title',
                       right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -338,7 +332,7 @@ console.log("selectedAppointment",selectedAppointment)
               </div>
               <div className="app-overlay"  ></div>
               <div
-              ref={offcanvasRef}
+                ref={offcanvasRef}
                 className="offcanvas offcanvas-end event-sidebar"
                 tabIndex="-1"
                 id="addEventSidebar"
@@ -350,11 +344,11 @@ console.log("selectedAppointment",selectedAppointment)
                     className="btn-close text-reset"
                     data-bs-dismiss="offcanvas"
                     aria-label="Close"
-                     onClick={() => {
-        setAddAppointment(false);
-        setSelectedAppointment(null);
-      }}
-                    ></button>
+                    onClick={() => {
+                      setAddAppointment(false);
+                      setSelectedAppointment(null);
+                    }}
+                  ></button>
                 </div>
                 <div className="offcanvas-body">
                   <AppointmentForm
@@ -369,8 +363,8 @@ console.log("selectedAppointment",selectedAppointment)
                     endHour={endHour}
                     endMinute={endMinute}
                     endPeriod={endPeriod}
-                    addAppointment = {addAppointment}
-                    selectedAppointment={selectedAppointment} 
+                    addAppointment={addAppointment}
+                    selectedAppointment={selectedAppointment}
                     setAddAppointment={setAddAppointment}
                   />
 
@@ -379,8 +373,11 @@ console.log("selectedAppointment",selectedAppointment)
             </div>
           </div>
         </div>
-      </div>
-
+     
+        <div className="row mb-1 mx-2 mt-5 justify-between ">
+         <WorkSession />
+          </div>
+        </div>
     </div>
   )
 }
