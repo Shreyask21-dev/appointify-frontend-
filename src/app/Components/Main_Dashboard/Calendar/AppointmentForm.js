@@ -13,7 +13,10 @@ export default function AppointmentForm({
   startPeriod,
   endHour,
   endMinute,
-  endPeriod
+  endPeriod,
+  selectedAppointment,
+  addAppointment,
+  setAddAppointment
 }) {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -31,6 +34,8 @@ export default function AppointmentForm({
   const [errors, setErrors] = useState({});
   const [timeOptions, setTimeOptions] = useState([]);
   const [paymentStatus, setPaymentStatus] = useState('');
+
+
 
   const validate = () => {
     const errs = {};
@@ -51,7 +56,44 @@ export default function AppointmentForm({
   };
 
   // When date changes, update date in formData and reset time selection
- 
+ useEffect(() => {
+  // Validate empty form fields on mount or when the form becomes visible/opened
+  const initialErrors = validate();
+  setErrors({});
+}, [formData]);
+useEffect(() => {
+  // setAddAppointment(false)
+  if (selectedAppointment && addAppointment === false) {
+    setFormData({
+      firstName: selectedAppointment.firstName || '',
+      lastName: selectedAppointment.lastName || '',
+      email: selectedAppointment.email || '',
+      phoneNumber: selectedAppointment.phoneNumber || '',
+      details: selectedAppointment.details || '',
+      appointmentDate: selectedAppointment.appointmentDate || '',
+      appointmentTime: selectedAppointment.appointmentTime || '',
+      plan: selectedAppointment.plan || '',
+      amount: selectedAppointment.amount || '',
+      duration: selectedAppointment.duration || '',
+    });
+  } else {
+    // Clear
+    //  form for new appointment
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      details: '',
+      appointmentDate: '',
+      appointmentTime: '',
+      plan: '',
+      amount: '',
+      duration: '',
+    });
+  }
+}, [selectedAppointment]);
+
 
   // When time slot clicked
   const handleTimeChange = (time) => {
@@ -141,49 +183,7 @@ export default function AppointmentForm({
     }
   };
 
-  // Verify payment status and update UI accordingly
-  const verifyPayment = async (appointmentId, paymentResponse) => {
-    try {
-      const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          AppointmentId: appointmentId,
-          PaymentId: paymentResponse.razorpay_payment_id,
-          OrderId: paymentResponse.razorpay_order_id,
-          Signature: paymentResponse.razorpay_signature,
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert(result.Message || 'Payment verified successfully.');
-
-        // Reset form and payment status success
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phoneNumber: '',
-          details: '',
-          appointmentDate: '',
-          appointmentTime: '',
-          plan: '',
-          amount: '',
-          duration: '',
-        });
-       setPaymentStatus('Payment successful! Thank you.');
-        setErrors({});
-      } else {
-        alert('Payment verification failed.');
-        setPaymentStatus('failure');
-      }
-    } catch (error) {
-      alert('An error occurred while verifying the payment.');
-      setPaymentStatus(`Payment failed: ${error.message}`);
-      console.error(error);
-    }
-  };
+ 
 
   // then format it when needed for display.
   const handleDateSelect = (e) => {
@@ -255,6 +255,7 @@ export default function AppointmentForm({
     
 
     useEffect(() => {
+
   const hour = parseInt(startHour);
   const minute = parseInt(startMinute);
   let actualHour = startPeriod === "PM" && hour !== 12 ? hour + 12 : hour;
@@ -268,6 +269,8 @@ export default function AppointmentForm({
 }, [startHour, startMinute, startPeriod]);
 
 useEffect(() => {
+
+  console.log("selectedappointment",selectedAppointment)
   const hour = parseInt(endHour);
   const minute = parseInt(endMinute);
   let actualHour = endPeriod === "PM" && hour !== 12 ? hour + 12 : hour;
@@ -316,7 +319,7 @@ useEffect(() => {
         id="firstName"
         name="firstName"
         className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
-        value={formData.firstName}
+        value= {formData.firstName}
         onChange={handleInputChange}
         placeholder="Enter your first name"
       />
@@ -475,7 +478,7 @@ useEffect(() => {
   </div>
 
   <button type="submit" className="btn btn-success w-100 mb-3">
-    Pay Now {formData.amount ? `₹${formData.amount}` : ''}
+    Book Appointment 
   </button>
 
   {paymentStatus && <div className="alert alert-info">{paymentStatus}</div>}

@@ -3,18 +3,51 @@ import React, { useState, useEffect } from 'react';
 
 const UsersWidgets = () => {
   const [stats, setStats] = useState({
-    totalPatients: { count: 5432, change: '+12%' },
-    activeAppointments: { count: 1245, change: '+8%' },
-    completedAppointments: { count: 4678, change: '+5%' },
-    pendingAppointments: { count: 237, change: '-3%' },
+    totalPatients: 0,
+    activeAppointments: 0,
+    completedAppointments: 0,
+    pendingAppointments: 0,
   });
 
-  // Use useEffect when you’re ready to fetch from backend
-  // useEffect(() => {
-  //   fetch('/api/dashboard-stats')
-  //     .then(res => res.json())
-  //     .then(data => setStats(data));
-  // }, []);
+  useEffect(() => {
+    fetch('http://localhost:5056/api/CustomerAppointment/GetAllAppointments')
+      .then((res) => res.json())
+      .then((data) => {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const patientEmails = new Set();
+        let active = 0;
+        let completed = 0;
+        let pending = 0;
+
+        data.forEach((appointment) => {
+          const appointmentDate = appointment.appointmentDate;
+          const status = appointment.appointmentStatus;
+
+          // Count unique patients
+          if (appointment.email) {
+            patientEmails.add(appointment.email);
+          }
+
+          // Assume:
+          // 1 = Active, 2 = Completed, 0 = Pending (adjust these if your API uses different codes)
+          if (status === 0) {
+            active++;
+          } else if (status === 1) {
+            completed++;
+          } else if (status === 4) {
+            pending++;
+          }
+        });
+
+        setStats({
+          totalPatients: patientEmails.size,
+          activeAppointments: active,
+          completedAppointments: completed,
+          pendingAppointments: pending,
+        });
+      })
+      .catch((error) => console.error('Error fetching dashboard stats:', error));
+  }, []);
 
   return (
     <div className="row g-6 mb-6">
@@ -26,8 +59,7 @@ const UsersWidgets = () => {
               <div className="me-1">
                 <p className="text-heading mb-1">Total Patients</p>
                 <div className="d-flex align-items-center mb-2">
-                  <h4 className="mb-1 me-2">{stats.totalPatients.count.toLocaleString()}</h4>
-                  <p className="text-success mb-1">({stats.totalPatients.change})</p>
+                  <h4 className="mb-1 me-2">{stats.totalPatients}</h4>
                 </div>
                 <small className="mt-5">All registered patients</small>
               </div>
@@ -49,8 +81,7 @@ const UsersWidgets = () => {
               <div className="me-1">
                 <p className="text-heading mb-1">Active Appointments</p>
                 <div className="d-flex align-items-center mb-2">
-                  <h4 className="mb-1 me-1">{stats.activeAppointments.count.toLocaleString()}</h4>
-                  <p className="text-success mb-1">({stats.activeAppointments.change})</p>
+                  <h4 className="mb-1 me-1">{stats.activeAppointments}</h4>
                 </div>
                 <small className="mb-0">Currently scheduled</small>
               </div>
@@ -72,8 +103,7 @@ const UsersWidgets = () => {
               <div className="me-1">
                 <p className="text-heading mb-1">Completed Appointments</p>
                 <div className="d-flex align-items-center mb-2">
-                  <h4 className="mb-1 me-1">{stats.completedAppointments.count.toLocaleString()}</h4>
-                  <p className="text-primary mb-1">({stats.completedAppointments.change})</p>
+                  <h4 className="mb-1 me-1">{stats.completedAppointments}</h4>
                 </div>
                 <small className="mb-0">Past appointments</small>
               </div>
@@ -95,8 +125,7 @@ const UsersWidgets = () => {
               <div className="me-1">
                 <p className="text-heading mb-1">Pending Appointments</p>
                 <div className="d-flex align-items-center mb-2">
-                  <h4 className="mb-1 me-1">{stats.pendingAppointments.count.toLocaleString()}</h4>
-                  <p className="text-danger mb-1">({stats.pendingAppointments.change})</p>
+                  <h4 className="mb-1 me-1">{stats.pendingAppointments}</h4>
                 </div>
                 <small className="mb-0">Awaiting confirmation</small>
               </div>

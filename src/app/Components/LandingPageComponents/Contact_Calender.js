@@ -221,70 +221,91 @@ const Contact_Calender = forwardRef((props, ref) => {
       showModal('failureModal');
     }
   };
+function openReceiptPdf(base64Pdf) {
+  const byteCharacters = atob(base64Pdf);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
 
-  // Function to verify payment
-  const verifyPayment = async (appointmentId, paymentResponse) => {
-    try {
-      const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          AppointmentId: appointmentId,
-          PaymentId: paymentResponse.razorpay_payment_id,
-          OrderId: paymentResponse.razorpay_order_id,
-          Signature: paymentResponse.razorpay_signature,
-        }),
-      });
-      console.log("VerifyPayment", response);
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Payment Verification Result:', result);
-        showModal('successModal');
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phoneNumber: '',
-          details: '',
-          appointmentDate: '',
-          appointmentTime: '',
-          plan: '',
-          amount: '',
-          duration: '',
-        });
-        setFormErrors({});
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  // Open in new tab using an anchor tag
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.target = '_blank'; // Open in new tab
+  a.rel = 'noopener noreferrer';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 10000); // Clean up
+}
+
+const verifyPayment = async (appointmentId, paymentResponse) => {
+  try {
+    const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        AppointmentId: appointmentId,
+        PaymentId: paymentResponse.razorpay_payment_id,
+        OrderId: paymentResponse.razorpay_order_id,
+        Signature: paymentResponse.razorpay_signature,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Payment Verification Result:', data);
+    console.log()
+      if (data.success && data.receipt) {
+        openReceiptPdf(data.receipt);
       } else {
-        const errorText = await response.text();
-        console.error('Verification failed:', errorText);
-        showModal('failureModal');
+        alert(data.message || 'Payment verified but no receipt.');
       }
-    } catch (error) {
-      console.error('Error verifying payment:', error);
-      alert('An error occurred while verifying the payment.');
-    }
-    setTimeout(() => {
-      const modalElement = document.getElementById('successModal');
-      if (modalElement) {
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        modal?.hide();
-      }
-    }, 3000);
-  };
 
-  // Generate time slots based on selected date and plan duration.
-  // Only generate if appointmentDate and duration are provided.
-  const timeSlots = (formData.appointmentDate && formData.duration)
+      showModal('successModal');
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        details: '',
+        appointmentDate: '',
+        appointmentTime: '',
+        plan: '',
+        amount: '',
+        duration: '',
+      });
+      setFormErrors({});
+    } else {
+      const errorText = await response.text();
+      console.error('Verification failed:', errorText);
+      showModal('failureModal');
+    }
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    alert('An error occurred while verifying the payment.');
+  }
+
+  setTimeout(() => {
+    const modalElement = document.getElementById('successModal');
+    if (modalElement) {
+      const modal = bootstrap.Modal.getInstance(modalElement);
+      modal?.hide();
+    }
+  }, 3000);
+};
+
+
+
+ const timeSlots = (formData.appointmentDate && formData.duration)
     ? generateTimeSlots(Number(formData.duration))
     : [];
-
-  const availableTimeSlots = () => {
-    if (!formData.appointmentDate || !formData.duration) return [];
-    const duration = parseInt(formData.duration);
-    const allSlots = generateTimeSlots(duration);
-    return allSlots.filter(
-      (slot) => !bookedTimeSlots.includes(slot.slotString)
-    );
-  };
 
 useEffect(() => {
   if (formData.appointmentDate && formData.plan) {

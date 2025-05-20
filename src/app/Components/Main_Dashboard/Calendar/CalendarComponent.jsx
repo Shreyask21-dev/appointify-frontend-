@@ -9,8 +9,13 @@ import './Calendar.css'
 import AppointmentForm from './AppointmentForm'
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useRef } from 'react';
+
+
+
 
 export default function CalendarComponent() {
+  const offcanvasRef = useRef(null);
   const [plans, setPlans] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [selectedPlans, setSelectedPlans] = useState([]);
@@ -19,6 +24,8 @@ export default function CalendarComponent() {
   const [startHour, setStartHour] = useState("10");
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState("AM");
+  const[addAppointment,setAddAppointment] = useState(false)
+const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const [endHour, setEndHour] = useState("11");
   const [endMinute, setEndMinute] = useState("00");
@@ -36,6 +43,25 @@ export default function CalendarComponent() {
     return colors[index % colors.length];
   };
 
+useEffect(() => {
+  const offcanvasElement = offcanvasRef.current;
+
+  const handleOffcanvasHidden = () => {
+    setErrors({});
+    setAddAppointment(false);
+        setSelectedAppointment(null);// optional: in case you’re toggling the UI via state
+  };
+
+  if (offcanvasElement) {
+    offcanvasElement.addEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
+  }
+
+  return () => {
+    if (offcanvasElement) {
+      offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
+    }
+  };
+}, []);
 
 
   useEffect(() => {
@@ -116,6 +142,34 @@ export default function CalendarComponent() {
   };
 // Extract booked times for the selected date
 
+const handleEventClick = (info) => {
+  const clickedTitle = info.event.title;
+  const clickedDate = info.event.start;
+
+  // Helper to format Date object to 'YYYY-MM-DD'
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are zero-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Find the matching appointment by comparing name and date string
+  const matchingAppointment = appointments.find(
+    (a) =>
+      `${a.firstName} ${a.lastName}` === clickedTitle &&
+      a.appointmentDate === formatDate(clickedDate)
+  );
+console.log("matchingAppointment",matchingAppointment)
+  if (matchingAppointment) {
+    setSelectedAppointment(matchingAppointment);
+console.log("selectedAppointment",selectedAppointment)
+    // Show the offcanvas (Bootstrap)
+    const offcanvasEl = document.getElementById('addEventSidebar');
+    const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+    bsOffcanvas.show();
+  }
+};
 
 
   return (
@@ -176,12 +230,13 @@ export default function CalendarComponent() {
             <div className="col app-calendar-sidebar border-end" id="app-calendar-sidebar">
               <div className="p-5 my-sm-0 mb-4 border-bottom">
                 <button
+                   onClick={()=>setAddAppointment(true)}
                   className="btn btn-primary btn-toggle-sidebar w-100"
                   data-bs-toggle="offcanvas"
                   data-bs-target="#addEventSidebar"
                   aria-controls="addEventSidebar">
                   <i className="ri-add-line ri-16px me-1_5"></i>
-                  <span className="align-middle">Add Appointment</span>
+                  <span className="align-middle"> Add Appointment</span>
                 </button>
               </div>
               <div className="px-4">
@@ -260,6 +315,8 @@ export default function CalendarComponent() {
                     initialView="dayGridMonth"
                     initialDate={appointments.length > 0 ? new Date(appointments[0].appointmentDate) : new Date()}
                     events={filteredAppointments}
+                 eventClick={(info) => handleEventClick(info)}
+                    onClick={()=>setAddAppointment(false)  }
                     headerToolbar={{
                       left: 'title',
                       right: 'dayGridMonth,timeGridWeek,timeGridDay'
@@ -279,19 +336,25 @@ export default function CalendarComponent() {
 
                 </div>
               </div>
-              <div className="app-overlay"></div>
+              <div className="app-overlay"  ></div>
               <div
+              ref={offcanvasRef}
                 className="offcanvas offcanvas-end event-sidebar"
                 tabIndex="-1"
                 id="addEventSidebar"
                 aria-labelledby="addEventSidebarLabel">
                 <div className="offcanvas-header border-bottom">
-                  <h5 className="offcanvas-title" id="addEventSidebarLabel">Add Appointment</h5>
+                  <h5 className="offcanvas-title" id="addEventSidebarLabel"> {selectedAppointment ? 'View Appointment' : 'Add Appointment'}</h5>
                   <button
                     type="button"
                     className="btn-close text-reset"
                     data-bs-dismiss="offcanvas"
-                    aria-label="Close"></button>
+                    aria-label="Close"
+                     onClick={() => {
+        setAddAppointment(false);
+        setSelectedAppointment(null);
+      }}
+                    ></button>
                 </div>
                 <div className="offcanvas-body">
                   <AppointmentForm
@@ -306,6 +369,9 @@ export default function CalendarComponent() {
                     endHour={endHour}
                     endMinute={endMinute}
                     endPeriod={endPeriod}
+                    addAppointment = {addAppointment}
+                    selectedAppointment={selectedAppointment} 
+                    setAddAppointment={setAddAppointment}
                   />
 
                 </div>
