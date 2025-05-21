@@ -171,12 +171,7 @@ export default function CalendarComponent() {
     }
   };
 
-  const to24HourTime = (hour, minute, period) => {
-    let h = parseInt(hour);
-    if (period === "PM" && h !== 12) h += 12;
-    if (period === "AM" && h === 12) h = 0;
-    return `${String(h).padStart(2, '0')}:${minute}:00`;
-  };
+ 
 const buildDateTime = (hour, minute, period) => {
   let hr = parseInt(hour);
   if (period === 'PM' && hr !== 12) hr += 12;
@@ -197,16 +192,6 @@ const dataToSend = {
   maxTime
 };
 
-useEffect(() => {
-  const dataToSend = {
-    minTime,
-    maxTime
-  };
-
-  axios.post("http://localhost:5056/api/WorkSession", dataToSend)
-    .then(res => console.log("Success", res))
-    .catch(err => console.error("Error", err));
-}, [minTime, maxTime]); // Runs only when minTime or maxTime changes
 
   return (
     <div>

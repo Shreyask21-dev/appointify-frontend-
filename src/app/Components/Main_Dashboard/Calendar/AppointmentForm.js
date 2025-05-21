@@ -4,10 +4,7 @@ import validator from 'validator';
 
 export default function AppointmentForm({
   plans,
-  slotMaxTime,
-  slotEndTime,
-  setSlotStartTime,
-  setSlotEndTime,
+
   startHour,
   startMinute,
   startPeriod,
@@ -32,12 +29,22 @@ export default function AppointmentForm({
   });
     const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
   const [errors, setErrors] = useState({});
-  const [timeOptions, setTimeOptions] = useState([]);
   const [paymentStatus, setPaymentStatus] = useState('');
  const [appointments, setAppointments] = useState([]);
  const [timeSlots, setTimeSlots] = useState([]);
+const [slotStartTime,setSlotStartTime]=useState(null)
+const [slotEndTime,setSlotEndTime]=useState(null)
+  const [workSession, setWorkSession] = useState(null); 
 
-
+  useEffect(() => {
+    async function fetchWorkSession() {
+      const res = await fetch('http://localhost:5056/api/WorkSession'); // your API endpoint
+      const data = await res.json();
+      console.log(workSession,"workSession")
+      setWorkSession(data);
+    }
+    fetchWorkSession();
+  }, []);
 
   const validate = () => {
     const errs = {};
@@ -60,10 +67,10 @@ export default function AppointmentForm({
   // When date changes, update date in formData and reset time selection
  useEffect(() => {
   // Validate empty form fields on mount or when the form becomes visible/opened
-  const initialErrors = validate();
   setErrors({});
 }, [formData]);
 useEffect(() => {
+  const slots = generateTimeSlots(slotStartTime, slotEndTime, 30);
   if (!addAppointment && selectedAppointment) {
     // Editing an existing appointment
     setFormData({
@@ -97,11 +104,14 @@ useEffect(() => {
 
 
   // When time slot clicked
-  const handleTimeChange = (time) => {
-    setFormData((prev) => ({
-      ...prev,
-      appointmentTime: time,
-    }));
+  const handleTimeChange = (slot) => {
+  setFormData(prev => ({
+    ...prev,
+    appointmentTime: slot,
+    duration: '30' // or compute based on logic
+  }));
+
+
   };
 
   // When user selects a plan, update plan details
@@ -128,9 +138,7 @@ useEffect(() => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
- const handleTimeSelect = (timeSlot) => {
-    setFormData({ ...formData, appointmentTime: timeSlot });
-  };
+
   // Form submit handler
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -203,58 +211,85 @@ const handleSubmit = async (e) => {
     setBookedTimeSlots([]);
   };
 
-  // Format a date in dd-mm-yyyy for display purposes
-  const formatDateDisplay = (dateString) => {
-    if(!dateString) return '';
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
 
-  // Generate time slots based on plan duration.
-const generateTimeSlots = (durationInMinutes) => {
+
+useEffect(() => {
+  if (Array.isArray(workSession) && workSession.length > 0) {
+    const recent = workSession.reduce((latest, current) => {
+      const latestDate = parseTimeStringToDate(latest.workStartTime);
+      const currentDate = parseTimeStringToDate(current.workStartTime);
+      return currentDate > latestDate ? current : latest;
+    });
+
+    const startDate = parseTimeStringToDate(recent.workStartTime);
+    const endDate = parseTimeStringToDate(recent.workEndTime);
+
+    setSlotStartTime(startDate);
+    setSlotEndTime(endDate);
+
+    const slots = generateTimeSlots(startDate, endDate, recent.slotDuration);
+    setTimeSlots(slots);
+  }
+}, [workSession]);
+
+
+function parseTimeStringToDate(timeString) {
+  if (!timeString || typeof timeString !== 'string') return null;
+
+  const [time, modifier] = timeString.split(' ');
+  let [hours, minutes] = time.split(':').map(Number);
+
+  if (modifier === 'PM' && hours !== 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+let recentWorkSession = null;
+
+if (Array.isArray(workSession) && workSession.length > 0) {
+  recentWorkSession = workSession.reduce((latest, current) => {
+    const latestDate = parseTimeStringToDate(latest.workStartTime);
+    const currentDate = parseTimeStringToDate(current.workStartTime);
+    return currentDate > latestDate ? current : latest;
+  });
+}
+
+
+console.log(recentWorkSession);
+
+
+
+ function generateTimeSlots(startDate, endDate, slotDuration) {
   const slots = [];
+  let current = new Date(startDate);
 
-  if (!slotMaxTime || !slotEndTime) return slots; // Ensure values exist
+  while (current < endDate) {
+    const slotStart = new Date(current);
+    current.setMinutes(current.getMinutes() + slotDuration);
+    const slotEnd = new Date(current);
 
-  let start = new Date(slotMaxTime); // Start of working hours
-  const end = new Date(slotEndTime); // End of working hours
-
-  while (start < end) {
-    let slotStart = new Date(start);
-    let slotEnd = new Date(slotStart.getTime() + durationInMinutes * 60000);
-    if (slotEnd > end) break;
-
-    const slotString = `${formatTime(slotStart)} - ${formatTime(slotEnd)}`;
-
-    if (!bookedTimeSlots.includes(slotString)) {
-      slots.push({
-        start: formatTime(slotStart),
-        end: formatTime(slotEnd),
-        slotString,
-      });
+    if (slotEnd <= endDate) {
+      slots.push(`${formatTime(slotStart)} - ${formatTime(slotEnd)}`);
     }
+  }
+  return slots;
+}
 
-    start = slotEnd;
+
+  function formatTime(date) {
+    let h = date.getHours();
+    let m = date.getMinutes();
+    let ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    m = m < 10 ? '0' + m : m;
+    return `${h}:${m} ${ampm}`;
   }
 
-  return slots;
-};
 
 
-
-  // Helper function to format time in hh:mm AM/PM
-  const formatTime = (date) => {
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
-    return `${hours}:${minutesStr} ${ampm}`;
-  };
 
     
 
@@ -287,26 +322,19 @@ useEffect(() => {
   setSlotEndTime(date);
 }, [endHour, endMinute, endPeriod]);
 
-const getBookedTimeSlots = (date) => {
-  const selectedDateStr = new Date(date).toDateString();
+const slots = generateTimeSlots(slotStartTime, slotEndTime, 30);
+console.log(slots);
 
-  return appointments
-    .filter(app => new Date(app.appointmentDate).toDateString() === selectedDateStr)
-    .map(app => {
-      const start = new Date(app.appointmentDate);
-      const end = new Date(app.endTime); // if you have an endTime, otherwise calculate from duration
-      return { start, end };
-    });
-};
 
 useEffect(() => {
-  if (formData.appointmentDate && formData.duration) {
-    const slots = generateTimeSlots(Number(formData.duration));
+  if (formData.appointmentDate && formData.duration && slotStartTime && slotEndTime) {
+    const slots = generateTimeSlots(slotStartTime, slotEndTime, Number(formData.duration));
     setTimeSlots(slots);
   } else {
     setTimeSlots([]);
   }
-}, [formData.appointmentDate, formData.duration, bookedTimeSlots]);
+}, [formData.appointmentDate, formData.duration, slotStartTime, slotEndTime, bookedTimeSlots]);
+
 
 useEffect(() => {
   if (formData.appointmentDate && formData.plan) {
@@ -435,26 +463,28 @@ useEffect(() => {
   </div>
 
  { addAppointment && formData.appointmentDate && timeSlots.length > 0 && (
-  <div className="mb-3">
-    <label className="form-label">Choose a Time</label>
-    <div className="d-flex flex-wrap gap-2">
-      { timeSlots.map(({ slotString }, idx) => (
+<div className="mb-3">
+  <label className="form-label">Available Time Slots</label>
+  <div>
+    {timeSlots.length === 0 && <p>No slots available</p>}
+    {timeSlots.map((slot, idx) => {
+      const isBooked = bookedTimeSlots.includes(slot);
+      return (
         <button
           type="button"
           key={idx}
-          onClick={() => handleTimeChange(slotString)}
-          className={`btn btn-sm ${
-            formData.appointmentTime === slotString ? 'btn-primary' : 'btn-outline-primary'
-          }`}
+          disabled={isBooked}
+          onClick={() => handleTimeChange(slot)}
+          className={`btn btn-sm me-2 mb-2 ${formData.appointmentTime === slot ? 'btn-primary' : 'btn-outline-primary'}`}
         >
-          {slotString}
+          {slot}
         </button>
-      ))}
-    </div>
-    {errors.appointmentTime && (
-      <div className="text-danger small mt-1">{errors.appointmentTime}</div>
-    )}
+      );
+    })}
   </div>
+  {errors.appointmentTime && <div className="text-danger">{errors.appointmentTime}</div>}
+</div>
+
 )}
 
     {/* 👇 Display selected time */}
