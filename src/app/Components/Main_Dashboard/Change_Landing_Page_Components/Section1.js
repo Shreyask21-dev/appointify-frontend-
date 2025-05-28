@@ -19,7 +19,7 @@ const Section1 = () => {
         const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
-        console.log("result", result[0]);
+        console.log("section1", result[0]);
         setData(result[0]);
         setEditableData(result[0]);
         setStatusMessage({ type: '', text: '' });

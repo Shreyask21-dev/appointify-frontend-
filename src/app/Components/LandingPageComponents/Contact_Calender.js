@@ -3,6 +3,7 @@ import React, { forwardRef, useEffect, useState } from 'react';
 import 'react-time-picker/dist/TimePicker.css';
 import MiniCalendar from './MiniCalendar';
 import dynamic from 'next/dynamic';
+import axios from 'axios';
 
 const TimePicker = dynamic(() => import('react-time-picker'), { ssr: false });
 
@@ -10,6 +11,8 @@ const Contact_Calender = forwardRef((props, ref) => {
   const [formErrors, setFormErrors] = useState({});
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [timeSlots, setTimeSlots] = useState([]);
+
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -105,47 +108,91 @@ const Contact_Calender = forwardRef((props, ref) => {
     return `${day}-${month}-${year}`;
   };
 
+  const parseTime = (timeStr) => {
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
+  // Overlap check for Date objects
+  const isOverlapping = (start1, end1, start2, end2) => {
+    return start1 < end2 && start2 < end1;
+  };
+
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await axios.get('http://localhost:5056/api/WorkSession');
+        if (response.data && response.data.length > 0 && formData.duration) {
+          const session = response.data[0];
+
+          const start = parseTime(session.workStartTime);
+          const end = parseTime(session.workEndTime);
+
+          // Convert to number just in case
+          const durationInMinutes = Number(formData.duration);
+
+          const slots = generateTimeSlots(start, end, durationInMinutes);
+          setTimeSlots(slots);
+        }
+      } catch (err) {
+        console.error("Failed to load session data", err);
+        setError("Unable to load work session data.");
+      }
+    };
+
+    fetchSession();
+  }, [formData.duration]); // 👈 re-run when plan duration changes
+
+
+
   // Generate time slots based on plan duration.
   // Assumes slots between 10:00 AM and 10:00 PM.
- const generateTimeSlots = (durationInMinutes) => {
-  const slots = [];
-  let start = new Date();
-  start.setHours(10, 0, 0, 0);
-  const end = new Date();
-  end.setHours(22, 0, 0, 0);
+  const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
+    const slots = [];
+    const booked = bookedTimeSlots.map(slot => slot.time);
 
-  while (start < end) {
-    let slotStart = new Date(start);
-    let slotEnd = new Date(slotStart.getTime() + durationInMinutes * 60000);
-    if (slotEnd > end) break;
+    const start = new Date(startTime);
+    const end = new Date(endTime);
 
-    const slotString = `${formatTime(slotStart)} - ${formatTime(slotEnd)}`;
+    while (start.getTime() + durationInMinutes * 60000 <= end.getTime()) {
+      const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
+      const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
 
-    if (!bookedTimeSlots.includes(slotString)) {
-      slots.push({
-        start: formatTime(slotStart),
-        end: formatTime(slotEnd),
-        slotString,
-      });
+      if (!booked.includes(slot)) {
+        slots.push({ label: slot, value: slot });
+      }
+
+      // Move to the next slot
+      start.setTime(start.getTime() + durationInMinutes * 60000);
     }
+    console.log("slots", slots)
+    return slots;
+  };
 
-    start = slotEnd;
-  }
 
-  return slots;
-};
+
+
 
 
   // Helper function to format time in hh:mm AM/PM
   const formatTime = (date) => {
     let hours = date.getHours();
-    const minutes = date.getMinutes();
+    let minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours % 12 || 12; // convert 0 to 12 for 12 AM
+
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
     return `${hours}:${minutesStr} ${ampm}`;
   };
+
 
   const handleTimeSelect = (timeSlot) => {
     setFormData({ ...formData, appointmentTime: timeSlot });
@@ -173,7 +220,7 @@ const Contact_Calender = forwardRef((props, ref) => {
       console.log('Appointment created:', JSON.stringify(formData));
       if (response.ok) {
         const appointment = await response.json();
-        console.log('Appointment created:', JSON.stringify(formData));
+        console.log('Appointment created now:', JSON.stringify(formData));
         // Razorpay integration remains unchanged
         const razorpayOptions = {
           key: 'rzp_test_G5ZTKDD6ejrInm',
@@ -185,7 +232,7 @@ const Contact_Calender = forwardRef((props, ref) => {
           handler: function (response) {
             console.log('Payment success:', response);
             setPaymentCompleted(true);
-            verifyPayment(appointment.appointmentId, response);
+            verifyPayment( response);
           },
           prefill: {
             name: formData.firstName + ' ' + formData.lastName,
@@ -221,100 +268,100 @@ const Contact_Calender = forwardRef((props, ref) => {
       showModal('failureModal');
     }
   };
-function openReceiptPdf(base64Pdf) {
-  const byteCharacters = atob(base64Pdf);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  function openReceiptPdf(base64Pdf) {
+    const byteCharacters = atob(base64Pdf);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Open in new tab using an anchor tag
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.target = '_blank'; // Open in new tab
+    a.rel = 'noopener noreferrer';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000); // Clean up
   }
-  const byteArray = new Uint8Array(byteNumbers);
 
-  const blob = new Blob([byteArray], { type: 'application/pdf' });
-  const blobUrl = URL.createObjectURL(blob);
-
-  // Open in new tab using an anchor tag
-  const a = document.createElement('a');
-  a.href = blobUrl;
-  a.target = '_blank'; // Open in new tab
-  a.rel = 'noopener noreferrer';
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 10000); // Clean up
-}
-
-const verifyPayment = async (appointmentId, paymentResponse) => {
-  try {
-    const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        AppointmentId: appointmentId,
-        PaymentId: paymentResponse.razorpay_payment_id,
-        OrderId: paymentResponse.razorpay_order_id,
-        Signature: paymentResponse.razorpay_signature,
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log('Payment Verification Result:', data);
-    console.log()
-      if (data.success && data.receipt) {
-        openReceiptPdf(data.receipt);
-      } else {
-        alert(data.message || 'Payment verified but no receipt.');
-      }
-
-      showModal('successModal');
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        details: '',
-        appointmentDate: '',
-        appointmentTime: '',
-        plan: '',
-        amount: '',
-        duration: '',
+  const verifyPayment = async (paymentResponse) => {
+    try {
+      const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          PaymentId: paymentResponse.razorpay_payment_id,
+          OrderId: paymentResponse.razorpay_order_id,
+          Signature: paymentResponse.razorpay_signature,
+        }),
       });
-      setFormErrors({});
-    } else {
-      const errorText = await response.text();
-      console.error('Verification failed:', errorText);
-      showModal('failureModal');
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Payment Verification Result:', data);
+        console.log()
+        if (data.success && data.receipt) {
+          openReceiptPdf(data.receipt);
+        } else {
+          alert(data.message || 'Payment verified but no receipt.');
+        }
+
+        showModal('successModal');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phoneNumber: '',
+          details: '',
+          appointmentDate: '',
+          appointmentTime: '',
+          plan: '',
+          amount: '',
+          duration: '',
+        });
+        setFormErrors({});
+      } else {
+        const errorText = await response.text();
+        console.error('Verification failed:', errorText);
+        showModal('failureModal');
+      }
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      alert('An error occurred while verifying the payment.');
     }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    alert('An error occurred while verifying the payment.');
-  }
 
-  setTimeout(() => {
-    const modalElement = document.getElementById('successModal');
-    if (modalElement) {
-      const modal = bootstrap.Modal.getInstance(modalElement);
-      modal?.hide();
+    setTimeout(() => {
+      const modalElement = document.getElementById('successModal');
+      if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal?.hide();
+      }
+    }, 3000);
+  };
+
+
+
+
+
+  useEffect(() => {
+    if (formData.appointmentDate && formData.plan) {
+      fetch(`http://localhost:5056/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
+        .then(res => res.json())
+        .then((data) => {
+          setBookedTimeSlots(data)
+          console.log("booked slots", data)
+        }) // data should be an array of slot strings
+        .catch(err => console.error("Error fetching booked slots:", err));
     }
-  }, 3000);
-};
-
-
-
- const timeSlots = (formData.appointmentDate && formData.duration)
-    ? generateTimeSlots(Number(formData.duration))
-    : [];
-
-useEffect(() => {
-  if (formData.appointmentDate && formData.plan) {
-    fetch(`http://localhost:5056/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}&plan=${formData.plan}`)
-      .then(res => res.json())
-      .then(data => setBookedTimeSlots(data)) // data should be an array of slot strings
-      .catch(err => console.error("Error fetching booked slots:", err));
-  }
-}, [formData.appointmentDate, formData.plan]);
+  }, [formData.appointmentDate, formData.plan]);
 
   return (
     <>
@@ -333,8 +380,8 @@ useEffect(() => {
                 <div className="card-body contact" style={{ maxHeight: '60.25rem', minHeight: '35.25rem' }}>
                   <div className="text-center mb-3">
                     <h5 className="mb-1">Book Your Appointment</h5>
-<p className="small mb-4">Please provide your details and let us know how we can assist you.</p>
-          <hr className='bg-dark'/>
+                    <p className="small mb-4">Please provide your details and let us know how we can assist you.</p>
+                    <hr className='bg-dark' />
                   </div>
                   <form onSubmit={handleSubmit}>
                     {/* First and Last Name */}
@@ -395,28 +442,53 @@ useEffect(() => {
                           <div className="mb-2">
                             <label className="form-label">Choose a Time Slot</label>
 
+
+
                             <div className="row gx-1">
-                              {timeSlots
-                                .filter(({ slotString }) => !bookedTimeSlots.includes(slotString))  // Only available slots
-                                .map(({ slotString }, index) => (
+                              {timeSlots.map(({ value }, index) => {
+                                const [startStr, endStr] = value.split('-').map(s => s.trim());
+                                const start = parseTime(startStr);
+                                const end = parseTime(endStr);
+
+                                const isBooked = Array.isArray(bookedTimeSlots) && bookedTimeSlots.some(slot => {
+                                  const [bStartH, bStartM, bStartS] = slot.startTime.split(':').map(Number);
+                                  const bookedStart = new Date();
+                                  bookedStart.setHours(bStartH, bStartM, bStartS, 0);
+
+                                  const [bEndH, bEndM, bEndS] = slot.endTime.split(':').map(Number);
+                                  const bookedEnd = new Date();
+                                  bookedEnd.setHours(bEndH, bEndM, bEndS, 0);
+
+                                  return isOverlapping(start, end, bookedStart, bookedEnd) && slot.status === "Scheduled";
+                                });
+
+                                const isSelected = formData.appointmentTime === value;
+
+                                return (
                                   <div className="col-4 mb-2" key={index}>
                                     <button
                                       type="button"
-                                      className="btn btn-sm w-100 text-truncate px-1 py-1 btn-outline-primary"
+                                      className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100
+          ${isBooked ? 'bg-danger text-white' : isSelected ? 'bg-primary text-white' : 'btn-outline-primary'}`}
                                       style={{
                                         fontSize: '0.75rem',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
-                                        cursor: 'pointer',
+                                        cursor: isBooked ? 'not-allowed' : 'pointer',
+                                        pointerEvents: isBooked ? 'none' : 'auto',
+                                        border: isSelected ? '1px solid #0d6efd' : undefined,
                                       }}
-                                      onClick={() => handleTimeSelect(slotString)}
+                                      disabled={isBooked}
+                                      onClick={() => !isBooked && handleTimeSelect(value)}
                                     >
-                                      {slotString}
+                                      {value}
                                     </button>
                                   </div>
-                                ))}
+                                );
+                              })}
                             </div>
+
 
                             {formErrors.appointmentTime && (
                               <div className="text-danger small mt-1">

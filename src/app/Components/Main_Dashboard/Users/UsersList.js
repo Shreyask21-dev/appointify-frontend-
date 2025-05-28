@@ -31,7 +31,7 @@ const UsersList = () => {
   }, []);
 
   const [newPatient, setNewPatient] = useState({
-    name: '', email: '', phone: '', createDate: '', totalAppointments: '', lastAppointmentDate: ''
+    name: '', email: '', phone: '', createDate: '', totalAppointments: '', lastAppointment: ''
   });
 
   const handleEdit = (patient) => {
@@ -44,7 +44,7 @@ const UsersList = () => {
       email: patient.email,
       phoneNumber: patient.phoneNumber,
       totalAppointments: patient.totalAppointments,
-      lastAppointmentDate: patient.lastAppointmentDate,
+      lastAppointment: patient.lastAppointment,
 
     });
     setShowForm(true);
@@ -61,7 +61,7 @@ const UsersList = () => {
       phoneNumber: "",
       createdDate: "",
       totalAppointments: 0,
-      lastAppointmentDate:''
+      lastAppointment:''
     });
   };
 
@@ -166,7 +166,7 @@ const UsersList = () => {
                 <td>{patient.email}</td>
                 <td>{patient.phoneNumber}</td>
                 <td>{patient.totalAppointments}</td>
-                <td>{patient.lastAppointmentDate}</td>
+                <td>{patient.lastAppointment}</td>
 
 
                 <td>
@@ -251,10 +251,9 @@ const UsersList = () => {
                    <div className="mb-3">
                     <label className="form-label">Last Appointment Date</label>
                     <input
-                      type="date"
                       className="form-control"
-                      name="lastAppointmentDate"
-                      value={newPatient.lastAppointmentDate}
+                      name="lastAppointment"
+                      value={newPatient.lastAppointment}
                       required
                       readOnly
                     />

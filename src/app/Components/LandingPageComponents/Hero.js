@@ -101,7 +101,7 @@ const Hero = ({ scrollToSectionHeader }) => {
                             src={
                               consultantData.profileImage
                                   ?  `http://localhost:5056/${consultantData.profileImage}`
-                                : '/assets/img/160x160/img8.jpg'
+                                : '/assets/img/160x160/img6.jpg'
                             }
                             alt="Doctor"
                           />

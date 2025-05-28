@@ -119,21 +119,33 @@ export default function CalendarComponent() {
   }, [plans]);
 
 
-  const filteredAppointments = appointments
-    .filter(a => selectedPlans.includes(a.plan?.toLowerCase()))
-    .map((a) => ({
+ const scheduledAppointments = appointments
+  .filter(a => a.appointmentStatus === 0)
+  .map(a => {
+    const [startStr, endStr] = a.appointmentTime.split(' - ');
+    const start = new Date(`${a.appointmentDate} ${startStr}`);
+    const end = new Date(`${a.appointmentDate} ${endStr}`);
+    return {
       title: `${a.firstName} ${a.lastName}`,
-      start: new Date(a.appointmentDate).toISOString(),
-      className: getColorClass(plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())),
+      start,
+      end,
+      className: getColorClass(
+        plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())
+      ),
       extendedProps: {
-        planName: a.plan?.toLowerCase() || 'unknown'
+        planName: a.plan?.toLowerCase() || 'unknown',
+        status: a.appointmentStatus,
+        appointmentTime: a.appointmentTime,  // important for matching click event
+        id: a.id
       }
-    }))
+    };
+  });
+
 
 
 
   useEffect(() => {
-    console.log("Filtered Appointments", filteredAppointments)
+    console.log("Filtered Appointments", scheduledAppointments)
 
   }, [appointments])
   const handleSubmit = (e) => {
@@ -142,34 +154,32 @@ export default function CalendarComponent() {
   };
   // Extract booked times for the selected date
 
-  const handleEventClick = (info) => {
-    const clickedTitle = info.event.title;
-    const clickedDate = info.event.start;
+const handleEventClick = (info) => {
+  const clickedTitle = info.event.title;
+  const clickedDate = info.event.start;  // Date object
+  const clickedTime = info.event.extendedProps.appointmentTime; // added time prop
 
-    // Helper to format Date object to 'YYYY-MM-DD'
-    const formatDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // months are zero-based
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
+  // Use strict matching including appointmentTime
+  const matchingAppointment = appointments.find(
+    (a) =>
+      `${a.firstName} ${a.lastName}` === clickedTitle &&
+      a.appointmentDate === clickedDate.toISOString().slice(0, 10) && // YYYY-MM-DD
+      a.appointmentTime === clickedTime
+  );
 
-    // Find the matching appointment by comparing name and date string
-    const matchingAppointment = appointments.find(
-      (a) =>
-        `${a.firstName} ${a.lastName}` === clickedTitle &&
-        a.appointmentDate === formatDate(clickedDate)
-    );
-    console.log("matchingAppointment", matchingAppointment)
-    if (matchingAppointment) {
-      setSelectedAppointment(matchingAppointment);
-      console.log("selectedAppointment", selectedAppointment)
-      // Show the offcanvas (Bootstrap)
-      const offcanvasEl = document.getElementById('addEventSidebar');
-      const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
-      bsOffcanvas.show();
-    }
-  };
+  console.log("matchingAppointment", matchingAppointment);
+
+  if (matchingAppointment) {
+    setSelectedAppointment(matchingAppointment);
+    console.log("selectedAppointment", matchingAppointment);
+
+    // Show the offcanvas (Bootstrap)
+    const offcanvasEl = document.getElementById('addEventSidebar');
+    const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+    bsOffcanvas.show();
+  }
+};
+
 
  
 const buildDateTime = (hour, minute, period) => {
@@ -288,7 +298,7 @@ const dataToSend = {
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                     initialView="dayGridMonth"
                     initialDate={appointments.length > 0 ? new Date(appointments[0].appointmentDate) : new Date()}
-                    events={filteredAppointments}
+                    events={scheduledAppointments}
                     slotMinTime={minTime}
                     slotMaxTime={maxTime}
                     eventClick={(info) => handleEventClick(info)}

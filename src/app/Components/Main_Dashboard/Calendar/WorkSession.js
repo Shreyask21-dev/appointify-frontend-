@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Container, Row, Col, Form, Alert } from 'react-bootstrap';
 import axios from 'axios';
 
@@ -15,12 +15,47 @@ const WorkSession = () => {
   const hours = [...Array(12)].map((_, i) => (i + 1).toString().padStart(2, '0'));
   const minutes = ['00', '15', '30', '45'];
 
+  // Convert "02:30 PM" to hour, minute, period
+  const parseTime = (timeStr) => {
+    const [time, period] = timeStr.split(' ');
+    const [hour, minute] = time.split(':');
+    return {
+      hour: hour.padStart(2, '0'),
+      minute,
+      period
+    };
+  };
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await axios.get('http://localhost:5056/api/WorkSession');
+        if (response.data && response.data.length > 0) {
+          const session = response.data[0]; // You can modify to loop if needed
+          const start = parseTime(session.workStartTime);
+          const end = parseTime(session.workEndTime);
+          setStartHour(start.hour);
+          setStartMinute(start.minute);
+          setStartPeriod(start.period);
+          setEndHour(end.hour);
+          setEndMinute(end.minute);
+          setEndPeriod(end.period);
+        }
+      } catch (err) {
+        console.error("Failed to load session data", err);
+        setError("Unable to load work session data.");
+      }
+    };
+
+    fetchSession();
+  }, []);
+
   const buildDateTime = (hour, minute, period) => {
     let h = parseInt(hour);
     if (period === 'PM' && h < 12) h += 12;
     if (period === 'AM' && h === 12) h = 0;
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateStr = now.toISOString().split('T')[0];
     const hh = h.toString().padStart(2, '0');
     return `${dateStr}T${hh}:${minute}:00`;
   };
@@ -38,35 +73,31 @@ const WorkSession = () => {
     const workEndTime = buildDateTime(endHour, endMinute, endPeriod);
 
     const dataToSend = { workStartTime, workEndTime };
-    const token = localStorage.getItem('token');
 
     try {
-      const response = await axios.post("http://localhost:5056/api/WorkSession", dataToSend, {
+      const response = await axios.put(`http://localhost:5056/api/WorkSession/1`, dataToSend, {
         headers: {
-        //   Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       setMessage("Work session submitted successfully.");
-        console.error("Server error:", response.data);
-    }catch (err) {
-  if (err.response) {
-    console.error("Server error:", err.response);
-    const status = err.response.status;
-    const msg = err.response.data?.message || 'No error message from server.';
-    setError(`Server Error (${status}): ${msg}`);
-  } else {
-    console.error("Axios error:", err.message);
-    setError("Something went wrong. Please try again.");
-  }
-}
-
+      console.log("Server response:", response.data);
+    } catch (err) {
+      if (err.response) {
+        const status = err.response.status;
+        const msg = err.response.data?.message || 'No error message from server.';
+        setError(`Server Error (${status}): ${msg}`);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
-    <Container className="mt-5 p-4 card app-calendar-wrapper " style={{ backgroundColor: "white"}} >
+    <Container className="mt-5 p-4 card app-calendar-wrapper " style={{ backgroundColor: "white" }}>
       <h3 className="mb-4 text-center">Work Session</h3>
 
+      {/* Start Time */}
       <Row className="mb-3">
         <Col>
           <Form.Label>Start Hour</Form.Label>
@@ -91,6 +122,7 @@ const WorkSession = () => {
         </Col>
       </Row>
 
+      {/* End Time */}
       <Row className="mb-3">
         <Col>
           <Form.Label>End Hour</Form.Label>
@@ -115,12 +147,14 @@ const WorkSession = () => {
         </Col>
       </Row>
 
+      {/* Submit Button */}
       <div className="text-center">
         <Button variant="primary" onClick={handleSubmit}>
           Submit Work Session
         </Button>
       </div>
 
+      {/* Alerts */}
       {message && <Alert variant="success" className="mt-4 text-center">{message}</Alert>}
       {error && <Alert variant="danger" className="mt-4 text-center">{error}</Alert>}
     </Container>

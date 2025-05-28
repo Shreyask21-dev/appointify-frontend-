@@ -54,7 +54,7 @@ const AppointmentWidgets = () => {
         // Filter logic (adjust these according to your data and business rules):
         const upcomingCount = appointments.filter((appt) => {
           const apptDate = new Date(appt.appointmentDate);
-          // upcoming means appointment date >= today AND status scheduled (e.g. appointmentStatus === 1 means completed, maybe 2 means scheduled?)
+          // upcoming means appointment date >= today AND status scheduled (e.g. appointmentStatus === 1 means completed, maybe 0 means scheduled?)
           // Adjust according to your status codes
           return apptDate >= today && appt.appointmentStatus === 0; 
         }).length;
