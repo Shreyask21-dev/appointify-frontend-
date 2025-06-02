@@ -1,3 +1,5 @@
+
+/* eslint-disable @next/next/no-assign-module-variable */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

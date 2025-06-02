@@ -75,7 +75,7 @@ const Section7 = () => {
       <h5 className="mb-3 text-muted">Paste Google Maps Iframe URL</h5>
       <p className="small text-muted">
         👉 Go to <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Google Maps</a> → Search location → 
-        Click "Share" → Select "Embed a map" → Copy  the <strong>IFrame URL</strong> and paste below.
+        Click &quot;Share&quot; → Select &quot;Embed a map&quot; → Copy  the <strong>IFrame URL</strong> and paste below.
       </p>
 
       {/* Edit Mode */}

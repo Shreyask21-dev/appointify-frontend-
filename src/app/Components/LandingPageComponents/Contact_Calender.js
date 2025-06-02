@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const TimePicker = dynamic(() => import('react-time-picker'), { ssr: false });
 
-const Contact_Calender = forwardRef((props, ref) => {
+const Contact_Calender = React.forwardRef((props, ref) => {
   const [formErrors, setFormErrors] = useState({});
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
@@ -540,7 +540,7 @@ const Contact_Calender = forwardRef((props, ref) => {
                       </button>
                     </div>
                     <div className="text-center">
-                      <p className="form-text text-muted small">We'll respond in 1–2 business days.</p>
+                      <p className="form-text text-muted small">We&apos;ll respond in 1–2 business days.</p>
                     </div>
                   </form>
                 </div>
@@ -561,7 +561,7 @@ const Contact_Calender = forwardRef((props, ref) => {
                 <i className="fas fa-check-circle fa-3x"></i>
               </div>
               <h4 className="mb-2">Appointment Confirmed!</h4>
-              <p className="mb-3">Your payment was successful. We'll get in touch soon.</p>
+              <p className="mb-3">Your payment was successful. We&apos;ll get in touch soon.</p>
               <button type="button" className="btn btn-outline-success" data-bs-dismiss="modal">Okay</button>
             </div>
           </div>
@@ -600,5 +600,7 @@ const Contact_Calender = forwardRef((props, ref) => {
     </>
   );
 });
+
+Contact_Calender.displayName = "Contact_Calender";
 
 export default Contact_Calender;

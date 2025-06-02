@@ -5,7 +5,7 @@ import './Plans.css'
 
 
 
-const Plans = forwardRef((props, ref) =>  {
+const Plans = React.forwardRef((props, ref) =>  {
   const [formData, setFormData] = useState({
     tagline: '',
     mainDescription: '',
@@ -112,4 +112,5 @@ const Plans = forwardRef((props, ref) =>  {
   );
 });
 
+Plans.displayName = "Plans";
 export default Plans;

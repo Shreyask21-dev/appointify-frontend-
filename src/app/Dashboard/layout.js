@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import withAuth from '../Dashboard/WithAuth/withAuth'
 
 
-function layout({ children }) {
+function Layout({ children }) {
     const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -35,4 +35,4 @@ function layout({ children }) {
     
   );
 }
-export default withAuth(layout);
+export default withAuth(Layout);

@@ -1,7 +1,8 @@
+"use client"
 import React, { useEffect } from 'react'
 import Dashboard_Content from '../Components/Main_Dashboard/Dashboard_Page_Components/Dashboard_Content'
 
-const page = () => {
+const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -16,4 +17,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

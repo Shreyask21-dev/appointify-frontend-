@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 // import Sidebar from '../../Components/Main_Dashboard/Dashboard_Page_Components/Sidebar';
 // import Navbar from '../../Components/Main_Dashboard/Dashboard_Page_Components/Navbar';
 
-const Change_Landing_Page = () => {
+const Page = () => {
     const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -44,4 +44,4 @@ const Change_Landing_Page = () => {
   )
 }
 
-export default Change_Landing_Page
+export default Page

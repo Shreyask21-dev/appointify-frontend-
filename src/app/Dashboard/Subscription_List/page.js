@@ -6,7 +6,7 @@ import Sidebar from '../../Components/Main_Dashboard/Dashboard_Page_Components/S
 import Navbar from '../../Components/Main_Dashboard/Dashboard_Page_Components/Navbar';
 import { useRouter } from 'next/navigation';
 
-const page = () => {
+const Page = () => {
     const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -25,4 +25,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

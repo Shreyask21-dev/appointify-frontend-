@@ -56,7 +56,7 @@ export default function RootLayout({ children }) {
 
         {children}
         {/* Essential JS */}
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js"  strategy="beforeInteractive"/>
         <Script src="/materialize/assets/vendor/libs/jquery/jquery.js" strategy="beforeInteractive" />
         <Script src="/materialize/assets/vendor/libs/popper/popper.js" strategy="beforeInteractive" />
         <Script src="/materialize/assets/vendor/js/bootstrap.js" strategy="beforeInteractive" />

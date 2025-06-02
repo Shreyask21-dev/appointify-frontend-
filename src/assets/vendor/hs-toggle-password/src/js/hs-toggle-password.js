@@ -6,6 +6,7 @@
 * @license: Htmlstream Libraries (https://htmlstream.com/)
 * Copyright 2021 Htmlstream
 */
+/* eslint-disable @next/next/no-assign-module-variable */
 
 const dataAttributeName = 'data-hs-toggle-password-options'
 const defaults = {

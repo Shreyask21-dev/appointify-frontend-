@@ -4,7 +4,7 @@ import BillingForm from "../../Components/Main_Dashboard/Account/BillingForm";
 import Billing_History from "../../Components/Main_Dashboard/Account/Billing_History";
 import { useRouter } from "next/navigation";
 
-const page = () => {
+const Page = () => {
     const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -30,4 +30,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
