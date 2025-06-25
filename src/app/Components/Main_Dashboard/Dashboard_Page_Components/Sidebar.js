@@ -159,25 +159,7 @@ const Sidebar = () => {
     </ul>
   </li>
 
- {/* Subscriptions */}
- <li className="menu-item cursor-pointer" >
-        <a className="menu-link  menu-toggle" onClick={() => toggleMenu('subscriptions')}>
-          <i className="menu-icon tf-icons ri-bill-line"></i>
-          <div>Subscriptions</div>
-        </a>
-        <ul className={`menu-sub ${openMenu === 'subscriptions' ? 'd-block' : 'd-none'}`}>
-          <li className="menu-item">
-            <Link href="/Dashboard/Subscription_List" className="menu-link">
-              <div>List</div>
-            </Link>
-          </li>
-          <li className="menu-item">
-            <Link href="/Dashboard/Subscription_Preview" className="menu-link">
-              <div>Preview</div>
-            </Link>
-          </li>
-        </ul>
-      </li>
+
 
       {/* Account Settings */}
       <li className="menu-item cursor-pointer">

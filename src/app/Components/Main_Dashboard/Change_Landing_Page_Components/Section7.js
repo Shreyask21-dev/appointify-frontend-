@@ -32,10 +32,10 @@ const Section7 = () => {
     if (!iframeUrl.trim()) return;
 
     try {
-      const payload = { iframeUrl: iframeUrl.trim() };
+      const payload = { iFrameURL: iframeUrl.trim() };
 
       if (savedUrl) {
-        await axios.put('http://localhost:5056/api/Location/6', payload);
+        await axios.put('http://localhost:5056/api/Location/1', payload);
         setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
       } else {
         await axios.post('http://localhost:5056/api/Location', payload);
