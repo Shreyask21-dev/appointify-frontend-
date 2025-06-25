@@ -8,7 +8,7 @@ const LeafletMap = () => {
     const fetchIframeUrl = async () => {
       try {
         const res = await axios.get('http://localhost:5056/api/Location');
-          console.log("res.data.iframeUrl",res.data.iFrameURL)
+          console.log("res.data.iframeUrl",res.data.iframeURL,res)
         if (res.data?.iFrameURL) {
           setIframeUrl(res.data.iFrameURL);
       
