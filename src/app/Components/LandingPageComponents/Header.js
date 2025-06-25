@@ -32,7 +32,7 @@ const Header = () => {
             <ul className="navbar-nav me-md-3">
               <li className="nav-item">
                 <a className="btn btn-light font-semibold btn-xs text-xs"
-                   href={ConsultantData.locationURL}
+                   href={ConsultantData.locationURL ?? "https://www.google.com/maps?q=Apollo+Hospital,+Mumbai"}
                    target="_blank" rel="noopener noreferrer">
                   🏥 {ConsultantData.hospitalClinicAddress}
                 </a>

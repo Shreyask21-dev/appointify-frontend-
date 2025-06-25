@@ -15,7 +15,7 @@ const Section7 = () => {
       const res = await axios.get('http://localhost:5056/api/Location');
       if (res.data?.iFrameURL) {
         setSavedUrl(res.data.iFrameURL);
-        setIframeUrl(res.data.iFrameURL);
+        setIframeUrl(res.data.iFrameURL );
       }
     } catch (err) {
       console.error('Error fetching iframe URL:', err);
@@ -85,7 +85,7 @@ const Section7 = () => {
             className="form-control mb-3"
             rows={3}
             placeholder="Paste only iframe src URL like https://www.google.com/maps/embed?..."
-            value={iframeUrl}
+            value={iframeUrl  }                                                                                                                                         
             onChange={(e) => {
               const value = e.target.value.trim();
               const match = value.match(/src\s*=\s*["']([^"']+)["']/);
