@@ -17,7 +17,7 @@ const Dashboard_Content = () => {
 
  useEffect(() => {
   axios
-    .get('http://localhost:5056/api/CustomerAppointment/GetAllAppointments')
+    .get('http://4.213.95.138:9090/api/CustomerAppointment/GetAllAppointments')
     .then((response) => {
       const data = response.data;
 

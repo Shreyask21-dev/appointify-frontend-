@@ -29,7 +29,7 @@ const WorkSession = () => {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get('http://localhost:5056/api/WorkSession');
+        const response = await axios.get('http://4.213.95.138:9090/api/WorkSession');
         if (response.data && response.data.length > 0) {
           const session = response.data[0]; // You can modify to loop if needed
           const start = parseTime(session.workStartTime);
@@ -75,7 +75,7 @@ const WorkSession = () => {
     const dataToSend = { workStartTime, workEndTime };
 
     try {
-      const response = await axios.put(`http://localhost:5056/api/WorkSession/1`, dataToSend, {
+      const response = await axios.put(`http://4.213.95.138:9090/api/WorkSession/1`, dataToSend, {
         headers: {
           'Content-Type': 'application/json'
         }

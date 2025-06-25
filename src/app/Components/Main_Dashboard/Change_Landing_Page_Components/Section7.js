@@ -12,7 +12,7 @@ const Section7 = () => {
   // Fetch iframe URL
   const fetchIframeUrl = async () => {
     try {
-      const res = await axios.get('http://localhost:5056/api/Location');
+      const res = await axios.get('http://4.213.95.138:9090/api/Location');
       if (res.data?.iFrameURL) {
         setSavedUrl(res.data.iFrameURL);
         setIframeUrl(res.data.iFrameURL );
@@ -35,10 +35,10 @@ const Section7 = () => {
       const payload = { iFrameURL: iframeUrl.trim() };
 
       if (savedUrl) {
-        await axios.put('http://localhost:5056/api/Location/1', payload);
+        await axios.put('http://4.213.95.138:9090/api/Location/1', payload);
         setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
       } else {
-        await axios.post('http://localhost:5056/api/Location', payload);
+        await axios.post('http://4.213.95.138:9090/api/Location', payload);
         setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
       }
 
@@ -53,7 +53,7 @@ const Section7 = () => {
   // Delete iframe URL
   const handleDelete = async () => {
     try {
-      await axios.delete('http://localhost:5056/api/Location/1');
+      await axios.delete('http://4.213.95.138:9090/api/Location/1');
       setIframeUrl('');
       setSavedUrl('');
       setStatusMessage({ type: 'success', text: 'Map URL deleted.' });

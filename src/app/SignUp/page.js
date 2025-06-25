@@ -31,7 +31,7 @@ const Page = () => {
     console.log("Sending form data:", formData); // ✅ Debug
 
     try {
-      const response = await fetch("http://localhost:5056/api/auth/register", {
+      const response = await fetch("http://4.213.95.138:9090/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

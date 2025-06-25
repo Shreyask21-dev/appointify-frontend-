@@ -129,7 +129,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get('http://localhost:5056/api/WorkSession');
+        const response = await axios.get('http://4.213.95.138:9090/api/WorkSession');
         if (response.data && response.data.length > 0 && formData.duration) {
           const session = response.data[0];
 
@@ -212,7 +212,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     setFormErrors({});
     try {
       // Submit appointment to backend
-      const response = await fetch('http://localhost:5056/api/CustomerAppointment/CreateAppointment', {
+      const response = await fetch('http://4.213.95.138:9090/api/CustomerAppointment/CreateAppointment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -294,7 +294,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
   const verifyPayment = async (paymentResponse) => {
     try {
-      const response = await fetch('http://localhost:5056/api/CustomerAppointment/VerifyPayment', {
+      const response = await fetch('http://4.213.95.138:9090/api/CustomerAppointment/VerifyPayment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -353,7 +353,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
   useEffect(() => {
     if (formData.appointmentDate && formData.plan) {
-      fetch(`http://localhost:5056/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
+      fetch(`http://4.213.95.138:9090/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
         .then(res => res.json())
         .then((data) => {
           setBookedTimeSlots(data)

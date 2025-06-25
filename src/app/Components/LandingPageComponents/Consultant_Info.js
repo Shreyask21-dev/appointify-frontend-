@@ -22,7 +22,7 @@ const Consultant_Info = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         console.log("result",result[0]);
@@ -43,7 +43,7 @@ const Consultant_Info = () => {
             className="img-fluid rounded-2"
             src={
               consultantData.section2_Image
-                ? `http://localhost:5056${consultantData.section2_Image}`
+                ? `http://4.213.95.138:9090${consultantData.section2_Image}`
                 : "/assets/img/160x160/img8.jpg"
             }
             alt={consultantData.section2_Image}

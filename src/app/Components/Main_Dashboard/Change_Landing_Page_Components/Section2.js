@@ -24,7 +24,7 @@ const Section2 = () => {
 
 const fetchProfile = async () => {
   try {
-    const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
+    const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
     if (!response.ok) throw new Error("Failed to fetch consultant data");
 
     const result = await response.json();
@@ -116,7 +116,7 @@ const fetchProfile = async () => {
 
     // Send the data to the backend
     const response = await axios.patch(
-      "http://localhost:5056/api/ConsultantProfile/updateConsultantProfile",
+      "http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile",
       updatedFormData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -155,7 +155,7 @@ const fetchProfile = async () => {
         {/* Profile Image Upload */}
         <div className="text-center mb-4">
           <img
-            src={formData.section2_Image ? `http://localhost:5056${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
+            src={formData.section2_Image ? `http://4.213.95.138:9090${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
             alt="Section 2 Preview"
             id="section2_Image"
             className="rounded-circle border border-secondary"

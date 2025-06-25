@@ -12,7 +12,7 @@ const ConsultantSection6 = () => {
   const [editAnswer, setEditAnswer] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-  const API_BASE = 'http://localhost:5056/api/Faq';
+  const API_BASE = 'http://4.213.95.138:9090/api/Faq';
 
   // Load FAQs from API on mount
   useEffect(() => {

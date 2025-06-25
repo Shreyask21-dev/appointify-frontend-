@@ -19,7 +19,7 @@ const Hero = ({ scrollToSectionHeader }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         const data = result[0];
@@ -100,7 +100,7 @@ const Hero = ({ scrollToSectionHeader }) => {
                             className="avatar-img rounded-pill"
                             src={
                               consultantData.profileImage
-                                  ?  `http://localhost:5056/${consultantData.profileImage}`
+                                  ?  `http://4.213.95.138:9090/${consultantData.profileImage}`
                                 : '/assets/img/160x160/img6.jpg'
                             }
                             alt="Doctor"

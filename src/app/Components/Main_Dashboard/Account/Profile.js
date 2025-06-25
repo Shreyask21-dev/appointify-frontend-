@@ -145,7 +145,7 @@ const Profile = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get('http://localhost:5056/api/ConsultantProfile/getConsultantProfile', {
+        .get('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -165,7 +165,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        'http://localhost:5056/api/ConsultantProfile/updateConsultantProfile',
+        'http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile',
         { key, value: newValue },
         {
           headers: {
@@ -199,21 +199,21 @@ const Profile = () => {
     }
 
     try {
-      const res = await axios.get('http://localhost:5056/api/ConsultantProfile/getConsultantProfile', {
+      const res = await axios.get('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (res.data.length > 0) {
-        await axios.patch('http://localhost:5056/api/ConsultantProfile/updateConsultantProfile', newData, {
+        await axios.patch('http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile', newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         });
       } else {
-        await axios.post('http://localhost:5056/api/ConsultantProfile/addConsultantProfile', newData, {
+        await axios.post('http://4.213.95.138:9090/api/ConsultantProfile/addConsultantProfile', newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -255,7 +255,7 @@ const Profile = () => {
           <div className="card">
             <div className="user-profile-header-banner position-relative">
               <img
-                src={user.backgroundImage && `http://localhost:5056${user.backgroundImage}`}
+                src={user.backgroundImage && `http://4.213.95.138:9090${user.backgroundImage}`}
                 alt="Banner"
                 className="rounded-top w-100"
                 style={{ height: '180px' }}
@@ -265,7 +265,7 @@ const Profile = () => {
             <div className="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center p-4">
               <div className="position-relative mx-auto mx-sm-4 mt-2">
                 <img
-                  src={user.profileImage && `http://localhost:5056${user.profileImage}`}
+                  src={user.profileImage && `http://4.213.95.138:9090${user.profileImage}`}
                   alt="Profile"
                   className="rounded-4 user-profile-img"
                   style={{ width: '150px', height: '150px' }}

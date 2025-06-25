@@ -17,7 +17,7 @@ const Section3 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5056/api/ConsultantProfile/getConsultantProfile');
+        const response = await fetch('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile');
         const data = await response.json();
         
         if (data && data[0]) {
@@ -26,7 +26,7 @@ const Section3 = () => {
           // Safe access with fallback default values
           setTagline(section3Data?.section3_Tagline || '');
           setDescription(section3Data?.section3_Description || '');
-          setPreviewUrl(section3Data?.section3_Image ? `http://localhost:5056${section3Data.section3_Image}` : '/assets/img/stethoscope.jpg');
+          setPreviewUrl(section3Data?.section3_Image ? `http://4.213.95.138:9090${section3Data.section3_Image}` : '/assets/img/stethoscope.jpg');
           setStatusMessage({ type: '', text: '' });
         } else {
           setStatusMessage({ type: 'error', text: 'No data available for section 3' });
@@ -83,7 +83,7 @@ const Section3 = () => {
 
       setLoading(true);
       const response = await axios.patch(
-        'http://localhost:5056/api/ConsultantProfile/updateConsultantProfile',
+        'http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile',
         formData,
         {
           headers: {

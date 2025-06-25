@@ -16,7 +16,7 @@ const Section1 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5056/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         console.log("section1", result[0]);
@@ -91,7 +91,7 @@ const Section1 = () => {
       }
 
       const response = await axios.patch(
-        "http://localhost:5056/api/ConsultantProfile/updateConsultantProfile",
+        "http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile",
         formData,
         {
           headers: {
@@ -134,7 +134,7 @@ const Section1 = () => {
                 editableData.profileImage
                   ? editableData.profileImage.startsWith('blob:')
                     ? editableData.profileImage
-                    : `http://localhost:5056/${editableData.profileImage}`
+                    : `http://4.213.95.138:9090/${editableData.profileImage}`
                   : '/assets/img/160x160/img8.jpg'
               }
               alt="Profile"

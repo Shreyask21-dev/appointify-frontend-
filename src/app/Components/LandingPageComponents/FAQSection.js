@@ -7,7 +7,7 @@ import { FaQuestionCircle } from 'react-icons/fa';
 const FAQSection = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API_BASE = 'http://localhost:5056/api/Faq';
+  const API_BASE = 'http://4.213.95.138:9090/api/Faq';
 
   useEffect(() => {
     axios.get(API_BASE)
