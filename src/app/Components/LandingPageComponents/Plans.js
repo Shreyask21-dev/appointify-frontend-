@@ -17,7 +17,7 @@ const Plans = React.forwardRef((props, ref) =>  {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('https://appointify.coinagesoft.com/api/section5');
+        const res = await axios.get('https://appointify.coinagesoft.com/api/Section5');
         setFormData(res.data);
       } catch (error) {
         console.error("Error fetching section5 data:", error);
