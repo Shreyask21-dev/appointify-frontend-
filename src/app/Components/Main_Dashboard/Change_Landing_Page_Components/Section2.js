@@ -24,7 +24,7 @@ const Section2 = () => {
 
 const fetchProfile = async () => {
   try {
-    const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
+    const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
     if (!response.ok) throw new Error("Failed to fetch consultant data");
 
     const result = await response.json();
@@ -116,7 +116,7 @@ const fetchProfile = async () => {
 
     // Send the data to the backend
     const response = await axios.patch(
-      "http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile",
+      "https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile",
       updatedFormData,
       {
         headers: { "Content-Type": "multipart/form-data" },

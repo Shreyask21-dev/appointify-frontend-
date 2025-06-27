@@ -17,7 +17,7 @@ const Section3 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile');
+        const response = await fetch('https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile');
         const data = await response.json();
         
         if (data && data[0]) {
@@ -83,7 +83,7 @@ const Section3 = () => {
 
       setLoading(true);
       const response = await axios.patch(
-        'http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile',
+        'https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile',
         formData,
         {
           headers: {

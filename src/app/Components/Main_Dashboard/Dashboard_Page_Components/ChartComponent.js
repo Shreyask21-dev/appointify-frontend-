@@ -45,7 +45,7 @@ const ChartComponent = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('http://4.213.95.138:9090/api/CustomerAppointment/GetAllAppointments'); // your backend endpoint
+        const response = await fetch('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments'); // your backend endpoint
         const data = await response.json();
         setAppointments(data);
       } catch (error) {

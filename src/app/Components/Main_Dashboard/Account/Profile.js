@@ -145,7 +145,7 @@ const Profile = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile', {
+        .get('https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -165,7 +165,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        'http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile',
+        'https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile',
         { key, value: newValue },
         {
           headers: {
@@ -199,21 +199,21 @@ const Profile = () => {
     }
 
     try {
-      const res = await axios.get('http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile', {
+      const res = await axios.get('https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (res.data.length > 0) {
-        await axios.patch('http://4.213.95.138:9090/api/ConsultantProfile/updateConsultantProfile', newData, {
+        await axios.patch('https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile', newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         });
       } else {
-        await axios.post('http://4.213.95.138:9090/api/ConsultantProfile/addConsultantProfile', newData, {
+        await axios.post('https://appointify.coinagesoft.com/api/ConsultantProfile/addConsultantProfile', newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',

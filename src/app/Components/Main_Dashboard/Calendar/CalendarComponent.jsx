@@ -66,7 +66,7 @@ export default function CalendarComponent() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('http://4.213.95.138:9090/api/CustomerAppointment/GetAllAppointments', {
+    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
@@ -89,7 +89,7 @@ export default function CalendarComponent() {
     const fetchPlans = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://4.213.95.138:9090/api/ConsultationPlan/get-all', {
+        const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/get-all', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 

@@ -7,7 +7,7 @@ const ConsultantSection4 = () => {
 
   // 🔽 Fetch stats on component mount
   useEffect(() => {
-    axios.get('http://4.213.95.138:9090/api/Stat')
+    axios.get('https://appointify.coinagesoft.com/api/Stat')
       .then(response => {
         const apiStats = response.data.map(stat => ({
           ...stat,
@@ -64,7 +64,7 @@ const ConsultantSection4 = () => {
       icon: stat.icon,
     };
 
-    axios.put(`http://4.213.95.138:9090/api/Stat/${stat.id}`, dataToSend)
+    axios.put(`https://appointify.coinagesoft.com/api/Stat/${stat.id}`, dataToSend)
       .then(() => {
         // Update local state after successful save
         stat.value = dataToSend.value;

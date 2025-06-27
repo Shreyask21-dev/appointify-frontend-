@@ -26,7 +26,7 @@ const Plan_List = () => {
     const fetchPlans = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://4.213.95.138:9090/api/ConsultationPlan/get-all', {
+        const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/get-all', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
@@ -81,7 +81,7 @@ const Plan_List = () => {
     const planToDelete = plans[index];
 
     try {
-      const response = await fetch(`http://4.213.95.138:9090/api/ConsultationPlan/delete/${planToDelete.planId}`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/delete/${planToDelete.planId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -155,7 +155,7 @@ const Plan_List = () => {
     };
 
     try {
-      const response = await fetch(`http://4.213.95.138:9090/api/ConsultationPlan/update/${planId}`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/update/${planId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

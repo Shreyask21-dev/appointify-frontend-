@@ -22,7 +22,7 @@ const Consultant_Info = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://4.213.95.138:9090/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         console.log("result",result[0]);

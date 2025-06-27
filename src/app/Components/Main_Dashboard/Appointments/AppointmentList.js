@@ -23,7 +23,7 @@ const AppointmentList = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('http://4.213.95.138:9090/api/CustomerAppointment/GetAllAppointments', {
+    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
@@ -67,7 +67,7 @@ const AppointmentList = () => {
     const updatedAppointments = appointments.filter((appt) => appt.id !== id);
     setAppointments(updatedAppointments);
 
-    axios.delete(`http://4.213.95.138:9090/api/CustomerAppointment/DeleteAppointment/${id}`)
+    axios.delete(`https://appointify.coinagesoft.com/api/CustomerAppointment/DeleteAppointment/${id}`)
       .then(() => {
         console.log(`Appointment ${id} deleted successfully.`);
       })
@@ -81,7 +81,7 @@ const AppointmentList = () => {
     const token = localStorage.getItem('token');
     console.log("Selected appointment before update:", selectedAppt);
     axios.put(
-      `http://4.213.95.138:9090/api/CustomerAppointment/UpdateAppointment/${selectedAppt.id}`,
+      `https://appointify.coinagesoft.com/api/CustomerAppointment/UpdateAppointment/${selectedAppt.id}`,
       {
         
         firstName: selectedAppt.firstName,

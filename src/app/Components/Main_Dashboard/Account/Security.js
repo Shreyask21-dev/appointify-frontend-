@@ -26,7 +26,7 @@ const Security = () => {
   
     try {
       const token = localStorage.getItem("token"); // Adjust key name if needed
-      const response = await fetch("http://4.213.95.138:9090/api/auth/change-password", {
+      const response = await fetch("https://appointify.coinagesoft.com/api/auth/change-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

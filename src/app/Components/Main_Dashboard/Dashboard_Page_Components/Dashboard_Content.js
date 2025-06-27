@@ -17,7 +17,7 @@ const Dashboard_Content = () => {
 
  useEffect(() => {
   axios
-    .get('http://4.213.95.138:9090/api/CustomerAppointment/GetAllAppointments')
+    .get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments')
     .then((response) => {
       const data = response.data;
 

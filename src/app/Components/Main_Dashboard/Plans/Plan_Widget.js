@@ -11,7 +11,7 @@ const Plan_Widget = () => {
 
   useEffect(() => {
     // Fetch data from the backend API
-    fetch('http://4.213.95.138:9090/api/consultationplan/get-all')
+    fetch('https://appointify.coinagesoft.com/api/consultationplan/get-all')
       .then((response) => response.json())
       .then((data) => {
         const totalPlans = data.length;

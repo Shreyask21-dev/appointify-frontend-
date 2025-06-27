@@ -80,7 +80,7 @@ const Add_Plan = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://4.213.95.138:9090/api/ConsultationPlan/add', {
+      const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
