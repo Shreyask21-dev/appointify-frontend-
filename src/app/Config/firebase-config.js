@@ -1,5 +1,5 @@
 // firebase-config.js
-
+const API_URL = process.env.REACT_APP_API_URL;
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 
@@ -21,7 +21,7 @@ const auth = getAuth(app);
 
 // Connect to Firebase Authentication Emulator (only in local environment)
 if (window.location.hostname === "localhost") {
-  connectAuthEmulator(auth, "http://4.213.95.138:9090"); 
+  connectAuthEmulator(auth, "http://localhost:9090");
 }
 
 export { auth };

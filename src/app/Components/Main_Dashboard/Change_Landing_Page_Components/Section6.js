@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const ConsultantSection6 = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
@@ -12,7 +12,7 @@ const ConsultantSection6 = () => {
   const [editAnswer, setEditAnswer] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-  const API_BASE = 'https://appointify.coinagesoft.com/api/Faq';
+  const API_BASE = `${API_URL}/api/Faq`;
 
   // Load FAQs from API on mount
   useEffect(() => {

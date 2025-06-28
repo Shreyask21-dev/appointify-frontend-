@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import ChartComponent from './ChartComponent';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Dashboard_Content = () => {
   const [stats, setStats] = useState({
     totalAppointments: 0,
@@ -17,7 +17,7 @@ const Dashboard_Content = () => {
 
  useEffect(() => {
   axios
-    .get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments')
+    .get(`${API_URL}/api/CustomerAppointment/GetAllAppointments`)
     .then((response) => {
       const data = response.data;
 

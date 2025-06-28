@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Add_Plan = () => {
   const [formData, setFormData] = useState({
     planName: '',
@@ -80,7 +80,7 @@ const Add_Plan = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/add', {
+      const response = await fetch(`${API_URL}/api/ConsultationPlan/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-
+const API_URL = process.env.REACT_APP_API_URL;
 // Reusable editable field component
 const EditableField = ({ label, icon, value, onSave, error }) => {
   const [edit, setEdit] = useState(false);
@@ -145,7 +145,7 @@ const Profile = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get('https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile', {
+        .get(`${API_URL}/api/ConsultantProfile/getConsultantProfile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -165,7 +165,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        'https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile',
+        `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
         { key, value: newValue },
         {
           headers: {
@@ -199,21 +199,21 @@ const Profile = () => {
     }
 
     try {
-      const res = await axios.get('https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile', {
+      const res = await axios.get(`${API_URL}/api/ConsultantProfile/getConsultantProfile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (res.data.length > 0) {
-        await axios.patch('https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile', newData, {
+        await axios.patch(`${API_URL}/api/ConsultantProfile/updateConsultantProfile`, newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         });
       } else {
-        await axios.post('https://appointify.coinagesoft.com/api/ConsultantProfile/addConsultantProfile', newData, {
+        await axios.post(`${API_URL}/api/ConsultantProfile/addConsultantProfile`, newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -255,7 +255,7 @@ const Profile = () => {
           <div className="card">
             <div className="user-profile-header-banner position-relative">
               <img
-                src={user.backgroundImage && `http://4.213.95.138:9090${user.backgroundImage}`}
+                src={user.backgroundImage && `${API_URL}${user.backgroundImage}`}
                 alt="Banner"
                 className="rounded-top w-100"
                 style={{ height: '180px' }}
@@ -265,7 +265,7 @@ const Profile = () => {
             <div className="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center p-4">
               <div className="position-relative mx-auto mx-sm-4 mt-2">
                 <img
-                  src={user.profileImage && `http://4.213.95.138:9090${user.profileImage}`}
+                  src={user.profileImage && `${API_URL}${user.profileImage}`}
                   alt="Profile"
                   className="rounded-4 user-profile-img"
                   style={{ width: '150px', height: '150px' }}

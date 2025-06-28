@@ -7,7 +7,7 @@ import {
   faBan,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const AppointmentWidgets = () => {
   const [widgetData, setWidgetData] = useState([
     // Initialize counts as zero, labels and icons stay the same
@@ -46,7 +46,7 @@ const AppointmentWidgets = () => {
   ]);
 
   useEffect(() => {
-    fetch('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments') // Your API endpoint
+    fetch(`${API_URL}/api/CustomerAppointment/GetAllAppointments`) // Your API endpoint
       .then((res) => res.json())
       .then((appointments) => {
         const today = new Date();

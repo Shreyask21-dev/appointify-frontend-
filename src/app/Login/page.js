@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Link from 'next/link';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Page = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -23,7 +23,7 @@ const Page = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://appointify.coinagesoft.com/api/auth/login', formData);
+      const response = await axios.post(`${API_URL}/api/auth/login`, formData);
        console.log(response);
       // Save token or user data
            localStorage.setItem('token', response.data.token);

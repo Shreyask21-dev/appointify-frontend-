@@ -15,7 +15,7 @@ export const paymentStatusMap = {
   2: 'Failed',
   3: 'Refunded'
 };
-
+const API_URL = process.env.REACT_APP_API_URL;
 const AppointmentList = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedAppt, setSelectedAppt] = useState(null);
@@ -23,7 +23,7 @@ const AppointmentList = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
+    axios.get(`${API_URL}/api/CustomerAppointment/GetAllAppointments`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
@@ -67,7 +67,7 @@ const AppointmentList = () => {
     const updatedAppointments = appointments.filter((appt) => appt.id !== id);
     setAppointments(updatedAppointments);
 
-    axios.delete(`https://appointify.coinagesoft.com/api/CustomerAppointment/DeleteAppointment/${id}`)
+    axios.delete(`${API_URL}/api/CustomerAppointment/DeleteAppointment/${id}`)
       .then(() => {
         console.log(`Appointment ${id} deleted successfully.`);
       })
@@ -81,7 +81,7 @@ const AppointmentList = () => {
     const token = localStorage.getItem('token');
     console.log("Selected appointment before update:", selectedAppt);
     axios.put(
-      `https://appointify.coinagesoft.com/api/CustomerAppointment/UpdateAppointment/${selectedAppt.id}`,
+      `${API_URL}/api/CustomerAppointment/UpdateAppointment/${selectedAppt.id}`,
       {
         
         firstName: selectedAppt.firstName,

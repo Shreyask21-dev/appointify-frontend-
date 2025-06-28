@@ -3,11 +3,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Accordion, Spinner, Row, Col } from 'react-bootstrap';
 import { FaQuestionCircle } from 'react-icons/fa';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const FAQSection = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API_BASE = 'https://appointify.coinagesoft.com/api/Faq';
+  const API_BASE = `${API_URL}/api/Faq`;
 
   useEffect(() => {
     axios.get(API_BASE)

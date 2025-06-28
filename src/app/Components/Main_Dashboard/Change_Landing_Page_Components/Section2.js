@@ -4,7 +4,7 @@ import '../../../../../dist/assets/vendor/aos/dist/aos.css';
 import '../../../../../dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css';
 import axios from "axios";
 import validator from 'validator';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Section2 = () => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -24,7 +24,7 @@ const Section2 = () => {
 
 const fetchProfile = async () => {
   try {
-    const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
+    const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
     if (!response.ok) throw new Error("Failed to fetch consultant data");
 
     const result = await response.json();
@@ -116,7 +116,7 @@ const fetchProfile = async () => {
 
     // Send the data to the backend
     const response = await axios.patch(
-      "https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile",
+      `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
       updatedFormData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -155,7 +155,7 @@ const fetchProfile = async () => {
         {/* Profile Image Upload */}
         <div className="text-center mb-4">
           <img
-            src={formData.section2_Image ? `http://4.213.95.138:9090${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
+            src={formData.section2_Image ? `${API_URL}${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
             alt="Section 2 Preview"
             id="section2_Image"
             className="rounded-circle border border-secondary"

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const UsersWidgets = () => {
   const [stats, setStats] = useState({
     totalPatients: 0,
@@ -10,7 +10,7 @@ const UsersWidgets = () => {
   });
 
   useEffect(() => {
-    fetch('http://localhost:5056/api/CustomerAppointment/GetAllAppointments')
+    fetch(`${API_URL}/api/CustomerAppointment/GetAllAppointments`)
       .then((res) => res.json())
       .then((data) => {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD

@@ -5,14 +5,14 @@ import React, { useEffect, useState } from 'react';
 import '../../../../dist/assets/vendor/aos/dist/aos.css';
 import '../../../../dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css';
 import Link from 'next/link';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Header = () => {
   const [ConsultantData, setConsultantData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         const data = result[0];

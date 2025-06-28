@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Section5 = () => {
   const [formData, setFormData] = useState({
     tagline: '',
@@ -23,7 +23,7 @@ const Section5 = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('https://appointify.coinagesoft.com/api/section5');
+        const res = await axios.get(`${API_URL}/api/section5`);
         setFormData(res.data);
         setEditedData(res.data);
         setStatusMessage({ type: '', text: '' });
@@ -85,7 +85,7 @@ const Section5 = () => {
 
     try {
       setLoading(true);
-      await axios.put('https://appointify.coinagesoft.com/api/Section5/api/section5', editedData);
+      await axios.put(`${API_URL}/api/Section5/api/section5`, editedData);
       setFormData(editedData);
       setIsEdited(false);
       setStatusMessage({ type: 'success', text: 'Section 5 updated successfully!' });

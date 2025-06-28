@@ -1,12 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Stats = () => {
   const [stats, setStats] = useState([]);
 
   useEffect(() => {
-    axios.get('https://appointify.coinagesoft.com/api/Stat')
+    axios.get(`${API_URL}/api/Stat`)
       .then(response => {
         setStats(response.data); // store the full array
       })

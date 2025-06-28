@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Container, Row, Col, Form, Alert } from 'react-bootstrap';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const WorkSession = () => {
   const [startHour, setStartHour] = useState('');
   const [startMinute, setStartMinute] = useState('');
@@ -29,7 +29,7 @@ const WorkSession = () => {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get('https://appointify.coinagesoft.com/api/WorkSession');
+        const response = await axios.get(`${API_URL}/api/WorkSession`);
         if (response.data && response.data.length > 0) {
           const session = response.data[0]; // You can modify to loop if needed
           const start = parseTime(session.workStartTime);
@@ -75,7 +75,7 @@ const WorkSession = () => {
     const dataToSend = { workStartTime, workEndTime };
 
     try {
-      const response = await axios.put(`https://appointify.coinagesoft.com/api/WorkSession/1`, dataToSend, {
+      const response = await axios.put(`${API_URL}/api/WorkSession/1`, dataToSend, {
         headers: {
           'Content-Type': 'application/json'
         }

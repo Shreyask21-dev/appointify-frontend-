@@ -3,7 +3,7 @@ import axios from 'axios';
 import React, { forwardRef, useEffect, useState } from 'react';
 import './Plans.css'
 
-
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Plans = React.forwardRef((props, ref) =>  {
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ const Plans = React.forwardRef((props, ref) =>  {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('https://appointify.coinagesoft.com/api/Section5');
+        const res = await axios.get(`${API_URL}/api/Section5`);
         setFormData(res.data);
       } catch (error) {
         console.error("Error fetching section5 data:", error);
@@ -26,7 +26,7 @@ const Plans = React.forwardRef((props, ref) =>  {
 
     const fetchPlans = async () => {
       try {
-        const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/get-all');
+        const response = await fetch(`${API_URL}/api/ConsultationPlan/get-all`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch plans');

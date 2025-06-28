@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Plan_Widget = () => {
   const [stats, setStats] = useState({
     totalPlans: 0,
@@ -11,7 +11,7 @@ const Plan_Widget = () => {
 
   useEffect(() => {
     // Fetch data from the backend API
-    fetch('https://appointify.coinagesoft.com/api/consultationplan/get-all')
+    fetch(`${API_URL}/api/consultationplan/get-all`)
       .then((response) => response.json())
       .then((data) => {
         const totalPlans = data.length;

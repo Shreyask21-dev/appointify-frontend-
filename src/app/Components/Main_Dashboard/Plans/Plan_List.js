@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Plan_Widget from './Plan_Widget';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Plan_List = () => {
   const [plans, setPlans] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -26,7 +26,7 @@ const Plan_List = () => {
     const fetchPlans = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/get-all', {
+        const response = await fetch(`${API_URL}/api/ConsultationPlan/get-all`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
@@ -81,7 +81,7 @@ const Plan_List = () => {
     const planToDelete = plans[index];
 
     try {
-      const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/delete/${planToDelete.planId}`, {
+      const response = await fetch(`${API_URL}/api/ConsultationPlan/delete/${planToDelete.planId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -155,7 +155,7 @@ const Plan_List = () => {
     };
 
     try {
-      const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/update/${planId}`, {
+      const response = await fetch(`${API_URL}/api/ConsultationPlan/update/${planId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

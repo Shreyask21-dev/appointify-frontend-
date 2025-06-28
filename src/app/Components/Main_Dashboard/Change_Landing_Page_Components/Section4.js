@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const ConsultantSection4 = () => {
   const [stats, setStats] = useState([]);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // 🔽 Fetch stats on component mount
   useEffect(() => {
-    axios.get('https://appointify.coinagesoft.com/api/Stat')
+    axios.get(`${API_URL}/api/Stat`)
       .then(response => {
         const apiStats = response.data.map(stat => ({
           ...stat,
@@ -64,7 +64,7 @@ const ConsultantSection4 = () => {
       icon: stat.icon,
     };
 
-    axios.put(`https://appointify.coinagesoft.com/api/Stat/${stat.id}`, dataToSend)
+    axios.put(`${API_URL}/api/Stat/${stat.id}`, dataToSend)
       .then(() => {
         // Update local state after successful save
         stat.value = dataToSend.value;

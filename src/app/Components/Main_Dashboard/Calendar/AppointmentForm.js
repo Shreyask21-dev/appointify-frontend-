@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import validator from 'validator';
-
+const API_URL = process.env.REACT_APP_API_URL;
 export default function AppointmentForm({
   plans,
   startHour,
@@ -83,7 +83,7 @@ export default function AppointmentForm({
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get('https://appointify.coinagesoft.com/api/WorkSession');
+        const response = await axios.get(`${API_URL}/api/WorkSession`);
         if (response.data && response.data.length > 0 && formData.duration) {
           const session = response.data[0];
 
@@ -207,7 +207,7 @@ export default function AppointmentForm({
     }
 
     try {
-      const res = await fetch('https://appointify.coinagesoft.com/api/CustomerAppointment/CreateAppointment', {
+      const res = await fetch(`${API_URL}/api/CustomerAppointment/CreateAppointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -245,7 +245,7 @@ export default function AppointmentForm({
 
   useEffect(() => {
     if (formData.appointmentDate && formData.plan) {
-      fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
+      fetch(`${API_URL}/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
         .then(res => res.json())
         .then((data) => {
           setBookedTimeSlots(data)

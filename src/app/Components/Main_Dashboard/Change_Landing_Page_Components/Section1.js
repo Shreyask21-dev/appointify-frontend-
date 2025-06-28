@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import '../../../../../dist/assets/vendor/aos/dist/aos.css';
 import '../../../../../dist/assets/vendor/bootstrap-icons/font/bootstrap-icons.css';
 import axios from "axios";
-
+const API_URL = process.env.REACT_APP_API_URL;
 const Section1 = () => {
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
   const [data, setData] = useState(null);
@@ -16,7 +16,7 @@ const Section1 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         console.log("section1", result[0]);
@@ -91,7 +91,7 @@ const Section1 = () => {
       }
 
       const response = await axios.patch(
-        "https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile",
+        `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
         formData,
         {
           headers: {
@@ -134,7 +134,7 @@ const Section1 = () => {
                 editableData.profileImage
                   ? editableData.profileImage.startsWith('blob:')
                     ? editableData.profileImage
-                    : `https://appointify.coinagesoft.com/${editableData.profileImage}`
+                    : `${API_URL}/${editableData.profileImage}`
                   : '/assets/img/160x160/img8.jpg'
               }
               alt="Profile"

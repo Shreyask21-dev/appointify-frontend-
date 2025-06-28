@@ -28,7 +28,7 @@ Chart.register(
   BarController,
   LineController
 );
-
+const API_URL = process.env.REACT_APP_API_URL;
 const ChartComponent = () => {
   const revenueChartRef = useRef(null);
   const revenueBarChartRef = useRef(null);
@@ -45,7 +45,7 @@ const ChartComponent = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments'); // your backend endpoint
+        const response = await fetch(`${API_URL}/api/CustomerAppointment/GetAllAppointments`); // your backend endpoint
         const data = await response.json();
         setAppointments(data);
       } catch (error) {

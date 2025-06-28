@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-
+const API_URL = process.env.REACT_APP_API_URL;
 const EmpoweringMinds = () => {
   const [consultantInfo, setConsultantInfo] = useState({
     section3_Tagline: '',
@@ -11,7 +11,7 @@ const EmpoweringMinds = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
 
         const result = await response.json();
@@ -46,7 +46,7 @@ const EmpoweringMinds = () => {
           <img 
             src={
               consultantInfo.section3_Image
-                ? `http://4.213.95.138:9090${consultantInfo.section3_Image}`
+                ? `${API_URL}${consultantInfo.section3_Image}`
                 : "/assets/img/psychological-help-jpg.jpg"
             }
             alt="Empowering Minds"

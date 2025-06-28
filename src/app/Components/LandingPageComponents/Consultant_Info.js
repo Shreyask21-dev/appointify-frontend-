@@ -17,12 +17,12 @@ const Consultant_Info = () => {
   //     instagram: "#",
   //   },
   // };
-
+const API_URL = process.env.REACT_APP_API_URL;
   const [consultantData,setConsultantData]=useState([])
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile");
+        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
         console.log("result",result[0]);
