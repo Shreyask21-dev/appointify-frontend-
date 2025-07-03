@@ -80,7 +80,7 @@ const Add_Plan = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/ConsultationPlan/add`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

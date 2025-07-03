@@ -7,7 +7,7 @@ const LeafletMap = () => {
   useEffect(() => {
     const fetchIframeUrl = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/Location`);
+        const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
           console.log("res.data.iframeUrl",res.data.iFrameURL,res)
         if (res.data?.iFrameURL) {
           setIframeUrl(res.data.iFrameURL);

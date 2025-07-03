@@ -46,7 +46,7 @@ const AppointmentWidgets = () => {
   ]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/CustomerAppointment/GetAllAppointments`) // Your API endpoint
+    fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments`) // Your API endpoint
       .then((res) => res.json())
       .then((appointments) => {
         const today = new Date();

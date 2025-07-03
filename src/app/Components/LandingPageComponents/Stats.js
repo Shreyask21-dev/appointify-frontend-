@@ -6,7 +6,7 @@ const Stats = () => {
   const [stats, setStats] = useState([]);
 
   useEffect(() => {
-    axios.get(`${API_URL}/api/Stat`)
+    axios.get(`https://appointify.coinagesoft.com/api/Stat`)
       .then(response => {
         setStats(response.data); // store the full array
       })

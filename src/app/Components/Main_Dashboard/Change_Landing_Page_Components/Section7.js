@@ -12,7 +12,7 @@ const Section7 = () => {
   // Fetch iframe URL
   const fetchIframeUrl = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/Location`);
+      const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
       if (res.data?.iFrameURL) {
         setSavedUrl(res.data.iFrameURL);
         setIframeUrl(res.data.iFrameURL );
@@ -35,10 +35,10 @@ const Section7 = () => {
       const payload = { iFrameURL: iframeUrl.trim() };
 
       if (savedUrl) {
-        await axios.put(`${API_URL}/api/Location/1`, payload);
+        await axios.put(`https://appointify.coinagesoft.com/api/Location/1`, payload);
         setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
       } else {
-        await axios.post(`${API_URL}/api/Location`, payload);
+        await axios.post(`https://appointify.coinagesoft.com/api/Location`, payload);
         setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
       }
 
@@ -53,7 +53,7 @@ const Section7 = () => {
   // Delete iframe URL
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/api/Location/1`);
+      await axios.delete(`https://appointify.coinagesoft.com/api/Location/1`);
       setIframeUrl('');
       setSavedUrl('');
       setStatusMessage({ type: 'success', text: 'Map URL deleted.' });

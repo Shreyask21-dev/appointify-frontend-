@@ -7,7 +7,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 const FAQSection = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const API_BASE = `${API_URL}/api/Faq`;
+  const API_BASE = `https://appointify.coinagesoft.com/api/Faq`;
 
   useEffect(() => {
     axios.get(API_BASE)

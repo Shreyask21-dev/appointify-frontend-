@@ -31,7 +31,7 @@ const Page = () => {
     console.log("Sending form data:", formData); // ✅ Debug
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

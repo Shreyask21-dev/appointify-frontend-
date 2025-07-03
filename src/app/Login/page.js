@@ -23,7 +23,7 @@ const Page = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, formData);
+      const response = await axios.post(`https://appointify.coinagesoft.com/api/auth/login`, formData);
        console.log(response);
       // Save token or user data
            localStorage.setItem('token', response.data.token);

@@ -17,7 +17,7 @@ const Dashboard_Content = () => {
 
  useEffect(() => {
   axios
-    .get(`${API_URL}/api/CustomerAppointment/GetAllAppointments`)
+    .get(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments`)
     .then((response) => {
       const data = response.data;
 

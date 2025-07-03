@@ -12,7 +12,7 @@ const ConsultantSection6 = () => {
   const [editAnswer, setEditAnswer] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-  const API_BASE = `${API_URL}/api/Faq`;
+  const API_BASE = `https://appointify.coinagesoft.com/api/Faq`;
 
   // Load FAQs from API on mount
   useEffect(() => {

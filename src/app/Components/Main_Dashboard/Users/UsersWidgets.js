@@ -10,7 +10,7 @@ const UsersWidgets = () => {
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/CustomerAppointment/GetAllAppointments`)
+    fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments`)
       .then((res) => res.json())
       .then((data) => {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD

@@ -11,7 +11,7 @@ const EmpoweringMinds = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
+        const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
 
         const result = await response.json();
@@ -46,7 +46,7 @@ const EmpoweringMinds = () => {
           <img 
             src={
               consultantInfo.section3_Image
-                ? `${API_URL}${consultantInfo.section3_Image}`
+                ? `https://appointify.coinagesoft.com${consultantInfo.section3_Image}`
                 : "/assets/img/psychological-help-jpg.jpg"
             }
             alt="Empowering Minds"

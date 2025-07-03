@@ -29,7 +29,7 @@ const WorkSession = () => {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/WorkSession`);
+        const response = await axios.get(`https://appointify.coinagesoft.com/api/WorkSession`);
         if (response.data && response.data.length > 0) {
           const session = response.data[0]; // You can modify to loop if needed
           const start = parseTime(session.workStartTime);
@@ -75,7 +75,7 @@ const WorkSession = () => {
     const dataToSend = { workStartTime, workEndTime };
 
     try {
-      const response = await axios.put(`${API_URL}/api/WorkSession/1`, dataToSend, {
+      const response = await axios.put(`https://appointify.coinagesoft.com/api/WorkSession/1`, dataToSend, {
         headers: {
           'Content-Type': 'application/json'
         }

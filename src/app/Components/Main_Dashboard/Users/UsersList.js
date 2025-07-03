@@ -12,7 +12,7 @@ const UsersList = () => {
   const fetchPatients = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/CustomerAppointment/unique-users`, {
+      const response = await axios.get(`https://appointify.coinagesoft.com/api/CustomerAppointment/unique-users`, {
         headers: {
           Authorization: `Bearer ${token}`  // replace with your JWT token
         }
@@ -68,7 +68,7 @@ const UsersList = () => {
   const handleUpdatePatient = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_URL}/api/CustomerAppointment/patch/${newPatient.id}`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/patch/${newPatient.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ const UsersList = () => {
   const handleDelete = async (userId) => {
     if (window.confirm("Are you sure you want to delete this patient?")) {
       try {
-        const res = await fetch(`${API_URL}/api/CustomerAppointment/delete/${userId}`, {
+        const res = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/delete/${userId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

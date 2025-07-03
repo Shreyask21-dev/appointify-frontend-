@@ -17,7 +17,7 @@ const Section3 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
+        const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`);
         const data = await response.json();
         
         if (data && data[0]) {
@@ -26,7 +26,7 @@ const Section3 = () => {
           // Safe access with fallback default values
           setTagline(section3Data?.section3_Tagline || '');
           setDescription(section3Data?.section3_Description || '');
-          setPreviewUrl(section3Data?.section3_Image ? `${API_URL}${section3Data.section3_Image}` : '/assets/img/stethoscope.jpg');
+          setPreviewUrl(section3Data?.section3_Image ? `https://appointify.coinagesoft.com${section3Data.section3_Image}` : '/assets/img/stethoscope.jpg');
           setStatusMessage({ type: '', text: '' });
         } else {
           setStatusMessage({ type: 'error', text: 'No data available for section 3' });
@@ -83,7 +83,7 @@ const Section3 = () => {
 
       setLoading(true);
       const response = await axios.patch(
-        `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
+        `https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`,
         formData,
         {
           headers: {

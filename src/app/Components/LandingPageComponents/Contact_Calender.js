@@ -129,7 +129,7 @@ const API_URL = process.env.REACT_APP_API_URL;
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/WorkSession`);
+        const response = await axios.get(`https://appointify.coinagesoft.com/api/WorkSession`);
         if (response.data && response.data.length > 0 && formData.duration) {
           const session = response.data[0];
 
@@ -212,7 +212,7 @@ const API_URL = process.env.REACT_APP_API_URL;
     setFormErrors({});
     try {
       // Submit appointment to backend
-      const response = await fetch(`${API_URL}/api/CustomerAppointment/CreateAppointment`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/CreateAppointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -294,7 +294,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
   const verifyPayment = async (paymentResponse) => {
     try {
-      const response = await fetch(`${API_URL}/api/CustomerAppointment/VerifyPayment`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -353,7 +353,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     if (formData.appointmentDate && formData.plan) {
-      fetch(`${API_URL}/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
+      fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
         .then(res => res.json())
         .then((data) => {
           setBookedTimeSlots(data)

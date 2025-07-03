@@ -145,7 +145,7 @@ const Profile = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get(`${API_URL}/api/ConsultantProfile/getConsultantProfile`, {
+        .get(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -165,7 +165,7 @@ const Profile = () => {
 
     try {
       await axios.patch(
-        `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
+        `https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`,
         { key, value: newValue },
         {
           headers: {
@@ -199,21 +199,21 @@ const Profile = () => {
     }
 
     try {
-      const res = await axios.get(`${API_URL}/api/ConsultantProfile/getConsultantProfile`, {
+      const res = await axios.get(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       if (res.data.length > 0) {
-        await axios.patch(`${API_URL}/api/ConsultantProfile/updateConsultantProfile`, newData, {
+        await axios.patch(`https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`, newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           },
         });
       } else {
-        await axios.post(`${API_URL}/api/ConsultantProfile/addConsultantProfile`, newData, {
+        await axios.post(`https://appointify.coinagesoft.com/api/ConsultantProfile/addConsultantProfile`, newData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -255,7 +255,7 @@ const Profile = () => {
           <div className="card">
             <div className="user-profile-header-banner position-relative">
               <img
-                src={user.backgroundImage && `${API_URL}${user.backgroundImage}`}
+                src={user.backgroundImage && `https://appointify.coinagesoft.com${user.backgroundImage}`}
                 alt="Banner"
                 className="rounded-top w-100"
                 style={{ height: '180px' }}
@@ -265,7 +265,7 @@ const Profile = () => {
             <div className="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center p-4">
               <div className="position-relative mx-auto mx-sm-4 mt-2">
                 <img
-                  src={user.profileImage && `${API_URL}${user.profileImage}`}
+                  src={user.profileImage && `https://appointify.coinagesoft.com${user.profileImage}`}
                   alt="Profile"
                   className="rounded-4 user-profile-img"
                   style={{ width: '150px', height: '150px' }}

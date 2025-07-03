@@ -24,7 +24,7 @@ const Section2 = () => {
 
 const fetchProfile = async () => {
   try {
-    const response = await fetch(`${API_URL}/api/ConsultantProfile/getConsultantProfile`);
+    const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`);
     if (!response.ok) throw new Error("Failed to fetch consultant data");
 
     const result = await response.json();
@@ -116,7 +116,7 @@ const fetchProfile = async () => {
 
     // Send the data to the backend
     const response = await axios.patch(
-      `${API_URL}/api/ConsultantProfile/updateConsultantProfile`,
+      `https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`,
       updatedFormData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -155,7 +155,7 @@ const fetchProfile = async () => {
         {/* Profile Image Upload */}
         <div className="text-center mb-4">
           <img
-            src={formData.section2_Image ? `${API_URL}${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
+            src={formData.section2_Image ? `https://appointify.coinagesoft.com${formData.section2_Image}` : "/assets/img/160x160/img8.jpg"}
             alt="Section 2 Preview"
             id="section2_Image"
             className="rounded-circle border border-secondary"
