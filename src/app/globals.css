@@ -215,3 +215,9 @@ object-fit: cover;
 .list-group-item {
   border-left: 4px solid #0d6efd;
 }
+
+@media only screen and (max-width: 600px) {
+  .responsive-btn{
+  margin-top: 15px;
+}
+}

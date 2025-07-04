@@ -68,7 +68,7 @@ const Header = () => {
               </a>
             </li>
             <li className="nav-item ms-4">
-              <button className="btn bg-light py-2 btn-transition font-thin ms-5" type="button">
+              <button className="btn bg-light py-2 btn-transition font-thin ms-5 responsive-btn" type="button">
                 <Link href="/Login" className="text-decoration-none">Log in</Link>
               </button>
             </li>

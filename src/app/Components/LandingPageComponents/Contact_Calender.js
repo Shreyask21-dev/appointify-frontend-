@@ -374,7 +374,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       )}
       <div className="bg-light mt-8">
         <div className="container row content-space-2 content-space-lg-3 mx-auto" id="target-form">
-          <div className="col-lg-8 col-12 mb-sm-8">
+          <div className="col-lg-8 col-12 ">
             {/* <div className="mx-auto" style={{ maxWidth: '35rem' }}> */}
             <div >
               <div className="card" ref={ref}>

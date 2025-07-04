@@ -29,11 +29,11 @@ const FAQSection = () => {
   return (
     <section className="py-5 my-5" >
       <div className="container" style={{ maxWidth: '1600px' }}>
-        <div className="text-center mb-5">
-          <h3 className="fw-bold text-dark ">
+        <div className="text-center mb-7">
+          <h2 >
             {/* <FaQuestionCircle className="me-2 text-primary" /> */}
             Frequently Asked Questions
-          </h3>
+          </h2>
           <p className="text-muted ">Answers to the most common questions</p>
         </div>
 

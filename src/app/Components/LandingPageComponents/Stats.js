@@ -27,7 +27,7 @@ const Stats = () => {
       <div className="container bg-white content-space-2 mt-5 pt-5">
         <div className="row justify-content-center mb-5">
           <div className="col-md-8 text-center">
-            <h2 className="fw-bold">Our Achievements</h2>
+            <h2>Our Achievements</h2>
             <p className="text-muted">These numbers speak for the trust and impact we’ve created.</p>
           </div>
         </div>
