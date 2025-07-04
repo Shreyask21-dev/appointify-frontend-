@@ -17,15 +17,15 @@ const Consultant_Info = () => {
   //     instagram: "#",
   //   },
   // };
-const API_URL = process.env.REACT_APP_API_URL;
-  const [consultantData,setConsultantData]=useState([])
+  const API_URL = process.env.REACT_APP_API_URL;
+  const [consultantData, setConsultantData] = useState([])
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`);
         if (!response.ok) throw new Error("Failed to fetch consultant data");
         const result = await response.json();
-        console.log("result",result[0]);
+        console.log("result", result[0]);
         setConsultantData(result[0]);
       } catch (error) {
         console.error("Error fetching consultant data:", error);
@@ -55,7 +55,7 @@ const API_URL = process.env.REACT_APP_API_URL;
           {/* Consultant Info */}
           <figure className="pe-md-7">
             <blockquote className="blockquote blockquote-lg   font-medium pb-2 fs-4 fw-medium" >
-             {consultantData.section2_Tagline}
+              {consultantData.section2_Tagline}
             </blockquote>
 
             <figcaption className="blockquote-footer">
@@ -66,40 +66,40 @@ const API_URL = process.env.REACT_APP_API_URL;
                     {consultantData.experience}
                   </p>
                   <p className="blockquote-footer-source mb-6">
-                    {consultantData.role} <br/>
-                      {consultantData.certificates === "null" ? "" : consultantData.certificates}
+                    {consultantData.role} <br />
+                    {consultantData.certificates === "null" ? "" : consultantData.certificates}
                   </p>
-                 
+
                   <p className="blockpara text-gray-800 justify-evenly fs-6 lh-base ">
                     {consultantData.description}
                   </p>
-                    
+
                 </div>
               </div>
               <ul className="navbar-nav">
                 {/* Social Media Buttons */}
                 <li className="nav-item">
                   <ul className="list-inline mb-0 mt-5 ">
-                      <li className="list-inline-item me-3" key="facebookId">
-                        <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.facebookId}>
-                          <i className={`bi-facebook`}></i>
-                        </a>
-                      </li>
-                       <li className="list-inline-item me-3" key="instagramId">
-                       <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.instagramId}>
-                         <i className={`bi-instagram`}></i>
-                       </a>
-                     </li>
-                      <li className="list-inline-item me-3" key="twitterId">
+                    <li className="list-inline-item me-3" key="facebookId">
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.facebookId}>
+                        <i className={`bi-facebook`}></i>
+                      </a>
+                    </li>
+                    <li className="list-inline-item me-3" key="instagramId">
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.instagramId}>
+                        <i className={`bi-instagram`}></i>
+                      </a>
+                    </li>
+                    <li className="list-inline-item me-3" key="twitterId">
                       <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.twitterId}>
                         <i className={`bi-twitter`}></i>
                       </a>
                     </li>
-                     <li className="list-inline-item me-3" key="youtubeId">
-                     <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.youtubeId}>
-                       <i className={`bi-youtube`}></i>
-                     </a>
-                   </li>
+                    <li className="list-inline-item me-3" key="youtubeId">
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.youtubeId}>
+                        <i className={`bi-youtube`}></i>
+                      </a>
+                    </li>
                   </ul>
                 </li>
               </ul>

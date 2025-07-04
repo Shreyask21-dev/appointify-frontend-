@@ -42,19 +42,22 @@ const EmpoweringMinds = () => {
     <div className="container content-space-2 content-space-lg-3 bg-white">
       <div className="row justify-content-lg-between">
         <div className="col-lg-6 mb-5 mb-lg-0">
-          <h4 className=''>{consultantInfo.section3_Tagline}</h4>
-          <img 
+          <h4>{consultantInfo.section3_Tagline}</h4>
+          <img
             src={
               consultantInfo.section3_Image
                 ? `https://appointify.coinagesoft.com${consultantInfo.section3_Image}`
                 : "/assets/img/psychological-help-jpg.jpg"
             }
-            alt="Empowering Minds"
-            style={{ width: "400px" }}
+            // alt="Empowering Minds"
+            alt={consultantInfo.section3_Tagline || "Empowering Minds"}
+            // style={{ width: "400px" }}
+            className="img-fluid"
+            style={{ maxWidth: "100%", maxHeight: "300px", objectFit: "cover" }}
           />
         </div>
 
-        <div className="col-lg-6 mt-5 pt-5">
+        <div className="col-lg-6 mt-3 pt-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
           {Array.isArray(consultantInfo.section3_Description) &&
             consultantInfo.section3_Description.map((text, index) => (
               <p key={index}>{text}</p>

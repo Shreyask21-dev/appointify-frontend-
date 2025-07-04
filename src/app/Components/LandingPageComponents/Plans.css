@@ -1,5 +1,5 @@
-.plan-features {
-    padding-left: 0; /* Optional: removes extra indent from ul */
+/* .plan-features {
+    padding-left: 0; 
   }
   
   .plan-features li {
@@ -26,4 +26,39 @@
   .plan-features li::marker {
     display: none !important;
   }
-    
+     */
+
+
+
+.plan-features {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.plan-features li {
+  list-style: none !important;
+  font-size: 0.95rem;
+  color: white !important;
+  margin-bottom: 0.4rem;
+  padding-left: 1.6rem;
+  position: relative;
+  display: block;
+}
+
+.plan-features li::before {
+  content: '✓';
+  color: #00ffb3;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.plan-features li i,
+.plan-features li::marker {
+  display: none !important;
+}
+
+

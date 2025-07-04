@@ -1,40 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-const API_URL = process.env.REACT_APP_API_URL;
+
 const LeafletMap = () => {
-  const [iframeUrl, setIframeUrl] = useState('');
+  const [iframeHtml, setIframeHtml] = useState('');
 
   useEffect(() => {
     const fetchIframeUrl = async () => {
       try {
         const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
-          console.log("res.data.iframeUrl",res.data.iFrameURL,res)
         if (res.data?.iFrameURL) {
-          setIframeUrl(res.data.iFrameURL);
-      
+          const match = res.data.iFrameURL.match(/src="([^"]+)"/);
+          // setIframeHtml(res.data.iFrameURL);
+          if (match && match[1]) {
+            setIframeHtml(match[1]);
+          }
         }
       } catch (err) {
         console.error('Error loading map:', err);
       }
-          console.log("iframeUrl",iframeUrl)
     };
 
     fetchIframeUrl();
   }, []);
 
-  if (!iframeUrl) return null;
+  if (!iframeHtml) return null;
 
   return (
-    <div className="map-container ">
-      <iframe
-        src={iframeUrl}
-        width="100%"
-        height="500"
-        style={{ border: 0 }}
-        allowFullScreen=""
-        loading="lazy"
-      ></iframe>
-    </div>
+    <section className="container my-5 py-5">
+      <div className="text-center mb-4">
+        <h2 className="fw-bold">Find Us on the Map</h2>
+        <p className="text-muted">We’re located at the heart of the city</p>
+      </div>
+
+      {/* <div className="ratio ratio-16x9 rounded shadow overflow-hidden" >
+        <div dangerouslySetInnerHTML={{ __html: iframeHtml }} />
+      </div> */}
+      {iframeHtml && (
+        <div className="ratio ratio-16x9 rounded shadow overflow-hidden">
+          <iframe
+            src={iframeHtml}
+            title="Google Map"
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            style={{ border: 0 }}
+          />
+        </div>
+      )}
+    </section>
   );
 };
 
