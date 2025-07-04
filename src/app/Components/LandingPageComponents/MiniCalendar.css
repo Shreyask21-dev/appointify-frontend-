@@ -36,27 +36,27 @@ h2#fc-dom-86 {
 
 
 
-/* .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+.react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
     color: #000;
     display: inline-block;
     width: 1.7rem;
     line-height: 1.7rem;
     text-align: center;
-    margin: 1.166rem;
-} */
+    margin: 0.8rem;
+}
 
-.react-datepicker__day-name,
+/* .react-datepicker__day-name,
 .react-datepicker__day,
 .react-datepicker__time-name {
   color: #000;
   display: inline-block;
   width: 100%;
-  max-width: 2.2rem; /* or adjust as needed */
+  max-width: 2.2rem;
   line-height: 2.2rem;
   text-align: center;
-  margin: 0.2rem; /* Small margin for spacing */
+  margin: 0.2rem; 
   box-sizing: border-box;
-}
+} */
 
 .react-datepicker__month-container {
   float: none !important;

@@ -57,22 +57,28 @@ const Plans = React.forwardRef((props, ref) => {
         style={{ backgroundImage: 'url(dist/assets/svg/components/card-11.svg)' }}
       >
         {/* after checking this in swagger getting 404. need to check backend */}
-        {/* <div className="container content-space-t-3 content-space-t-lg-5 content-space-b-2 content-space-b-lg-1">
-
+        {/* <div className="container ">
           <div className="w-md-75 w-lg-70 text-center mx-auto mb-9" id="target-plans" ref={ref} >
             <h2>{formData.tagline}</h2>
             <p>{formData.mainDescription}</p>
-            <h3 className="mt-9 mb-0">{formData.mainHeading}</h3>
+           
           </div>
-
         </div> */}
       </div>
 
       {/* Plan Cards */}
       <div className="container py-5"> {/* Section spacing */}
-        <div className="text-center mb-5">
+        {/* <div className="text-center mb-5">
           <h2 className="fw-bold">Our Consultation Plans</h2>
           <p className="text-muted">Choose the plan that fits your needs</p>
+        </div> */}
+
+        <div className="container ">
+          <div className="w-md-75 w-lg-70 text-center mx-auto mb-9" id="target-plans" ref={ref} >
+            <h2>{formData.tagline}</h2>
+            <p>{formData.mainDescription}</p>
+            {/* <h3 className="mt-9 mb-0">{formData.mainHeading}</h3> */}
+          </div>
         </div>
 
         <div className="row justify-content-center">

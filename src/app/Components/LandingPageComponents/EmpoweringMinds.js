@@ -39,10 +39,17 @@ const EmpoweringMinds = () => {
   }, []);
 
   return (
-    <div className="container content-space-2 content-space-lg-3 bg-white">
+    <div className="container bg-white py-5">
       <div className="row justify-content-lg-between">
-        <div className="col-lg-6 mb-5 mb-lg-0">
-          <h4>{consultantInfo.section3_Tagline}</h4>
+        <div className="col-lg-8 mt-3 pt-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+          <h2>{consultantInfo.section3_Tagline}</h2>
+
+          {Array.isArray(consultantInfo.section3_Description) &&
+            consultantInfo.section3_Description.map((text, index) => (
+              <p key={index}>{text}</p>
+            ))}
+        </div>
+        <div className="col-lg-4 mb-5 mb-lg-0">
           <img
             src={
               consultantInfo.section3_Image
@@ -57,12 +64,7 @@ const EmpoweringMinds = () => {
           />
         </div>
 
-        <div className="col-lg-6 mt-3 pt-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-          {Array.isArray(consultantInfo.section3_Description) &&
-            consultantInfo.section3_Description.map((text, index) => (
-              <p key={index}>{text}</p>
-            ))}
-        </div>
+        
       </div>
     </div>
   );
