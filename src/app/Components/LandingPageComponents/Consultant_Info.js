@@ -29,7 +29,7 @@ const Consultant_Info = () => {
             className="img-fluid rounded-2"
             src={
               consultantData.section2_Image
-                ? `http://4.213.95.138:9090${consultantData.section2_Image}`
+                ? `https://appointify.coinagesoft.com${consultantData.section2_Image}`
                 : "/assets/img/160x160/img8.jpg"
             }
             alt={consultantData.section2_Image}

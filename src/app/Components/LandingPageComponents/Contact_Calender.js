@@ -13,7 +13,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [timeSlots, setTimeSlots] = useState([]);
 
-const API_URL = process.env.REACT_APP_API_URL;
+  const API_URL = process.env.REACT_APP_API_URL;
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -232,7 +232,7 @@ const API_URL = process.env.REACT_APP_API_URL;
           handler: function (response) {
             console.log('Payment success:', response);
             setPaymentCompleted(true);
-            verifyPayment( response);
+            verifyPayment(response);
           },
           prefill: {
             name: formData.firstName + ' ' + formData.lastName,
@@ -374,8 +374,9 @@ const API_URL = process.env.REACT_APP_API_URL;
       )}
       <div className="bg-light mt-8">
         <div className="container row content-space-2 content-space-lg-3 mx-auto" id="target-form">
-          <div className="col-lg-6 col-12 mb-sm-8">
-            <div className="mx-auto" style={{ maxWidth: '35rem' }}>
+          <div className="col-lg-8 col-12 mb-sm-8">
+            {/* <div className="mx-auto" style={{ maxWidth: '35rem' }}> */}
+            <div >
               <div className="card" ref={ref}>
                 <div className="card-body contact" style={{ maxHeight: '60.25rem', minHeight: '35.25rem' }}>
                   <div className="text-center mb-3">
@@ -424,7 +425,7 @@ const API_URL = process.env.REACT_APP_API_URL;
                     </div>
                     {/* Date & Time Slot */}
                     <div className="row gx-2">
-                      <div className="col-sm-12 ">
+                      <div className="col-sm-6 ">
                         <div className="mb-2">
                           <label className="form-label" htmlFor="appointmentDate">Choose a Date</label>
                           <input type="date" className={`form-control form-control-sm ${formErrors.appointmentDate ? 'border border-danger' : ''}`}
@@ -468,8 +469,7 @@ const API_URL = process.env.REACT_APP_API_URL;
                                   <div className="col-4 mb-2" key={index}>
                                     <button
                                       type="button"
-                                      className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100
-          ${isBooked ? 'bg-danger text-white' : isSelected ? 'bg-primary text-white' : 'btn-outline-primary'}`}
+                                      className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 ${isBooked ? 'bg-danger text-white' : isSelected ? 'bg-primary text-white' : 'btn-outline-primary'}`}
                                       style={{
                                         fontSize: '0.75rem',
                                         whiteSpace: 'nowrap',
@@ -500,7 +500,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 
                       </div>
-                      <div className="col-sm-12">
+                      <div className="col-sm-6">
                         <div className="mb-2">
                           <label className="form-label" htmlFor="plan">Plan Name</label>
                           <input type="text" className={`form-control form-control-sm ${formErrors.plan ? 'border border-danger' : ''}`}
@@ -547,7 +547,7 @@ const API_URL = process.env.REACT_APP_API_URL;
               </div>
             </div>
           </div>
-          <div className="col-lg-6 col-12 mt-md-5">
+          <div className="col-lg-4 col-12 ">
             <MiniCalendar />
           </div>
         </div>
