@@ -32,10 +32,6 @@ h2#fc-dom-86 {
   /* height: 500px; */
 }
 
-
-
-
-
 .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
     color: #000;
     display: inline-block;
@@ -44,19 +40,6 @@ h2#fc-dom-86 {
     text-align: center;
     margin: 0.8rem;
 }
-
-/* .react-datepicker__day-name,
-.react-datepicker__day,
-.react-datepicker__time-name {
-  color: #000;
-  display: inline-block;
-  width: 100%;
-  max-width: 2.2rem;
-  line-height: 2.2rem;
-  text-align: center;
-  margin: 0.2rem; 
-  box-sizing: border-box;
-} */
 
 .react-datepicker__month-container {
   float: none !important;
@@ -77,4 +60,30 @@ h2#fc-dom-86 {
   bottom: -7px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+
+@media screen and (max-width: 600px) {
+  .custom-calendar .react-datepicker {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .react-datepicker__day-name,
+  .react-datepicker__day,
+  .react-datepicker__time-name {
+    width: 1.4rem;
+    line-height: 1.4rem;
+    margin: 0.3rem;
+  }
+
+  .react-datepicker__month-container {
+    width: 100%;
+    float: none !important;
+  }
+
+  .react-datepicker {
+    padding: 0 5px;
+  }
 }
