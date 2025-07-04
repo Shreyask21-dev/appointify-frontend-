@@ -27,7 +27,7 @@ const FAQSection = () => {
   const column2 = faqs.slice(midIndex);
 
   return (
-    <section className="py-5 my-5" style={{ minHeight: '80vh' }}>
+    <section className="py-5 my-5" >
       <div className="container" style={{ maxWidth: '1600px' }}>
         <div className="text-center mb-5">
           <h3 className="fw-bold text-dark ">
@@ -54,7 +54,8 @@ const FAQSection = () => {
                         className="mb-3 rounded shadow-sm border-0"
                         style={{ backgroundColor: '#fff' }}
                       >
-                        <Accordion.Header>
+                        <Accordion.Header className="faq-header">
+                          <FaQuestionCircle className="me-2 text-primary" />
                           <strong className="text-dark">{faq.question}</strong>
                         </Accordion.Header>
                         <Accordion.Body className="text-muted">
@@ -74,6 +75,7 @@ const FAQSection = () => {
                         style={{ backgroundColor: '#fff' }}
                       >
                         <Accordion.Header>
+                          <FaQuestionCircle className="me-2 text-primary" />
                           <strong className="text-dark">{faq.question}</strong>
                         </Accordion.Header>
                         <Accordion.Body className="text-muted">

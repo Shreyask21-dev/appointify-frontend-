@@ -64,7 +64,7 @@ const Stats = () => {
                       </div>
 
                       <h2 className={`display-6 fw-bold ${trendClass}`}>
-                        <CountUp end={parseInt(stat.value.replace(/[^\d]/g, ''), 10)} duration={2} />
+                        <CountUp end={parseInt(stat.value.replace(/[^\d]/g, ''), 10)} duration={2} suffix="%" />
                       </h2>
                       <p className="mb-0">
                         <strong>{stat.description}</strong>
