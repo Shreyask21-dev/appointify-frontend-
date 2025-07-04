@@ -2,21 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 const Consultant_Info = () => {
-  // Dummy data, replace later with backend data
-  // const consultantData = {
-  //   name: "Dr. Riya Mehta",
-  //   qualification: "Ph.D. in Clinical Psychology | 10+ Years Experience",
-  //   position: "Senior Consultant at MindCare Wellness Center | Certified Cognitive Behavioral Therapist",
-  //   description:
-  //     "With over a decade of experience in mental health, Dr. Riya Mehta specializes in stress management, anxiety disorders, depression therapy, and mindfulness-based techniques. She is committed to helping individuals overcome personal challenges through a compassionate and evidence-based approach, ensuring emotional resilience and overall well-being.",
-  //   image: "/dist/assets/img/400x500/img28.jpg", // Ensure this is stored in the public folder
-  //   socialLinks: {
-  //     facebook: "#",
-  //     youtube: "#",
-  //     twitter: "#",
-  //     instagram: "#",
-  //   },
-  // };
+
   const API_URL = process.env.REACT_APP_API_URL;
   const [consultantData, setConsultantData] = useState([])
   useEffect(() => {
@@ -81,22 +67,22 @@ const Consultant_Info = () => {
                 <li className="nav-item">
                   <ul className="list-inline mb-0 mt-5 ">
                     <li className="list-inline-item me-3" key="facebookId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.facebookId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.facebookId}>
                         <i className={`bi-facebook`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="instagramId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.instagramId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.instagramId}>
                         <i className={`bi-instagram`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="twitterId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.twitterId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.twitterId}>
                         <i className={`bi-twitter`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="youtubeId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" href={consultantData.youtubeId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.youtubeId}>
                         <i className={`bi-youtube`}></i>
                       </a>
                     </li>
