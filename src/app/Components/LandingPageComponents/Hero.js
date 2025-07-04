@@ -8,7 +8,7 @@ import 'swiper/css/effect-fade';
 import { Pagination, Thumbs, EffectFade, Autoplay } from 'swiper/modules';
 const API_URL = process.env.REACT_APP_API_URL;
 const dummyData = {
-  images: ['img3', 'img5', 'img11'],
+  images: ['img32', 'img33', 'img34'],
 };
 
 const Hero = ({ scrollToSectionHeader }) => {
