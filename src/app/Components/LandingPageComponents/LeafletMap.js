@@ -8,10 +8,13 @@ const LeafletMap = () => {
     const fetchIframeUrl = async () => {
       try {
         const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
+        console.log("res location",res)
         if (res.data?.iFrameURL) {
           const match = res.data.iFrameURL.match(/src="([^"]+)"/);
           // setIframeHtml(res.data.iFrameURL);
+          console.log("res location",res)
           if (match && match[1]) {
+            console.log("res location",res)
             setIframeHtml(match[1]);
           }
         }

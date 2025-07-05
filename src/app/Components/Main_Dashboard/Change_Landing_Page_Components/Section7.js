@@ -10,18 +10,24 @@ const Section7 = () => {
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // Fetch iframe URL
-  const fetchIframeUrl = async () => {
-    try {
-      const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
-      if (res.data?.iFrameURL) {
-        setSavedUrl(res.data.iFrameURL);
-        setIframeUrl(res.data.iFrameURL );
-      }
-    } catch (err) {
-      console.error('Error fetching iframe URL:', err);
-      setStatusMessage({ type: 'error', text: 'Failed to fetch map URL.' });
+const fetchIframeUrl = async () => {
+  try {
+    const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
+    const fetchedUrl = res.data?.iFrameURL;
+
+    if (fetchedUrl) {
+      setSavedUrl(fetchedUrl);
+      setIframeUrl(fetchedUrl);
+    } else {
+      setSavedUrl('');
+      setIframeUrl('');
     }
-  };
+  } catch (err) {
+    console.error('Error fetching iframe URL:', err);
+    setStatusMessage({ type: 'error', text: 'Failed to fetch map URL.' });
+  }
+};
+
 
   useEffect(() => {
     fetchIframeUrl();
@@ -35,7 +41,7 @@ const Section7 = () => {
       const payload = { iFrameURL: iframeUrl.trim() };
 
       if (savedUrl) {
-        await axios.put(`https://appointify.coinagesoft.com/api/Location/1`, payload);
+        await axios.put(`https://appointify.coinagesoft.com/api/Location/iframe`, payload);
         setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
       } else {
         await axios.post(`https://appointify.coinagesoft.com/api/Location`, payload);
@@ -53,7 +59,7 @@ const Section7 = () => {
   // Delete iframe URL
   const handleDelete = async () => {
     try {
-      await axios.delete(`https://appointify.coinagesoft.com/api/Location/1`);
+      await axios.delete(`https://appointify.coinagesoft.com/api/Location`);
       setIframeUrl('');
       setSavedUrl('');
       setStatusMessage({ type: 'success', text: 'Map URL deleted.' });
