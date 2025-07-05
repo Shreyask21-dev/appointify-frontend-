@@ -38,15 +38,17 @@ const fetchIframeUrl = async () => {
     if (!iframeUrl.trim()) return;
 
     try {
-      const payload = { iFrameURL: iframeUrl.trim() };
 
-      if (savedUrl) {
-        await axios.put(`https://appointify.coinagesoft.com/api/Location/iframe`, payload);
-        setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
-      } else {
-        await axios.post(`https://appointify.coinagesoft.com/api/Location`, payload);
-        setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
-      }
+    const payload = { iFrameURL: iframeUrl.trim() };
+
+if (savedUrl) {
+  await axios.put(`https://appointify.coinagesoft.com/api/Location/iframe`, payload);
+  setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
+} else {
+  await axios.post(`https://appointify.coinagesoft.com/api/Location`, payload);
+  setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
+}
+
 
       setIsEditMode(false);
       fetchIframeUrl();
