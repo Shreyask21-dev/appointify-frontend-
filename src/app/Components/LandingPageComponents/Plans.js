@@ -83,54 +83,13 @@ const Plans = React.forwardRef((props, ref) => {
 
         <div className="row justify-content-center">
           {plans.map((plan) => (
-            // <div className="col-md-6 col-lg-4 mb-4" key={plan.planId}>
-            //   <div className="card h-100 bg-primary text-white shadow">
-            //     <div className="card-body d-flex flex-column justify-content-between">
-            //       <div className="text-center mb-4">
-            //         <div className="mb-2">
-            //           <span className="fs-1 fw-semibold">{plan.planDuration}</span>
-            //           <span> minutes</span>
-            //         </div>
-            //         <h3 className="fs-5">{plan.planName}</h3>
-            //         <p className="text-white-70">{plan.planDescription}</p>
-            //       </div>
-
-            //       <ul
-            //         className="plan-features px-3"
-            //         dangerouslySetInnerHTML={{ __html: plan.planFeatures }}
-            //       />
-            //     </div>
-
-            //     <div className="card-footer bg-transparent text-center border-0">
-            //       <div className="d-flex justify-content-center flex-wrap gap-2">
-            //         <span className="btn btn-ghost-light text-white">
-            //           Price: ₹{plan.planPrice}
-            //         </span>
-            //         <button
-            //           type="button"
-            //           className="btn btn-light text-black bookAppointment"
-            //           onClick={() =>
-            //             props.scrollToSection({
-            //               planName: plan.planName,
-            //               planPrice: plan.planPrice,
-            //               planDuration: plan.planDuration,
-            //             })
-            //           }
-            //         >
-            //           Book Now
-            //         </button>
-            //       </div>
-            //     </div>
-            //   </div>
-            // </div>
-
 
             <div className="col-md-6 col-lg-4 mb-4" key={plan.planId}>
               <div className="card h-100 bg-primary text-white shadow-sm border-0 d-flex flex-column">
 
                 <div className="card-body d-flex flex-column">
                   {/* Plan Name */}
-                  <h4 className="fw-bold mb-3 text-white">{plan.planName}</h4>
+                  <h5 className="fw-bold mb-3 text-white">{plan.planName}</h5>
 
                   {/* Plan Duration */}
                   <div className="small text-white-50 mb-2">{plan.planDuration} minutes</div>

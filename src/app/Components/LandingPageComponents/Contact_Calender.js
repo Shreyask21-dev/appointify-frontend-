@@ -13,6 +13,23 @@ const Contact_Calender = React.forwardRef((props, ref) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [timeSlots, setTimeSlots] = useState([]);
 
+  const [availablePlans, setAvailablePlans] = useState([]);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch("https://appointify.coinagesoft.com/api/ConsultationPlan/get-all");
+        const data = await res.json();
+        setAvailablePlans(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching plans", err);
+      }
+    };
+
+    fetchPlans();
+  }, []);
+
+
   const API_URL = process.env.REACT_APP_API_URL;
   const [formData, setFormData] = useState({
     firstName: '',
@@ -27,10 +44,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     duration: '',   // pre-filled plan duration as a string representing minutes (eg: "30", "60", "90")
   });
 
-  // Dummy booked slots for demo purposes.
-  // In practice, fetch these for the selected date & plan from your backend.
   const [bookedTimeSlots, setBookedTimeSlots] = useState([]);
-  // For example, if a slot "10:30 AM - 11:00 AM" is booked, add that string to this array.
 
   const validateForm = () => {
     const errors = {};
@@ -93,8 +107,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     }
     // Save the raw date string (or format it later for display)
     setFormData({ ...formData, appointmentDate: selectedDate, appointmentTime: '' });
-    // Optionally, fetch booked slots for this date & plan from your backend
-    // For demo, we'll clear bookedTimeSlots here
+
     setBookedTimeSlots([]);
   };
 
@@ -151,13 +164,31 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     fetchSession();
   }, [formData.duration]); // 👈 re-run when plan duration changes
 
+  // const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
+  //   const slots = [];
+  //   const booked = bookedTimeSlots.map(slot => slot.time);
+
+  //   const start = new Date(startTime);
+  //   const end = new Date(endTime);
+
+  //   while (start.getTime() + durationInMinutes * 60000 <= end.getTime()) {
+  //     const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
+  //     const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
+
+  //     if (!booked.includes(slot)) {
+  //       slots.push({ label: slot, value: slot });
+  //     }
+
+  //     // Move to the next slot
+  //     start.setTime(start.getTime() + durationInMinutes * 60000);
+  //   }
+  //   console.log("slots", slots)
+  //   return slots;
+  // };
 
 
-  // Generate time slots based on plan duration.
-  // Assumes slots between 10:00 AM and 10:00 PM.
   const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
     const slots = [];
-    const booked = bookedTimeSlots.map(slot => slot.time);
 
     const start = new Date(startTime);
     const end = new Date(endTime);
@@ -166,23 +197,13 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
       const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
 
-      if (!booked.includes(slot)) {
-        slots.push({ label: slot, value: slot });
-      }
-
-      // Move to the next slot
+      slots.push({ label: slot, value: slot });
       start.setTime(start.getTime() + durationInMinutes * 60000);
     }
-    console.log("slots", slots)
+
     return slots;
   };
 
-
-
-
-
-
-  // Helper function to format time in hh:mm AM/PM
   const formatTime = (date) => {
     let hours = date.getHours();
     let minutes = date.getMinutes();
@@ -347,21 +368,23 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     }, 3000);
   };
 
-
-
-
-
   useEffect(() => {
     if (formData.appointmentDate && formData.plan) {
-      fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
-        .then(res => res.json())
-        .then((data) => {
-          setBookedTimeSlots(data)
-          console.log("booked slots", data)
-        }) // data should be an array of slot strings
-        .catch(err => console.error("Error fetching booked slots:", err));
+      axios.get("https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments")
+        .then((res) => {
+          const appointments = res.data || [];
+
+          // Filter appointments for the selected date
+          const bookedSlots = appointments
+            .filter(a => a.appointmentDate === formData.appointmentDate)
+            .map(a => a.appointmentTime); // example: "10:00 AM - 10:30 AM"
+
+          setBookedTimeSlots(bookedSlots);
+        })
+        .catch(err => console.error("Error fetching appointments:", err));
     }
   }, [formData.appointmentDate, formData.plan]);
+
 
   return (
     <>
@@ -423,8 +446,40 @@ const Contact_Calender = React.forwardRef((props, ref) => {
                         </div>
                       </div>
                     </div>
+
+
                     {/* Date & Time Slot */}
                     <div className="row gx-2">
+                      <div className='col-sm-6'>
+                        <div className="mb-2">
+                          <label className="form-label" htmlFor="planDropdown">Choose a Plan</label>
+                          <select
+                            id="planDropdown"
+                            className="form-select form-select-sm"
+                            value={formData.plan}
+                            onChange={(e) => {
+                              const selectedPlan = availablePlans.find(p => p.planName === e.target.value);
+                              if (selectedPlan) {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  plan: selectedPlan.planName,
+                                  amount: selectedPlan.planPrice,
+                                  duration: selectedPlan.planDuration,
+                                  appointmentTime: "", // reset previously selected slot
+                                }));
+                              }
+                            }}
+                          >
+                            <option value="">-- Select a Plan --</option>
+                            {availablePlans.map(plan => (
+                              <option key={plan.planId} value={plan.planName}>
+                                {plan.planName} - ₹{plan.planPrice}
+                              </option>
+                            ))}
+                          </select>
+                          {formErrors.plan && <div className="text-danger small">{formErrors.plan}</div>}
+                        </div>
+                      </div>
                       <div className="col-sm-6 ">
                         <div className="mb-2">
                           <label className="form-label" htmlFor="appointmentDate">Choose a Date</label>
@@ -439,75 +494,10 @@ const Contact_Calender = React.forwardRef((props, ref) => {
                             </p>
                           </div>
                         )}
-                        {formData.appointmentDate && formData.duration && (
-                          <div className="mb-2">
-                            <label className="form-label">Choose a Time Slot</label>
-
-
-
-                            <div className="row gx-1">
-                              {timeSlots.map(({ value }, index) => {
-                                const [startStr, endStr] = value.split('-').map(s => s.trim());
-                                const start = parseTime(startStr);
-                                const end = parseTime(endStr);
-
-                                const isBooked = Array.isArray(bookedTimeSlots) && bookedTimeSlots.some(slot => {
-                                  const [bStartH, bStartM, bStartS] = slot.startTime.split(':').map(Number);
-                                  const bookedStart = new Date();
-                                  bookedStart.setHours(bStartH, bStartM, bStartS, 0);
-
-                                  const [bEndH, bEndM, bEndS] = slot.endTime.split(':').map(Number);
-                                  const bookedEnd = new Date();
-                                  bookedEnd.setHours(bEndH, bEndM, bEndS, 0);
-
-                                  return isOverlapping(start, end, bookedStart, bookedEnd) && slot.status === "Scheduled";
-                                });
-
-                                const isSelected = formData.appointmentTime === value;
-
-                                return (
-                                  <div className="col-4 mb-2" key={index}>
-                                    <button
-                                      type="button"
-                                      className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 ${isBooked ? 'bg-danger text-white' : isSelected ? 'bg-primary text-white' : 'btn-outline-primary'}`}
-                                      style={{
-                                        fontSize: '0.75rem',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        cursor: isBooked ? 'not-allowed' : 'pointer',
-                                        pointerEvents: isBooked ? 'none' : 'auto',
-                                        border: isSelected ? '1px solid #0d6efd' : undefined,
-                                      }}
-                                      disabled={isBooked}
-                                      onClick={() => !isBooked && handleTimeSelect(value)}
-                                    >
-                                      {value}
-                                    </button>
-                                  </div>
-                                );
-                              })}
-                            </div>
-
-
-                            {formErrors.appointmentTime && (
-                              <div className="text-danger small mt-1">
-                                {formErrors.appointmentTime}
-                              </div>
-                            )}
-                          </div>
-                        )}
 
 
                       </div>
-                      <div className="col-sm-6">
-                        <div className="mb-2">
-                          <label className="form-label" htmlFor="plan">Plan Name</label>
-                          <input type="text" className={`form-control form-control-sm ${formErrors.plan ? 'border border-danger' : ''}`}
-                            name="plan" id="plan" value={formData.plan || ''} readOnly placeholder="Auto-filled" />
-                          {formErrors.plan && <div className="text-danger small">{formErrors.plan}</div>}
-                        </div>
-                      </div>
+
                     </div>
                     {/* Price & Duration */}
                     <div className="row gx-2">
@@ -548,7 +538,41 @@ const Contact_Calender = React.forwardRef((props, ref) => {
             </div>
           </div>
           <div className="col-lg-4 col-12 ">
-            <MiniCalendar />
+            {/* <MiniCalendar /> */}
+
+            {/* <MiniCalendar
+              selected={formData.appointmentDate}
+              onDateChange={(date) => {
+                setFormData({ ...formData, appointmentDate: date, appointmentTime: "" });
+              }}
+              onSlotSelect={(slot) => {
+                setFormData({ ...formData, appointmentTime: slot });
+              }}
+
+              duration={formData.duration}
+              bookedTimeSlots={bookedTimeSlots}
+            /> */}
+
+            <MiniCalendar
+              selected={formData.appointmentDate}
+              duration={formData.duration}
+              bookedTimeSlots={bookedTimeSlots}
+              onDateChange={(date) => {
+                setFormData(prev => ({
+                  ...prev,
+                  appointmentDate: date,
+                  appointmentTime: ''
+                }));
+              }}
+              onSlotSelect={(slot) => {
+                setFormData(prev => ({
+                  ...prev,
+                  appointmentTime: slot
+                }));
+              }}
+              selectedSlot={formData.appointmentTime}
+            />
+
           </div>
         </div>
       </div>
