@@ -89,7 +89,8 @@ const Hero = ({ scrollToSectionHeader }) => {
               <div
                 key={index}
                 className="js-swiper-slide-preload swiper-slide d-flex gradient-x-overlay-sm-dark bg-img-start"
-                style={{ backgroundImage: `url(/dist/assets/img/1920x1080/${image}.jpg)`, minHeight: '40rem' }}
+                style={{ backgroundImage: `url(/dist/assets/img/1920x1080/${image}.jpg)`, height:"100vh", backgroundPosition:"center center" }}
+                // , minHeight: '40rem'
               >
                 <div className="container d-flex align-items-center" style={{ minHeight: '40rem' }}>
                   <div className="w-lg-50 me-3">
