@@ -31,22 +31,23 @@ const UsersList = () => {
   }, []);
 
   const [newPatient, setNewPatient] = useState({
-    name: '', email: '', phone: '', createDate: '', totalAppointments: '', lastAppointment: ''
+    userId: '', name: '', email: '', phone: '', createDate: '', totalAppointments: '', lastAppointment: ''
   });
 
   const handleEdit = (patient) => {
+    console.log("patient",patient)
     setIsEditMode(true);
     setEditingPatient(patient);
-    setNewPatient({
-      id: patient.userId,
-      firstName: patient.firstName ,
-       lastName : patient.lastName,
-      email: patient.email,
-      phoneNumber: patient.phoneNumber,
-      totalAppointments: patient.totalAppointments,
-      lastAppointment: patient.lastAppointment,
+ setNewPatient({
+  userId: patient.userId, // ✅ CORRECT field name
+  firstName: patient.firstName,
+  lastName: patient.lastName,
+  email: patient.email,
+  phoneNumber: patient.phoneNumber,
+  totalAppointments: patient.totalAppointments,
+  lastAppointment: patient.lastAppointment,
+});
 
-    });
     setShowForm(true);
   };
 
@@ -55,7 +56,7 @@ const UsersList = () => {
     setIsEditMode(false);
     setEditingPatient(null);
     setNewPatient({
-      id: "",
+       userId: "",
       name: "",
       email: "",
       phoneNumber: "",
@@ -67,19 +68,20 @@ const UsersList = () => {
 
   const handleUpdatePatient = async (e) => {
     e.preventDefault();
+      console.log("newPatient:", newPatient);
     try {
-      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/patch/${newPatient.id}`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/patch/${patients.userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}` // if JWT token is stored
         },
         body: JSON.stringify({
-          id: newPatient.userId,
+          userId:newPatient.userId,
           firstName: newPatient.firstName ,
           lastName : newPatient.lastName,
           email: newPatient.email,
-          phone: newPatient.phoneNumber,
+          phoneNumber: newPatient.phoneNumber  
      
         })
       });
@@ -160,7 +162,7 @@ const UsersList = () => {
           </thead>
           <tbody>
             {patients.map((patient, index) => (
-              <tr key={patient.userId}>
+             <tr key={patient.userId}> 
                 <td>{index + 1}</td>
                 <td>{patient.firstName} {patient.lastName}</td>
                 <td>{patient.email}</td>
