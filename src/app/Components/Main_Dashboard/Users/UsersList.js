@@ -85,7 +85,7 @@ const UsersList = () => {
      
         })
       });
-
+console.log("patients",patients)
       if (response.ok) {
         alert("Patient updated successfully");
         setShowForm(false);
@@ -105,7 +105,7 @@ const UsersList = () => {
   const handleDelete = async (userId) => {
     if (window.confirm("Are you sure you want to delete this patient?")) {
       try {
-        const res = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/delete/${userId}`, {
+        const res = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/delete-by-user/${userId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
