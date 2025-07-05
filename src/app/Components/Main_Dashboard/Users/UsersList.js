@@ -70,7 +70,7 @@ const UsersList = () => {
     e.preventDefault();
       console.log("newPatient:", newPatient);
     try {
-      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/patch/${patients.userId}`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/patch/${newPatient.userId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
