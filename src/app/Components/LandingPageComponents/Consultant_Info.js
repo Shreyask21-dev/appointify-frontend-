@@ -65,24 +65,24 @@ const Consultant_Info = () => {
               <ul className="navbar-nav">
                 {/* Social Media Buttons */}
                 <li className="nav-item">
-                  <ul className="list-inline mb-0 mt-5 ">
+                  <ul className="list-inline mb-0 ">
                     <li className="list-inline-item me-3" key="facebookId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.facebookId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.facebookId}>
                         <i className={`bi-facebook`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="instagramId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.instagramId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.instagramId}>
                         <i className={`bi-instagram`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="twitterId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.twitterId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.twitterId}>
                         <i className={`bi-twitter`}></i>
                       </a>
                     </li>
                     <li className="list-inline-item me-3" key="youtubeId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded" target="_blank" href={consultantData.youtubeId}>
+                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.youtubeId}>
                         <i className={`bi-youtube`}></i>
                       </a>
                     </li>

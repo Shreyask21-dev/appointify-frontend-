@@ -39,7 +39,7 @@ const EmpoweringMinds = () => {
   }, []);
 
   return (
-    <div className="container bg-white py-5">
+    <div className="container bg-white py-5  px-3 px-md-4 px-lg-5">
       <div className="row justify-content-lg-between">
         <div className="col-lg-8 mt-3 pt-3">
           <h2>{consultantInfo.section3_Tagline}</h2>
