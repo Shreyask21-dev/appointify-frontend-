@@ -20,7 +20,21 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       try {
         const res = await fetch("https://appointify.coinagesoft.com/api/ConsultationPlan/get-all");
         const data = await res.json();
-        setAvailablePlans(Array.isArray(data) ? data : []);
+        // setAvailablePlans(Array.isArray(data) ? data : []);
+        if (Array.isArray(data) && data.length > 0) {
+          setAvailablePlans(data);
+
+          // Auto-select the first plan
+          const firstPlan = data[0];
+          setFormData(prev => ({
+            ...prev,
+            plan: firstPlan.planName,
+            amount: firstPlan.planPrice,
+            duration: firstPlan.planDuration,
+            appointmentTime: ''
+          }));
+        }
+
       } catch (err) {
         console.error("Error fetching plans", err);
       }
@@ -163,29 +177,6 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
     fetchSession();
   }, [formData.duration]); // 👈 re-run when plan duration changes
-
-  // const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
-  //   const slots = [];
-  //   const booked = bookedTimeSlots.map(slot => slot.time);
-
-  //   const start = new Date(startTime);
-  //   const end = new Date(endTime);
-
-  //   while (start.getTime() + durationInMinutes * 60000 <= end.getTime()) {
-  //     const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
-  //     const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
-
-  //     if (!booked.includes(slot)) {
-  //       slots.push({ label: slot, value: slot });
-  //     }
-
-  //     // Move to the next slot
-  //     start.setTime(start.getTime() + durationInMinutes * 60000);
-  //   }
-  //   console.log("slots", slots)
-  //   return slots;
-  // };
-
 
   const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
     const slots = [];
@@ -539,19 +530,6 @@ const Contact_Calender = React.forwardRef((props, ref) => {
           </div>
           <div className="col-lg-4 col-12 ">
             {/* <MiniCalendar /> */}
-
-            {/* <MiniCalendar
-              selected={formData.appointmentDate}
-              onDateChange={(date) => {
-                setFormData({ ...formData, appointmentDate: date, appointmentTime: "" });
-              }}
-              onSlotSelect={(slot) => {
-                setFormData({ ...formData, appointmentTime: slot });
-              }}
-
-              duration={formData.duration}
-              bookedTimeSlots={bookedTimeSlots}
-            /> */}
 
             <MiniCalendar
               selected={formData.appointmentDate}
