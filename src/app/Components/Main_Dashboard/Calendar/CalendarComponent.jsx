@@ -1,17 +1,17 @@
 'use client';
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import DatePicker from 'react-datepicker';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import "react-datepicker/dist/react-datepicker.css";
-import './Calendar.css'
-import AppointmentForm from './AppointmentForm'
-import WorkSession from './WorkSession'
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useRef } from 'react';
+import DatePicker from 'react-datepicker';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'react-datepicker/dist/react-datepicker.css';
+import './Calendar.css';
 
+import AppointmentForm from './AppointmentForm';
+import WorkSession from './WorkSession';
+import { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 
 
 
@@ -119,27 +119,27 @@ export default function CalendarComponent() {
   }, [plans]);
 
 
- const scheduledAppointments = appointments
-  .filter(a => a.appointmentStatus === 0)
-  .map(a => {
-    const [startStr, endStr] = a.appointmentTime.split(' - ');
-    const start = new Date(`${a.appointmentDate} ${startStr}`);
-    const end = new Date(`${a.appointmentDate} ${endStr}`);
-    return {
-      title: `${a.firstName} ${a.lastName}`,
-      start,
-      end,
-      className: getColorClass(
-        plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())
-      ),
-      extendedProps: {
-        planName: a.plan?.toLowerCase() || 'unknown',
-        status: a.appointmentStatus,
-        appointmentTime: a.appointmentTime,  // important for matching click event
-        id: a.id
-      }
-    };
-  });
+  const scheduledAppointments = appointments
+    .filter(a => a.appointmentStatus === 0)
+    .map(a => {
+      const [startStr, endStr] = a.appointmentTime.split(' - ');
+      const start = new Date(`${a.appointmentDate} ${startStr}`);
+      const end = new Date(`${a.appointmentDate} ${endStr}`);
+      return {
+        title: `${a.firstName} ${a.lastName}`,
+        start,
+        end,
+        className: getColorClass(
+          plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())
+        ),
+        extendedProps: {
+          planName: a.plan?.toLowerCase() || 'unknown',
+          status: a.appointmentStatus,
+          appointmentTime: a.appointmentTime,  // important for matching click event
+          id: a.id
+        }
+      };
+    });
 
 
 
@@ -154,58 +154,58 @@ export default function CalendarComponent() {
   };
   // Extract booked times for the selected date
 
-const handleEventClick = (info) => {
-  const clickedTitle = info.event.title;
-  const clickedDate = info.event.start;  // Date object
-  const clickedTime = info.event.extendedProps.appointmentTime; // added time prop
+  const handleEventClick = (info) => {
+    const clickedTitle = info.event.title;
+    const clickedDate = info.event.start;  // Date object
+    const clickedTime = info.event.extendedProps.appointmentTime; // added time prop
 
-  // Use strict matching including appointmentTime
-  const matchingAppointment = appointments.find(
-    (a) =>
-      `${a.firstName} ${a.lastName}` === clickedTitle &&
-      a.appointmentDate === clickedDate.toISOString().slice(0, 10) && // YYYY-MM-DD
-      a.appointmentTime === clickedTime
-  );
+    // Use strict matching including appointmentTime
+    const matchingAppointment = appointments.find(
+      (a) =>
+        `${a.firstName} ${a.lastName}` === clickedTitle &&
+        a.appointmentDate === clickedDate.toISOString().slice(0, 10) && // YYYY-MM-DD
+        a.appointmentTime === clickedTime
+    );
 
-  console.log("matchingAppointment", matchingAppointment);
+    console.log("matchingAppointment", matchingAppointment);
 
-  if (matchingAppointment) {
-    setSelectedAppointment(matchingAppointment);
-    console.log("selectedAppointment", matchingAppointment);
+    if (matchingAppointment) {
+      setSelectedAppointment(matchingAppointment);
+      console.log("selectedAppointment", matchingAppointment);
 
-    // Show the offcanvas (Bootstrap)
-    const offcanvasEl = document.getElementById('addEventSidebar');
-    const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
-    bsOffcanvas.show();
-  }
-};
+      // Show the offcanvas (Bootstrap)
+      const offcanvasEl = document.getElementById('addEventSidebar');
+      const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+      bsOffcanvas.show();
+    }
+  };
 
 
- 
-const buildDateTime = (hour, minute, period) => {
-  let hr = parseInt(hour);
-  if (period === 'PM' && hr !== 12) hr += 12;
-  if (period === 'AM' && hr === 12) hr = 0;
 
-  const now = new Date(); // or use a specific date
-  const datePart = now.toISOString().split('T')[0]; // e.g., "2025-05-20"
-  const timePart = `${hr.toString().padStart(2, '0')}:${minute}:00`;
+  const buildDateTime = (hour, minute, period) => {
+    let hr = parseInt(hour);
+    if (period === 'PM' && hr !== 12) hr += 12;
+    if (period === 'AM' && hr === 12) hr = 0;
 
-  return `${datePart}T${timePart}`; // Final output: "2025-05-20T22:30:00"
-};
+    const now = new Date(); // or use a specific date
+    const datePart = now.toISOString().split('T')[0]; // e.g., "2025-05-20"
+    const timePart = `${hr.toString().padStart(2, '0')}:${minute}:00`;
+
+    return `${datePart}T${timePart}`; // Final output: "2025-05-20T22:30:00"
+  };
 
   const minTime = buildDateTime(startHour, startMinute, startPeriod); // e.g., "10:00:00"
   const maxTime = buildDateTime(endHour, endMinute, endPeriod);       // e.g., "18:00:00"
 
-const dataToSend = {
-  minTime,
-  maxTime
-};
+  const dataToSend = {
+    minTime,
+    maxTime
+  };
 
 
   return (
     <div>
-     
+
 
       <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
 
@@ -307,9 +307,17 @@ const dataToSend = {
                       console.log("Date clicked, addAppointment:", addAppointment);
                     }}
                     headerToolbar={{
-                      left: 'title',
+                      left: 'prev,next today',
+                      center: 'title',
                       right: 'dayGridMonth,timeGridWeek,timeGridDay'
                     }}
+                    buttonText={{
+                      today: 'Today',
+                      dayGridMonth: 'Month',
+                      timeGridWeek: 'Week',
+                      timeGridDay: 'Day'
+                    }}
+
                     eventContent={(info) => {
                       return {
                         html: `<div class="custom-event ${info.event.classNames.join(' ')}">
@@ -368,11 +376,11 @@ const dataToSend = {
             </div>
           </div>
         </div>
-     
+
         <div className="row mb-1 mx-2 mt-5 justify-between ">
-         <WorkSession />
-          </div>
+          <WorkSession />
         </div>
+      </div>
     </div>
   )
 }

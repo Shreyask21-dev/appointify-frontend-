@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-const API_URL = process.env.REACT_APP_API_URL;
+
 const Section7 = () => {
   const [iframeUrl, setIframeUrl] = useState('');
   const [savedUrl, setSavedUrl] = useState('');
@@ -10,24 +10,24 @@ const Section7 = () => {
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   // Fetch iframe URL
-const fetchIframeUrl = async () => {
-  try {
-    const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
-    const fetchedUrl = res.data?.iFrameURL;
+  const fetchIframeUrl = async () => {
+    try {
+      const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
+      const fetchedUrl = res.data.data?.iFrameURL;
+      console.log('fetched url -', fetchedUrl);
 
-    if (fetchedUrl) {
-      setSavedUrl(fetchedUrl);
-      setIframeUrl(fetchedUrl);
-    } else {
-      setSavedUrl('');
-      setIframeUrl('');
+      if (fetchedUrl) {
+        setSavedUrl(fetchedUrl);
+        setIframeUrl(fetchedUrl);
+      } else {
+        setSavedUrl('');
+        setIframeUrl('');
+      }
+    } catch (err) {
+      console.error('Error fetching iframe URL:', err);
+      setStatusMessage({ type: 'error', text: 'Failed to fetch map URL.' });
     }
-  } catch (err) {
-    console.error('Error fetching iframe URL:', err);
-    setStatusMessage({ type: 'error', text: 'Failed to fetch map URL.' });
-  }
-};
-
+  };
 
   useEffect(() => {
     fetchIframeUrl();
@@ -35,26 +35,34 @@ const fetchIframeUrl = async () => {
 
   // Save iframe URL
   const handleSave = async () => {
-    if (!iframeUrl.trim()) return;
+    const trimmedUrl = iframeUrl.trim();
+    if (!trimmedUrl) return;
+
+    console.log('Saving raw string payload:', trimmedUrl);
 
     try {
+      await axios.put(
+        `https://appointify.coinagesoft.com/api/Location/iframe`,
+        JSON.stringify(trimmedUrl), 
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-    const payload = { iFrameURL: iframeUrl.trim() };
-
-if (savedUrl) {
-  await axios.put(`https://appointify.coinagesoft.com/api/Location/iframe`, payload);
-  setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
-} else {
-  await axios.post(`https://appointify.coinagesoft.com/api/Location`, payload);
-  setStatusMessage({ type: 'success', text: 'Map URL saved successfully!' });
-}
-
-
+      setStatusMessage({ type: 'success', text: 'Map URL updated successfully!' });
       setIsEditMode(false);
       fetchIframeUrl();
     } catch (err) {
-      console.error('Save failed:', err);
-      setStatusMessage({ type: 'error', text: 'Failed to save map URL.' });
+      console.error('Save failed:', err.response?.data || err.message || err);
+      if (err.response?.data?.errors) {
+        console.table(err.response.data.errors);
+      }
+      setStatusMessage({
+        type: 'error',
+        text: err.response?.data?.title || 'Failed to save map URL.',
+      });
     }
   };
 
@@ -83,7 +91,7 @@ if (savedUrl) {
       <h5 className="mb-3 text-muted">Paste Google Maps Iframe URL</h5>
       <p className="small text-muted">
         👉 Go to <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer">Google Maps</a> → Search location → 
-        Click &quot;Share&quot; → Select &quot;Embed a map&quot; → Copy  the <strong>IFrame URL</strong> and paste below.
+        Click &quot;Share&quot; → Select &quot;Embed a map&quot; → Copy the <strong>iframe src URL</strong> and paste below.
       </p>
 
       {/* Edit Mode */}
@@ -93,11 +101,15 @@ if (savedUrl) {
             className="form-control mb-3"
             rows={3}
             placeholder="Paste only iframe src URL like https://www.google.com/maps/embed?..."
-            value={iframeUrl  }                                                                                                                                         
+            value={iframeUrl}
             onChange={(e) => {
-              const value = e.target.value.trim();
-              const match = value.match(/src\s*=\s*["']([^"']+)["']/);
-              setIframeUrl(match ? match[1] : value);
+              const raw = e.target.value.trim();
+              if (raw.includes('<iframe')) {
+                const match = raw.match(/src\s*=\s*["']([^"']+)["']/);
+                setIframeUrl(match ? match[1] : '');
+              } else {
+                setIframeUrl(raw);
+              }
             }}
           />
 
@@ -111,7 +123,7 @@ if (savedUrl) {
                 width="100%"
                 height="400"
                 style={{ border: 0 }}
-                allowFullScreen=""
+                allowFullScreen
                 loading="lazy"
                 className="my-4 rounded"
               />
@@ -119,7 +131,11 @@ if (savedUrl) {
           )}
 
           <div className="d-flex gap-2 mt-2">
-            <button className="btn btn-sm btn-primary" onClick={handleSave}>
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={handleSave}
+              disabled={iframeUrl === savedUrl}
+            >
               {savedUrl ? 'Update Map URL' : 'Save Map URL'}
             </button>
             {savedUrl && (
@@ -147,16 +163,22 @@ if (savedUrl) {
             width="100%"
             height="400"
             style={{ border: 0 }}
-            allowFullScreen=""
+            allowFullScreen
             loading="lazy"
             className="my-4 rounded"
           />
 
           <div className="d-flex gap-2">
-            <button className="btn btn-sm btn-outline-warning" onClick={() => setIsEditMode(true)}>
+            <button
+              className="btn btn-sm btn-outline-warning"
+              onClick={() => setIsEditMode(true)}
+            >
               ✏️ Edit
             </button>
-            <button className="btn btn-sm btn-outline-danger" onClick={handleDelete}>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={handleDelete}
+            >
               🗑️ Delete
             </button>
           </div>

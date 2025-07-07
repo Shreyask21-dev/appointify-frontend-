@@ -2,20 +2,19 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const LeafletMap = () => {
-  const [iframeHtml, setIframeHtml] = useState('');
+  const [iframeUrl, setIframeUrl] = useState('');
 
   useEffect(() => {
     const fetchIframeUrl = async () => {
       try {
-    const res = await axios.get(`https://appointify.coinagesoft.com/api/Location`);
-if (res.data?.iFrameURL) {
-  const match = res.data.iFrameURL.match(/src="([^"]+)"/);
-  if (match && match[1]) {
-    setIframeHtml(match[1]);
-  } else {
-    console.warn("No valid iframe src found in:", res.data.iFrameURL);
-  }
-}
+        const res = await axios.get('https://appointify.coinagesoft.com/api/Location');
+        console.log("res iframeurl", res.data.data.iFrameURL);
+
+        if (res.data.data?.iFrameURL) {
+          setIframeUrl(res.data.data.iFrameURL); // ✅ use directly
+        } else {
+          console.warn("No iframe URL found in response");
+        }
       } catch (err) {
         console.error('Error loading map:', err);
       }
@@ -24,7 +23,7 @@ if (res.data?.iFrameURL) {
     fetchIframeUrl();
   }, []);
 
-  if (!iframeHtml) return null;
+  if (!iframeUrl) return null;
 
   return (
     <section className="container my-5 py-5">
@@ -33,21 +32,16 @@ if (res.data?.iFrameURL) {
         <p className="text-muted">We’re located at the heart of the city</p>
       </div>
 
-      {/* <div className="ratio ratio-16x9 rounded shadow overflow-hidden" >
-        <div dangerouslySetInnerHTML={{ __html: iframeHtml }} />
-      </div> */}
-      {iframeHtml && (
-        <div className="ratio ratio-16x9 rounded shadow overflow-hidden">
-          <iframe
-            src={iframeHtml}
-            title="Google Map"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            style={{ border: 0 }}
-          />
-        </div>
-      )}
+      <div className="ratio ratio-16x9 rounded shadow overflow-hidden">
+        <iframe
+          src={iframeUrl}
+          title="Google Map"
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          style={{ border: 0 }}
+        />
+      </div>
     </section>
   );
 };
