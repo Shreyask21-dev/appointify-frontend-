@@ -8,7 +8,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'react-datepicker/dist/react-datepicker.css';
 import './Calendar.css';
 import AppointmentForm from './AppointmentForm';
-import WorkSession from './WorkSession';
+import ShiftManager from './ShiftManager';
 import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 
@@ -377,7 +377,7 @@ export default function CalendarComponent() {
         </div>
 
         <div className="row mb-1 mx-2 mt-5 justify-between ">
-          <WorkSession />
+          <ShiftManager />
         </div>
       </div>
     </div>

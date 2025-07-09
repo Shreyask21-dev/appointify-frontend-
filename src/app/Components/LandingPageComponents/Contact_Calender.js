@@ -368,10 +368,10 @@ const Contact_Calender = React.forwardRef((props, ref) => {
         .then((res) => {
           const appointments = res.data || [];
 
-          // Filter appointments for the selected date
+        
           const bookedSlots = appointments
             .filter(a => a.appointmentDate === formData.appointmentDate)
-            .map(a => a.appointmentTime); // example: "10:00 AM - 10:30 AM"
+            .map(a => a.appointmentTime); 
 
           setBookedTimeSlots(bookedSlots);
         })
