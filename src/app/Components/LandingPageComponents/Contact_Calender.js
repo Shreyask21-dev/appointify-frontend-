@@ -312,12 +312,12 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: paymentResponse.razorpay_order_id,
-          paymentId: paymentResponse.razorpay_payment_id,
-          signature: paymentResponse.razorpay_signature
-        })
-        ,
+      body: JSON.stringify({
+  razorpay_order_id: paymentResponse.razorpay_order_id,
+  razorpay_payment_id: paymentResponse.razorpay_payment_id,
+  razorpay_signature: paymentResponse.razorpay_signature
+})
+        
       });
 
       if (response.ok) {
