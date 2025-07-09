@@ -7,7 +7,6 @@ import DatePicker from 'react-datepicker';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'react-datepicker/dist/react-datepicker.css';
 import './Calendar.css';
-
 import AppointmentForm from './AppointmentForm';
 import WorkSession from './WorkSession';
 import { useEffect, useState, useRef } from 'react';

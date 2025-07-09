@@ -280,29 +280,32 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       showModal('failureModal');
     }
   };
-  function openReceiptPdf(base64Pdf) {
-    const byteCharacters = atob(base64Pdf);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-
-    const blob = new Blob([byteArray], { type: 'application/pdf' });
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Open in new tab using an anchor tag
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.target = '_blank'; // Open in new tab
-    a.rel = 'noopener noreferrer';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000); // Clean up
+function openReceiptPdf(base64Pdf) {
+  const byteCharacters = atob(base64Pdf);
+  const byteArray = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteArray[i] = byteCharacters.charCodeAt(i);
   }
+
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const blobUrl = URL.createObjectURL(blob);
+
+  window.open(blobUrl, '_blank'); // open in new tab
+}
+function downloadPdf(base64Pdf) {
+  const byteCharacters = atob(base64Pdf);
+  const byteArray = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteArray[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `Appointment-Receipt.pdf`;
+  link.click();
+}
+
 
   const verifyPayment = async (paymentResponse) => {
     try {
@@ -310,16 +313,15 @@ const Contact_Calender = React.forwardRef((props, ref) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          PaymentId: paymentResponse.razorpay_payment_id,
-          OrderId: paymentResponse.razorpay_order_id,
-          Signature: paymentResponse.razorpay_signature,
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log('Payment Verification Result:', data);
-        console.log()
         if (data.success && data.receipt) {
           openReceiptPdf(data.receipt);
         } else {

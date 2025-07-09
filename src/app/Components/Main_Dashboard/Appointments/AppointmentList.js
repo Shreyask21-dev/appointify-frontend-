@@ -42,6 +42,19 @@ const AppointmentList = () => {
       });
   }, [appointments]);
 
+  function downloadPdf(base64Pdf) {
+  const byteCharacters = atob(base64Pdf);
+  const byteArray = new Uint8Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteArray[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const blob = new Blob([byteArray], { type: 'application/pdf' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `Appointment-Receipt.pdf`;
+  link.click();
+}
   const handleEdit = (appt) => {
     setSelectedAppt({ ...appt });
     setShowModal(true);
@@ -125,7 +138,7 @@ const AppointmentList = () => {
   };
 
   const handleViewInvoice = (apptId) => {
-    // For now, we will just log the appointment id or open a placeholder.
+    downloadPdf();
     console.log(`Viewing invoice for appointment ${apptId}`);
     // You can replace this with logic to open an invoice PDF or redirect to an invoice page.
     window.open(`/invoice/${apptId}`, '_blank'); // Adjust URL as needed
