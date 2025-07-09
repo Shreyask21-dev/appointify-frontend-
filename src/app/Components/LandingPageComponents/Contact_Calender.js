@@ -280,31 +280,31 @@ const Contact_Calender = React.forwardRef((props, ref) => {
       showModal('failureModal');
     }
   };
-function openReceiptPdf(base64Pdf) {
-  const byteCharacters = atob(base64Pdf);
-  const byteArray = new Uint8Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteArray[i] = byteCharacters.charCodeAt(i);
+  function openReceiptPdf(base64Pdf) {
+    const byteCharacters = atob(base64Pdf);
+    const byteArray = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteArray[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    window.open(blobUrl, '_blank'); // open in new tab
   }
+  function downloadPdf(base64Pdf) {
+    const byteCharacters = atob(base64Pdf);
+    const byteArray = new Uint8Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteArray[i] = byteCharacters.charCodeAt(i);
+    }
 
-  const blob = new Blob([byteArray], { type: 'application/pdf' });
-  const blobUrl = URL.createObjectURL(blob);
-
-  window.open(blobUrl, '_blank'); // open in new tab
-}
-function downloadPdf(base64Pdf) {
-  const byteCharacters = atob(base64Pdf);
-  const byteArray = new Uint8Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteArray[i] = byteCharacters.charCodeAt(i);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Appointment-Receipt.pdf`;
+    link.click();
   }
-
-  const blob = new Blob([byteArray], { type: 'application/pdf' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `Appointment-Receipt.pdf`;
-  link.click();
-}
 
 
   const verifyPayment = async (paymentResponse) => {
@@ -313,10 +313,11 @@ function downloadPdf(base64Pdf) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-        razorpay_order_id: paymentResponse.razorpay_order_id,
-        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-        razorpay_signature: paymentResponse.razorpay_signature
-        }),
+          orderId: paymentResponse.razorpay_order_id,
+          paymentId: paymentResponse.razorpay_payment_id,
+          signature: paymentResponse.razorpay_signature
+        })
+        ,
       });
 
       if (response.ok) {
