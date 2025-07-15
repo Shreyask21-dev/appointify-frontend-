@@ -34,7 +34,6 @@ const AppointmentList = () => {
           setAppointments(sortedAppointments);
 
         // setAppointments(response.data);
-        console.log("Appointments", response.data)
         
       })
       .catch(error => {
@@ -42,7 +41,7 @@ const AppointmentList = () => {
       });
   }, [appointments]);
 
-  function downloadPdf(base64Pdf) {
+function downloadPdf(base64Pdf) {
   const byteCharacters = atob(base64Pdf);
   const byteArray = new Uint8Array(byteCharacters.length);
   for (let i = 0; i < byteCharacters.length; i++) {
@@ -55,6 +54,7 @@ const AppointmentList = () => {
   link.download = `Appointment-Receipt.pdf`;
   link.click();
 }
+
   const handleEdit = (appt) => {
     setSelectedAppt({ ...appt });
     setShowModal(true);
@@ -137,12 +137,31 @@ const AppointmentList = () => {
       });
   };
 
-  const handleViewInvoice = (apptId) => {
-    downloadPdf();
-    console.log(`Viewing invoice for appointment ${apptId}`);
-    // You can replace this with logic to open an invoice PDF or redirect to an invoice page.
-    window.open(`/invoice/${apptId}`, '_blank'); // Adjust URL as needed
-  };
+const handleViewInvoice = async (apptId) => {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await axios.get(` https://appointify.coinagesoft.com/api/CustomerAppointment/GetInvoice`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        id: apptId, // 👈 use params instead of string concat
+      },
+    });
+
+
+    if (response.data?.base64Pdf) {
+      downloadPdf(response.data.base64Pdf);
+    } else {
+      alert("Invalid or missing invoice data.");
+    }
+  } catch (error) {
+    console.error("Failed to fetch invoice PDF:", error.response?.data || error.message);
+    alert("Could not load invoice. Please try again.");
+  }
+};
+
+
 
   return (
     <>

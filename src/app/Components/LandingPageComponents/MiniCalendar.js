@@ -5,24 +5,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import "./MiniCalendar.css";
 import axios from "axios";
 
-const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTimeSlots, selectedSlot }) => {
-  const [appointments, setAppointments] = useState([]);
+const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTimeSlots = [], selectedSlot, planId }) => {
   const [timeSlots, setTimeSlots] = useState([]);
 
   const isSameDay = (date1, date2) =>
     date1.getDate() === date2.getDate() &&
     date1.getMonth() === date2.getMonth() &&
     date1.getFullYear() === date2.getFullYear();
-
-  const parseTime = (timeStr) => {
-    const [time, meridian] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-    if (meridian === "PM" && hours !== 12) hours += 12;
-    if (meridian === "AM" && hours === 12) hours = 0;
-    const date = new Date();
-    date.setHours(hours, minutes, 0, 0);
-    return date;
-  };
 
   const formatTime = (date) => {
     let hours = date.getHours();
@@ -32,50 +21,96 @@ const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTi
     return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   };
 
-  const generateTimeSlots = (start, end, durationMin) => {
-    const result = [];
-    const curr = new Date(start);
-
-    while (curr.getTime() + durationMin * 60000 <= end.getTime()) {
-      const endSlot = new Date(curr.getTime() + durationMin * 60000);
-      result.push(`${formatTime(curr)} - ${formatTime(endSlot)}`);
-      curr.setTime(curr.getTime() + durationMin * 60000);
-    }
-
-    return result;
+  const format24Hr = (date) => {
+    return date.toTimeString().slice(0, 5);
   };
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await axios.get("https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments");
-        setAppointments(res.data || []);
-      } catch (err) {
-        console.error("Error fetching appointments", err);
+ const generateTimeSlots = (startTime, endTime, duration, buffer) => {
+  if (!startTime || !endTime || isNaN(duration)) return [];
+
+  const slots = [];
+  const cur = new Date(startTime);
+
+  while (true) {
+    const slotEnd = new Date(cur.getTime() + duration * 60000);
+    if (slotEnd > endTime) break;
+
+    slots.push({
+      label: `${formatTime(cur)} - ${formatTime(slotEnd)}`,
+      value: `${formatTime(cur)} - ${formatTime(slotEnd)}`,
+      start: format24Hr(cur),
+      end: format24Hr(slotEnd),
+    });
+
+    // Move to next slot (consider buffer)
+    cur.setTime(slotEnd.getTime() + buffer * 60000);
+  }
+
+  return slots;
+};
+
+
+useEffect(() => {
+  const fetchShiftAndGenerateSlots = async () => {
+    const token = localStorage.getItem('token');
+    if (!selected || !duration || !planId) return;
+
+    try {
+      console.log("Fetching plan with ID:", planId);
+
+      // Step 1: Get PlanBufferRule (returns shiftId and buffer time)
+      const bufferRes = await axios.get(` https://appointify.coinagesoft.com/api/PlanBufferRule`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { planId }
+      });
+
+      const bufferData = bufferRes.data;
+      console.log("🟢 PlanBufferRule Response:", bufferData);
+
+      const shiftId = bufferData.shiftId;
+      const buffer = bufferData.bufferInMinutes || 0;
+
+      if (!shiftId) {
+        console.warn("⛔ No shiftId found in buffer rule.");
+        setTimeSlots([]);
+        return;
       }
-    };
 
-    fetchAppointments();
-  }, []);
+      // Step 2: Fetch all shifts and find the matching one
+      const shiftRes = await axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-  useEffect(() => {
-    const generateSlotsOnSelection = async () => {
-      if (!selected || !duration) return;
+      const allShifts = shiftRes.data;
+      console.log("🟢 Shift details:", allShifts);
 
-      try {
-        const res = await axios.get("https://appointify.coinagesoft.com/api/WorkSession");
-        const session = res.data[0];
-        const start = parseTime(session.workStartTime);
-        const end = parseTime(session.workEndTime);
-        const slots = generateTimeSlots(start, end, Number(duration));
-        setTimeSlots(slots);
-      } catch (err) {
-        console.error("Failed to fetch session or generate slots", err);
+      const shift = allShifts.find(s => s.id === shiftId);
+
+      if (!shift?.startTime || !shift?.endTime) {
+        console.warn("⛔ Missing shift start or end time.");
+        setTimeSlots([]);
+        return;
       }
-    };
 
-    generateSlotsOnSelection();
-  }, [selected, duration]);
+      const shiftStart = new Date(`${selected}T${shift.startTime}`);
+      const shiftEnd = new Date(`${selected}T${shift.endTime}`);
+
+      console.log("Shift Start:", shiftStart);
+      console.log("Shift End:", shiftEnd);
+      console.log("Duration:", duration);
+
+      const slots = generateTimeSlots(shiftStart, shiftEnd, Number(duration), buffer);
+      console.log("Generated Slots:", slots);
+
+      setTimeSlots(slots);
+    } catch (err) {
+      console.error("❌ Error fetching shift:", err);
+      setTimeSlots([]);
+    }
+  };
+
+  fetchShiftAndGenerateSlots();
+}, [selected, duration, planId]);
 
   return (
     <div className="mx-auto" style={{ maxWidth: "35rem" }}>
@@ -85,17 +120,11 @@ const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTi
             inline
             selected={selected ? new Date(selected) : null}
             onChange={(dateObj) => {
-              if (!duration) {
-                alert("Please select a plan to see available time slots.");
+              if (!duration || !planId) {
+                alert("Please select a plan first.");
                 return;
               }
               onDateChange && onDateChange(dateObj.toISOString().split("T")[0]);
-            }}
-            dayClassName={(date) => {
-              const hasAppt = appointments.some((a) =>
-                isSameDay(date, new Date(a.appointmentDate))
-              );
-              return hasAppt ? "date-has-dot" : "";
             }}
           />
 
@@ -104,25 +133,27 @@ const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTi
               <h6 className="fw-bold text-primary mb-2 mt-3">Available Slots:</h6>
               <div className="row gx-1">
                 {timeSlots.map((slot, index) => {
-                  const isBooked = bookedTimeSlots?.includes(slot);
+                  const isBooked = bookedTimeSlots.includes(slot.value);
+                  const isSelected = selectedSlot === slot.value;
+
                   return (
                     <div className="col-4 mb-2" key={index}>
                       <button
-                        className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 ${isBooked ? "bg-danger text-white"
-                            : selectedSlot === slot ? "bg-primary text-white"
+                        className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 ${isBooked
+                            ? "bg-danger text-white"
+                            : isSelected
+                              ? "bg-primary text-white"
                               : "btn-outline-primary"
                           }`}
-
-                        // className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 ${isBooked ? "bg-danger text-white" : "btn-outline-primary"}`}
                         style={{
                           fontSize: "0.75rem",
                           cursor: isBooked ? "not-allowed" : "pointer",
                           pointerEvents: isBooked ? "none" : "auto",
                         }}
                         disabled={isBooked}
-                        onClick={() => onSlotSelect(slot)}
+                        onClick={() => onSlotSelect(slot.value)}
                       >
-                        {slot}
+                        {slot.label}
                       </button>
                     </div>
                   );

@@ -2,66 +2,63 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 
 const API = process.env.REACT_APP_API_URL;
 
-const ShiftManager = () => {
+const ShiftManager = ({ planId }) => {
   const [shifts, setShifts] = useState([]);
   const [selectedShift, setSelectedShift] = useState(null);
-  const [startHour, setStartHour] = useState('');
-  const [startMinute, setStartMinute] = useState('');
+  const [startHour, setStartHour] = useState('01');
+  const [startMinute, setStartMinute] = useState('00');
   const [startPeriod, setStartPeriod] = useState('AM');
-  const [endHour, setEndHour] = useState('');
-  const [endMinute, setEndMinute] = useState('');
+  const [endHour, setEndHour] = useState('01');
+  const [endMinute, setEndMinute] = useState('00');
   const [endPeriod, setEndPeriod] = useState('PM');
-  const [bufferMin, setBufferMin] = useState('');
+  const [bufferMin, setBufferMin] = useState('10');
   const [planList, setPlanList] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [token, setToken] = useState(null);
 
-useEffect(() => {
-  if (typeof window !== 'undefined') {
-    const storedToken = localStorage.getItem('token');
-    setToken(storedToken);
-  }
-}, []);
   const hours = [...Array(12)].map((_, i) => (i + 1).toString().padStart(2, '0'));
   const mins = ['00', '15', '30', '45'];
 
-  const parseTime = (ts) => {
-    const date = new Date(ts);
-    let h = date.getHours(), m = date.getMinutes(), ap = 'AM';
-    if (h >= 12) { ap = 'PM'; if (h > 12) h -= 12; }
-    if (h === 0) h = 12;
-    return { hour: h.toString().padStart(2, '0'), minute: m.toString().padStart(2, '0'), period: ap };
-  };
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) setToken(storedToken);
+  }, []);
 
- useEffect(() => {
-  if (!token) return;
+  useEffect(() => {
+    if (!token) return;
 
-  const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+    const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
 
-  axios.get(`https://appointify.coinagesoft.com/api/ConsultantShift`, authHeaders)
-    .then((r) => {  
-      setShifts(r.data);
+    const loadData = async () => {
+      try {
+        const shiftRes = await axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, authHeaders);
+        const shiftData = shiftRes.data;
+        setShifts(shiftData);
 
-      if (shifts.length === 0) {
-  setMessage("No shifts found for this consultant.");
-}
-      console.log("shifts loaded =", r.data);
-    })
-    .catch(() => setError('Cannot load shifts'));
+        if (shiftData.length === 0) {
+          setMessage("No shifts found for this consultant.");
+        }
+      } catch (err) {
+        setError('Cannot load shifts');
+      }
 
-  axios.get(`https://appointify.coinagesoft.com/api/ConsultationPlan/get-all`)
-    .then((r) => {
-      setPlanList(r.data);
-      console.log("plans loaded =", r.data);
-    })
-    .catch(() => console.log('No plans'));
+      try {
+        const planRes = await axios.get(` https://appointify.coinagesoft.com/api/ConsultationPlan/get-all`);
+        setPlanList(planRes.data);
+      } catch {
+        console.log('No plans found.');
+      }
+    };
 
-}, [token]);
+    loadData();
+  }, [token]);
 
   useEffect(() => {
     if (!selectedShift) return;
@@ -71,104 +68,227 @@ useEffect(() => {
     setEndHour(pe.hour); setEndMinute(pe.minute); setEndPeriod(pe.period);
   }, [selectedShift]);
 
-  const buildTimestamp = (h, m, p) => {
-    let hh = parseInt(h);
-    if (p === 'PM' && hh < 12) hh += 12;
-    if (p === 'AM' && hh === 12) hh = 0;
-    return new Date(0, 0, 0, hh, parseInt(m)).toISOString();
+
+  const parseTime = (ts) => {
+    const [hStr, mStr] = ts.split(':');
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    let period = 'AM';
+
+    if (h >= 12) {
+      period = 'PM';
+      if (h > 12) h -= 12;
+    }
+    if (h === 0) h = 12;
+
+    return {
+      hour: h.toString().padStart(2, '0'),
+      minute: m.toString().padStart(2, '0'),
+      period
+    };
   };
 
-  const saveShift = async () => {
-    try {
-      const body = {
-        startTime: buildTimestamp(startHour, startMinute, startPeriod),
-        endTime: buildTimestamp(endHour, endMinute, endPeriod),
-        name: selectedShift?.id ? selectedShift.name : `Shift (${startHour}:${startMinute}-${endHour}:${endMinute})`
-      };
+  const buildTimeSpan = (h, m, p) => {
+    if (!h || !m || !p) return null;
 
+    let hh = parseInt(h, 10);
+    if (p === 'PM' && hh < 12) hh += 12;
+    if (p === 'AM' && hh === 12) hh = 0;
+
+    const mm = m.toString().padStart(2, '0');
+    const hhStr = hh.toString().padStart(2, '0');
+
+    return `${hhStr}:${mm}:00`; // returns "HH:mm:ss"
+  };
+
+  const handleDeleteShift = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this shift?')) return;
+
+    const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+
+    try {
+      await axios.delete(` https://appointify.coinagesoft.com/api/ConsultantShift/${id}`, authHeaders);
+      setShifts(shifts.filter(s => s.id !== id));
+      setMessage("Shift deleted successfully.");
+      setError('');
+    } catch (err) {
+      setError('Failed to delete shift');
+    }
+  };
+
+
+  const saveShift = async () => {
+    const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+    console.log(startHour, startMinute, endHour, endMinute)
+
+    if (!startHour || !startMinute || !endHour || !endMinute) {
+      setError("Please select valid start and end time.");
+      return;
+    }
+
+    const start = buildTimeSpan(startHour, startMinute, startPeriod); // e.g. "13:30:00"
+    const end = buildTimeSpan(endHour, endMinute, endPeriod);         // e.g. "15:00:00"
+
+    const shiftName = `Shift (${startHour}:${startMinute} ${startPeriod} - ${endHour}:${endMinute} ${endPeriod})`;
+
+    // 🧠 Convert HH:mm:ss → minutes since midnight
+    const timeToMinutes = (time) => {
+      const [h, m] = time.split(':');
+      return parseInt(h, 10) * 60 + parseInt(m, 10);
+    };
+
+    const newStartMin = timeToMinutes(start);
+    const newEndMin = timeToMinutes(end);
+
+    // 🚫 Check for overlap
+    const isOverlap = shifts.some(s => {
+      if (selectedShift?.id && s.id === selectedShift.id) return false; // skip editing current shift
+      const existingStart = timeToMinutes(s.startTime.slice(0, 5));
+      const existingEnd = timeToMinutes(s.endTime.slice(0, 5));
+      return !(newEndMin <= existingStart || newStartMin >= existingEnd);
+    });
+
+    if (isOverlap) {
+      setError("⚠️ This shift overlaps with an existing one. Please choose a different time.");
+      return;
+    }
+
+    const body = {
+      startTime: start,
+      endTime: end,
+      name: shiftName,
+    };
+    
+if (planId) {
+  body.planId = planId;  // ✅ Only include if it's valid
+}
+
+    console.log("Creating/Updating shift with body:", body);
+
+    try {
       const res = selectedShift?.id
-        ? await axios.put(`https://appointify.coinagesoft.com/api/ConsultantShift/${selectedShift.id}`, body, authHeaders)
-        : await axios.post(`https://appointify.coinagesoft.com/api/ConsultantShift`, body, authHeaders);
+        ? await axios.put(` https://appointify.coinagesoft.com/api/ConsultantShift/${selectedShift.id}`, body, authHeaders)
+        : await axios.post(` https://appointify.coinagesoft.com/api/ConsultantShift`, body, authHeaders);
 
       setMessage('Shift saved successfully');
       setError('');
-      const { data } = await axios.get(`https://appointify.coinagesoft.com/api/ConsultantShift`, authHeaders);
+      const { data } = await axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, authHeaders);
       setShifts(data);
       setSelectedShift(null);
     } catch (err) {
-      setError(err?.response?.data || 'Save failed');
+      const validationErrors = err?.response?.data?.errors;
+      if (validationErrors) {
+        const errorMessages = Object.values(validationErrors).flat().join(', ');
+        setError(errorMessages);
+      } else {
+        setError(err?.response?.data?.title || 'Save failed');
+      }
     }
   };
-
-  const saveBuffer = async () => {
-    if (!selectedPlan || !selectedShift) return setError('Select plan and shift first');
-    try {
-      await axios.post(`https://appointify.coinagesoft.com/api/PlanBufferRule`, {
-        planId: selectedPlan.id,
-        shiftId: selectedShift.id,
-        bufferInMinutes: parseInt(bufferMin)
-      }, authHeaders);
-      setMessage('Buffer saved');
-      setError('');
-    } catch (err) {
-      setError(err?.response?.data || 'Buffer error');
-    }
-  };
-
   return (
-    <Container className="p-4 bg-white">
-      <h3>Manage Shifts & Buffers</h3>
-      <Form.Group className="mb-3">
-        <Form.Label>Choose Shift</Form.Label>
-        <Form.Select onChange={(e)=> {
-          const sh = shifts.find(s=>s.id===e.target.value);
-          setSelectedShift(sh);
-        }} value={selectedShift?.id || ''}>
-          <option value="">-- new or select --</option>
-          {shifts.map(s => (
-            <option key={s.id} value={s.id}>{s.name} ({s.startTime}‑{s.endTime})</option>
-          ))}
-        </Form.Select>
-      </Form.Group>
+    <Container className="p-4 bg-white rounded shadow-sm">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Manage Shifts </h4>
+        <Button
+          variant="outline-success"
+          onClick={() => {
+            setSelectedShift(null);
+            setStartHour('01'); setStartMinute('00'); setStartPeriod('AM');
+            setEndHour('01'); setEndMinute('00'); setEndPeriod('PM');
+          }}
+        >
+          <i className="bi bi-plus-circle pe-3"></i>  Add Shift
+        </Button>
+      </div>
 
-      <Row><Col>Start</Col><Col>End</Col></Row>
+      {/* Shifts List */}
+      {shifts.length === 0 ? (
+        <Alert variant="info">No shifts found. Use <b>Add Shift</b> to create one.</Alert>
+      ) : (
+        <div className="mb-4">
+          <div className="list-group">
+            {shifts.map((s) => (
+              <div key={s.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>{s.name}</strong>
+                  <div className="text-muted" style={{ fontSize: '0.85rem' }}>
+                    {s.startTime.slice(11, 16)}  {s.endTime.slice(11, 16)}
+                  </div>
+                </div>
+                <div className="d-flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline-primary"
+                    onClick={() => setSelectedShift(s)}
+                  >
+                    <i className="bi bi-pencil-fill"></i>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline-danger"
+                    onClick={() => handleDeleteShift(s.id)}
+                  >
+                    <i className="bi bi-trash-fill"></i>
+                  </Button>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Shift Form */}
+      <hr />
+      <h5>{selectedShift ? 'Edit Shift' : 'Create New Shift'}</h5>
       <Row className="mb-3">
-        {[startHour, startMinute, startPeriod].map((v,i)=>
-          <Col key={'s'+i}>
-            <Form.Select value={v} onChange={e=>[setStartHour,setStartMinute,setStartPeriod][i](e.target.value)}>
-              <option>--</option>
-              {(i===0?hours: i===1?mins: ['AM','PM']).map(opt=><option key={opt}>{opt}</option>)}
+        <Col>
+          <Form.Label>Start Time</Form.Label>
+          <div className="d-flex gap-2">
+            <Form.Select value={startHour} onChange={(e) => setStartHour(e.target.value)}>
+              {hours.map(h => <option key={h} value={h}>{h}</option>)}
             </Form.Select>
-          </Col>)}
-        {[endHour, endMinute, endPeriod].map((v,i)=>
-          <Col key={'e'+i}>
-            <Form.Select value={v} onChange={e=>[setEndHour,setEndMinute,setEndPeriod][i](e.target.value)}>
-              <option>--</option>
-              {(i===0?hours: i===1?mins: ['AM','PM']).map(opt=><option key={opt}>{opt}</option>)}
+
+            <Form.Select value={startMinute} onChange={(e) => setStartMinute(e.target.value)}>
+              {mins.map(m => <option key={m} value={m}>{m}</option>)}
             </Form.Select>
-          </Col>)}
+
+            <Form.Select value={startPeriod} onChange={(e) => setStartPeriod(e.target.value)}>
+              {['AM', 'PM'].map(p => <option key={p} value={p}>{p}</option>)}
+            </Form.Select>
+
+          </div>
+        </Col>
+        <Col>
+          <Form.Label>End Time</Form.Label>
+          <div className="d-flex gap-2">
+            <Form.Select value={endHour} onChange={(e) => setEndHour(e.target.value)}>
+              {hours.map(h => <option key={h} value={h}>{h}</option>)}
+            </Form.Select>
+            <Form.Select value={endMinute} onChange={(e) => setEndMinute(e.target.value)}>
+              {mins.map(m => <option key={m} value={m}>{m}</option>)}
+            </Form.Select>
+            <Form.Select value={endPeriod} onChange={(e) => setEndPeriod(e.target.value)}>
+              {['AM', 'PM'].map(p => <option key={p} value={p}>{p}</option>)}
+            </Form.Select>
+          </div>
+        </Col>
       </Row>
-      <Button onClick={saveShift}>Save Shift</Button>
 
-      <hr/>
+      <Button onClick={saveShift} className="mb-4" variant="primary">
+        {selectedShift ? 'Update Shift' : 'Save Shift'}
+      </Button>
 
-      <Form.Group className="mb-3">
-        <Form.Label>Select Plan</Form.Label>
-        <Form.Select onChange={e => setSelectedPlan(planList.find(p=>p.id===e.target.value))} value={selectedPlan?.id||''}>
-          <option value="">-- choose plan --</option>
-          {planList.map(p => <option key={p.id} value={p.id}>{p.planName} ({p.planDuration} min)</option>)}
-        </Form.Select>
-      </Form.Group>
-      <Form.Group className="mb-3">
-        <Form.Label>Buffer Minutes</Form.Label>
-        <Form.Control type="number" value={bufferMin} onChange={e=>setBufferMin(e.target.value)} placeholder="e.g. 10"/>
-      </Form.Group>
-      <Button onClick={saveBuffer}>Save Buffer Rule</Button>
+      {/* Buffer Section */}
+      <hr />
 
+
+      {/* Messages */}
       {message && <Alert variant="success" className="mt-3">{message}</Alert>}
       {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
     </Container>
   );
+
 };
 
 export default ShiftManager;

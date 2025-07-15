@@ -1,3 +1,4 @@
+// CalendarComponent.jsx
 'use client';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -12,8 +13,6 @@ import ShiftManager from './ShiftManager';
 import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 
-
-
 export default function CalendarComponent() {
   const offcanvasRef = useRef(null);
   const [plans, setPlans] = useState([]);
@@ -24,31 +23,44 @@ export default function CalendarComponent() {
   const [startHour, setStartHour] = useState("10");
   const [startMinute, setStartMinute] = useState("00");
   const [startPeriod, setStartPeriod] = useState("AM");
-  const [addAppointment, setAddAppointment] = useState(false)
+  const [addAppointment, setAddAppointment] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [selectedShiftId, setSelectedShiftId] = useState(null);
+  const [shifts, setShifts] = useState([]);
+  const [bufferInMinutes, setBufferInMinutes] = useState(0);
   const [endHour, setEndHour] = useState("11");
   const [endMinute, setEndMinute] = useState("00");
   const [endPeriod, setEndPeriod] = useState("AM");
 
-
   const getColorClass = (index) => {
-    const colors = [
-      'form-check-primary',
-      'form-check-success',
-      'form-check-warning',
-      'form-check-danger',
-      'form-check-info'
-    ];
+    const colors = ['form-check-primary', 'form-check-success', 'form-check-warning', 'form-check-danger', 'form-check-info'];
     return colors[index % colors.length];
+  };
+
+  const fetchAppointments = () => {
+    const token = localStorage.getItem('token');
+    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+      .then(response => {
+        const sortedAppointments = [...response.data].sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
+        setAppointments(sortedAppointments);
+      })
+      .catch(error => {
+        console.error('Error fetching appointments:', error);
+      });
   };
 
   useEffect(() => {
     const offcanvasElement = offcanvasRef.current;
-
     const handleOffcanvasHidden = () => {
       setAddAppointment(false);
-      setSelectedAppointment(null);// optional: in case you’re toggling the UI via state
+      setSelectedAppointment(null);
+      fetchAppointments(); // refresh after closing form
     };
 
     if (offcanvasElement) {
@@ -62,26 +74,8 @@ export default function CalendarComponent() {
     };
   }, []);
 
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-      .then(response => {
-        const sortedAppointments = [...response.data].sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
-        setAppointments(sortedAppointments);
-
-        // setAppointments(response.data);
-        console.log("Appointments", response.data)
-
-      })
-      .catch(error => {
-        console.error('Error fetching appointments:', error);
-      });
+    fetchAppointments();
   }, []);
 
   useEffect(() => {
@@ -92,31 +86,84 @@ export default function CalendarComponent() {
           headers: { 'Authorization': `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch plans');
-        }
+        if (!response.ok) throw new Error('Failed to fetch plans');
 
         const data = await response.json();
-        console.log(data)
-        if (Array.isArray(data)) {
-          setPlans(data);
-        } else {
-          console.error('Expected an array for plans, but got:', data);
-          setPlans([]);
-        }
+        if (Array.isArray(data)) setPlans(data);
+        else setPlans([]);
       } catch (error) {
         console.error('Error fetching plans:', error);
         setPlans([]);
       }
     };
-
-    fetchPlans(); // Call the fetch function
-
+    fetchPlans();
   }, []);
+
   useEffect(() => {
     setSelectedPlans(plans.map(p => p.planName?.toLowerCase()));
   }, [plans]);
 
+  useEffect(() => {
+  console.log("📌 Updated selectedPlanId:", selectedPlanId);
+}, [selectedPlanId]);
+
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  console.log("planId={selectedPlanId}",selectedPlanId)
+  if (!selectedPlanId) return;
+
+  // Fetch all consultant shifts
+  axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then((res) => {
+    console.log("🟢 ConsultantShift Response:", res);
+    setShifts(res.data);
+  })
+  .catch((err) => {
+    console.error("❌ Error fetching shifts:", err);
+    setShifts([]);
+  });
+
+  // Fetch buffer time using only planId (shiftId removed from params)
+  axios.get(` https://appointify.coinagesoft.com/api/PlanBufferRule`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { planId: selectedPlanId }  // ✅ shiftId removed
+  })
+  .then((res) => {
+    console.log("🟢 PlanBufferRule Response:", res.data);
+    setBufferInMinutes(res.data.bufferInMinutes);
+  })
+  .catch((err) => {
+    console.error("❌ Error fetching buffer:", err);
+    setBufferInMinutes(0);
+  });
+
+}, [selectedPlanId]);  // ✅ Removed selectedShiftId from dependency
+
+useEffect(() => {
+  if (!shifts.length || !selectedShiftId) return;
+  const shift = shifts.find(s => s.id === selectedShiftId);
+
+  if (!shift) return;
+
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+
+  const start = new Date(`${dateStr}T${shift.startTime}`);
+  let end = new Date(`${dateStr}T${shift.endTime}`);
+
+  // 🛠 Fix: if end time is less than start time, it means it goes past midnight
+  if (end <= start) {
+    end.setDate(end.getDate() + 1); // move end to next day
+  }
+
+  console.log("🟢 Shift Start:", start);
+  console.log("🟢 Shift End:", end);
+
+  setSlotStartTime(start);
+  setSlotEndTime(end);
+}, [shifts, selectedShiftId]);
 
   const scheduledAppointments = appointments
     .filter(a => a.appointmentStatus === 0)
@@ -134,78 +181,48 @@ export default function CalendarComponent() {
         extendedProps: {
           planName: a.plan?.toLowerCase() || 'unknown',
           status: a.appointmentStatus,
-          appointmentTime: a.appointmentTime,  // important for matching click event
+          appointmentTime: a.appointmentTime,
           id: a.id
         }
       };
     });
 
-
-
-
-  useEffect(() => {
-    console.log("Filtered Appointments", scheduledAppointments)
-
-  }, [appointments])
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    return false;
-  };
-  // Extract booked times for the selected date
-
   const handleEventClick = (info) => {
     const clickedTitle = info.event.title;
-    const clickedDate = info.event.start;  // Date object
-    const clickedTime = info.event.extendedProps.appointmentTime; // added time prop
+    const clickedDate = info.event.start;
+    const clickedTime = info.event.extendedProps.appointmentTime;
 
-    // Use strict matching including appointmentTime
     const matchingAppointment = appointments.find(
       (a) =>
         `${a.firstName} ${a.lastName}` === clickedTitle &&
-        a.appointmentDate === clickedDate.toISOString().slice(0, 10) && // YYYY-MM-DD
+        a.appointmentDate === clickedDate.toISOString().slice(0, 10) &&
         a.appointmentTime === clickedTime
     );
 
-    console.log("matchingAppointment", matchingAppointment);
-
     if (matchingAppointment) {
       setSelectedAppointment(matchingAppointment);
-      console.log("selectedAppointment", matchingAppointment);
-
-      // Show the offcanvas (Bootstrap)
       const offcanvasEl = document.getElementById('addEventSidebar');
       const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
       bsOffcanvas.show();
     }
   };
 
-
-
   const buildDateTime = (hour, minute, period) => {
     let hr = parseInt(hour);
     if (period === 'PM' && hr !== 12) hr += 12;
     if (period === 'AM' && hr === 12) hr = 0;
-
-    const now = new Date(); // or use a specific date
-    const datePart = now.toISOString().split('T')[0]; // e.g., "2025-05-20"
+    const now = new Date();
+    const datePart = now.toISOString().split('T')[0];
     const timePart = `${hr.toString().padStart(2, '0')}:${minute}:00`;
-
-    return `${datePart}T${timePart}`; // Final output: "2025-05-20T22:30:00"
+    return `${datePart}T${timePart}`;
   };
 
-  const minTime = buildDateTime(startHour, startMinute, startPeriod); // e.g., "10:00:00"
-  const maxTime = buildDateTime(endHour, endMinute, endPeriod);       // e.g., "18:00:00"
-
-  const dataToSend = {
-    minTime,
-    maxTime
-  };
-
+  const minTime = buildDateTime(startHour, startMinute, startPeriod);
+  const maxTime = buildDateTime(endHour, endMinute, endPeriod);
 
   return (
-    <div>
-
-
+    <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
+   
       <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
 
         <div className="card app-calendar-wrapper">
@@ -353,22 +370,30 @@ export default function CalendarComponent() {
                   ></button>
                 </div>
                 <div className="offcanvas-body">
-                  <AppointmentForm
-                    plans={plans}
-                    slotStartTime={slotStartTime}
-                    slotEndTime={slotEndTime}
-                    setSlotStartTime={setSlotStartTime}
-                    setSlotEndTime={setSlotEndTime}
-                    startHour={startHour}
-                    startMinute={startMinute}
-                    startPeriod={startPeriod}
-                    endHour={endHour}
-                    endMinute={endMinute}
-                    endPeriod={endPeriod}
-                    addAppointment={addAppointment}
-                    selectedAppointment={selectedAppointment}
-                    setAddAppointment={setAddAppointment}
-                  />
+                 <AppointmentForm
+        plans={plans}
+        slotStartTime={slotStartTime}
+        slotEndTime={slotEndTime}
+        setSlotStartTime={setSlotStartTime}
+        setSlotEndTime={setSlotEndTime}
+        startHour={startHour}
+        startMinute={startMinute}
+        startPeriod={startPeriod}
+        endHour={endHour}
+        endMinute={endMinute}
+        endPeriod={endPeriod}
+        addAppointment={addAppointment}
+        selectedAppointment={selectedAppointment}
+        setAddAppointment={setAddAppointment}
+        shiftStart={slotStartTime}
+        shiftEnd={slotEndTime}
+        bufferInMinutes={bufferInMinutes}
+        refreshAppointments={fetchAppointments} 
+         setSelectedShiftId={setSelectedShiftId}
+         setBufferInMinutes={setBufferInMinutes}
+           selectedPlanId={selectedPlanId} // ✅ new
+           setSelectedPlanId={setSelectedPlanId} /// ✅ added refresh
+      />
 
                 </div>
               </div>
@@ -376,10 +401,13 @@ export default function CalendarComponent() {
           </div>
         </div>
 
-        <div className="row mb-1 mx-2 mt-5 justify-between ">
-          <ShiftManager />
+     
+
+     
+         <div className="row mb-1 mx-2 mt-5 justify-between ">
+          <ShiftManager planId={selectedPlanId} />
         </div>
       </div>
     </div>
-  )
+  );
 }

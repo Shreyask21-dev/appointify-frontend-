@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import validator from 'validator';
-const API_URL = process.env.REACT_APP_API_URL;
+
 export default function AppointmentForm({
   plans,
   startHour,
@@ -13,7 +13,14 @@ export default function AppointmentForm({
   endPeriod,
   selectedAppointment,
   addAppointment,
-  setAddAppointment
+  setAddAppointment,
+  shiftStart,
+  shiftEnd,
+  bufferInMinutes,
+  setBufferInMinutes,
+  setSelectedShiftId,
+   selectedPlanId,             // ✅ new
+  setSelectedPlanId  
 }) {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -32,11 +39,7 @@ export default function AppointmentForm({
   const [errors, setErrors] = useState({});
   const [appointments, setAppointments] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
-  const [slotStartTime, setSlotStartTime] = useState(null);
-  const [slotEndTime, setSlotEndTime] = useState(null);
-  const [workSession, setWorkSession] = useState([]);
 
-  // Prefill form when editing
   useEffect(() => {
     if (!addAppointment && selectedAppointment) {
       setFormData({ ...selectedAppointment });
@@ -59,111 +62,122 @@ export default function AppointmentForm({
   const parseTime = (timeStr) => {
     const [time, modifier] = timeStr.split(" ");
     let [hours, minutes] = time.split(":").map(Number);
-
     if (modifier === "PM" && hours !== 12) hours += 12;
     if (modifier === "AM" && hours === 12) hours = 0;
-
     const date = new Date();
     date.setHours(hours, minutes, 0, 0);
     return date;
   };
 
-
-  function timeStringToMinutes(timeStr) {
-    // Convert "10:00:00" 24h format to total minutes
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return hours * 60 + minutes;
-  }
-
-  function isOverlapping(start1, end1, start2, end2) {
+  const isOverlapping = (start1, end1, start2, end2) => {
     return start1 < end2 && start2 < end1;
+  };
+ console.log("🟢 Triggering Slot Generation with: ");
+console.log("Duration:", formData.duration);
+console.log("Shift Start:", shiftStart);
+console.log("Shift End:", shiftEnd);
+console.log("Buffer:", bufferInMinutes);
+const generateTimeSlots = (startTime, endTime, duration, buffer) => {
+
+
+
+  if (!startTime || !endTime || isNaN(duration)) {
+    console.warn("❌ Invalid shift time or duration. Cannot generate slots.");
+    return [];
   }
 
+  const slots = [];
+  const cur = new Date(startTime);
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await axios.get(`https://appointify.coinagesoft.com/api/WorkSession`);
-        if (response.data && response.data.length > 0 && formData.duration) {
-          const session = response.data[0];
+  while (true) {
+    const slotEnd = new Date(cur.getTime() + duration * 60000);
+    if (slotEnd > endTime) break;
 
-          const start = parseTime(session.workStartTime);
-          const end = parseTime(session.workEndTime);
+    slots.push({
+      label: `${formatTime(cur)} - ${formatTime(slotEnd)}`,
+      value: `${formatTime(cur)} - ${formatTime(slotEnd)}`,
+      start: format24Hr(cur),
+      end: format24Hr(slotEnd),
+    });
 
-          // Convert to number just in case
-          const durationInMinutes = Number(formData.duration);
+    cur.setTime(slotEnd.getTime() + buffer * 60000);
+  }
 
-          const slots = generateTimeSlots(start, end, durationInMinutes);
-          setTimeSlots(slots);
-        }
-      } catch (err) {
-        console.error("Failed to load session data", err);
-        setError("Unable to load work session data.");
-      }
-    };
-
-    fetchSession();
-  }, [formData.duration]); // 👈 re-run when plan duration changes
+  console.log("✅ Generated slots:", slots);
+  return slots;
+};
 
 
-
-  // Generate time slots based on plan duration.
-  // Assumes slots between 10:00 AM and 10:00 PM.
-  const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
-    const slots = [];
-    const booked = bookedTimeSlots.map(slot => slot.time);
-
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-
-    while (start.getTime() + durationInMinutes * 60000 <= end.getTime()) {
-      const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
-      const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
-
-      if (!booked.includes(slot)) {
-        slots.push({ label: slot, value: slot });
-      }
-
-      // Move to the next slot
-      start.setTime(start.getTime() + durationInMinutes * 60000);
-    }
-    console.log("slots", slots)
-    return slots;
-  };
-
-
-
-
-
-
-  // Helper function to format time in hh:mm AM/PM
   const formatTime = (date) => {
     let hours = date.getHours();
     let minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // convert 0 to 12 for 12 AM
-
+    hours = hours % 12 || 12;
     const minutesStr = minutes < 10 ? '0' + minutes : minutes;
     return `${hours}:${minutesStr} ${ampm}`;
   };
 
-
-  const handleTimeSelect = (timeSlot) => {
-    setFormData({ ...formData, appointmentTime: timeSlot });
+  const format24Hr = (date) => {
+    return date.toTimeString().slice(0, 5);
   };
 
-  const handlePlanChange = (e) => {
-    const selectedPlan = plans.find(p => p.planName === e.target.value);
-    if (selectedPlan) {
-      setFormData(prev => ({
-        ...prev,
-        plan: selectedPlan.planName,
-        amount: selectedPlan.planPrice,
-        duration: selectedPlan.planDuration,
-        appointmentTime: '' // clear previous time
-      }));
-    }
-  };
+useEffect(() => {
+  if (
+    !formData.duration || 
+    isNaN(formData.duration) || 
+    !shiftStart || 
+    !shiftEnd || 
+    shiftStart.toString() === shiftEnd.toString()
+  ) return;
+
+  const duration = Number(formData.duration);
+  if (shiftStart?.toString() === shiftEnd?.toString()) {
+  console.warn("❌ shiftStart and shiftEnd are equal. Skipping slot generation.");
+}
+
+  const slots = generateTimeSlots(shiftStart, shiftEnd, duration, bufferInMinutes);
+  setTimeSlots(slots);
+}, [formData.duration, shiftStart, shiftEnd, bufferInMinutes, bookedTimeSlots]);
+
+
+const handlePlanChange = async (e) => {
+  const selectedPlan = plans.find(p => p.planName === e.target.value);
+  if (!selectedPlan) return;
+
+  const token = localStorage.getItem('token');
+
+
+
+  try {
+    const res = await axios.get(` https://appointify.coinagesoft.com/api/PlanBufferRule`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: {
+        planId: selectedPlan.planId,
+      }
+    });
+
+    const buffer = res.data.bufferInMinutes;
+    const shiftId = res.data.shiftId;
+
+    setSelectedShiftId(shiftId); // Update if it changed
+    setBufferInMinutes(buffer);
+  } catch (error) {
+    console.error("❌ Failed to fetch buffer/shift:", error);
+  }
+
+  setFormData(prev => ({
+    ...prev,
+    plan: selectedPlan.planName,
+    amount: selectedPlan.planPrice,
+    duration: selectedPlan.planDuration,
+    appointmentTime: ''
+  }));
+  console.log("selectedPlanId",selectedPlanId)
+  setSelectedPlanId(selectedPlan.planId);  
+};
+
+
+
 
   const handleDateSelect = (e) => {
     const selectedDate = e.target.value;
@@ -174,8 +188,6 @@ export default function AppointmentForm({
     }
     setFormData(prev => ({ ...prev, appointmentDate: selectedDate, appointmentTime: '' }));
   };
-
-
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -205,24 +217,23 @@ export default function AppointmentForm({
       setErrors(validationErrors);
       return;
     }
+    console.log("Submitting data:", formData);
+
 
     try {
-      const res = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/CreateAppointment`, {
+      const res = await fetch(` https://appointify.coinagesoft.com/api/CustomerAppointment/CreateAppointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
-      console.log("res", JSON.stringify(formData))
       if (!res.ok) {
         new bootstrap.Modal(document.getElementById('failureModal')).show();
-        console.log("Appointment not booked", res)
         return;
       }
 
       const newAppointment = await res.json();
       setAppointments(prev => [...prev, newAppointment]);
-
       setFormData({
         firstName: '',
         lastName: '',
@@ -235,7 +246,6 @@ export default function AppointmentForm({
         amount: '',
         duration: '',
       });
-
       new bootstrap.Modal(document.getElementById('successModal')).show();
     } catch (err) {
       console.error('Error:', err);
@@ -247,265 +257,156 @@ export default function AppointmentForm({
     if (formData.appointmentDate && formData.plan) {
       fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetBookedSlots?date=${formData.appointmentDate}`)
         .then(res => res.json())
-        .then((data) => {
-          setBookedTimeSlots(data)
-          console.log("booked slots", data)
-        }) // data should be an array of slot strings
+        .then(data => setBookedTimeSlots(data))
         .catch(err => console.error("Error fetching booked slots:", err));
     }
   }, [formData.appointmentDate, formData.plan]);
 
+  const handleTimeSelect = (value) => {
+  setFormData(prev => ({
+    ...prev,
+    appointmentTime: value
+  }));
+};
+
   return (
     <>
       <form onSubmit={handleSubmit} className="container py-3" style={{ maxWidth: 600 }}>
+        {/* First Name + Last Name */}
         <div className="row mb-3">
           <div className="col-sm-6">
-            <label htmlFor="firstName" className="form-label">
-              First Name
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              className={`form-control ${errors.firstName ? 'is-invalid' : ''}`}
-              value={formData.firstName}
-              onChange={handleInputChange}
-              placeholder="Enter your first name"
-            />
+            <label className="form-label">First Name</label>
+            <input name="firstName" className={`form-control ${errors.firstName ? 'is-invalid' : ''}`} value={formData.firstName} onChange={handleInputChange} />
             {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
           </div>
           <div className="col-sm-6">
-            <label htmlFor="lastName" className="form-label">
-              Last Name
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              className={`form-control ${errors.lastName ? 'is-invalid' : ''}`}
-              value={formData.lastName}
-              onChange={handleInputChange}
-              placeholder="Enter your last name"
-            />
+            <label className="form-label">Last Name</label>
+            <input name="lastName" className={`form-control ${errors.lastName ? 'is-invalid' : ''}`} value={formData.lastName} onChange={handleInputChange} />
             {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
           </div>
         </div>
 
+        {/* Email */}
         <div className="mb-3">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Enter your email address"
-          />
+          <label className="form-label">Email</label>
+          <input name="email" className={`form-control ${errors.email ? 'is-invalid' : ''}`} value={formData.email} onChange={handleInputChange} />
           {errors.email && <div className="invalid-feedback">{errors.email}</div>}
         </div>
 
+        {/* Phone Number */}
         <div className="mb-3">
-          <label htmlFor="phoneNumber" className="form-label">
-            Phone Number
-          </label>
-          <input
-            id="phoneNumber"
-            name="phoneNumber"
-            className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
-            value={formData.phoneNumber}
-            onChange={handleInputChange}
-            placeholder="Enter your phone number"
-          />
+          <label className="form-label">Phone Number</label>
+          <input name="phoneNumber" className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`} value={formData.phoneNumber} onChange={handleInputChange} />
           {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
         </div>
 
+        {/* Plan Dropdown */}
         <div className="mb-3">
-          <label htmlFor="plan" className="form-label">
-            Plan
-          </label>
-          <select
-            id="plan"
-            name="plan"
-            className={`form-select ${errors.plan ? 'is-invalid' : ''}`}
-            value={formData.plan}
-            onChange={handlePlanChange}
-          >
+          <label className="form-label">Plan</label>
+          <select name="plan" className={`form-select ${errors.plan ? 'is-invalid' : ''}`} value={formData.plan} onChange={handlePlanChange}>
             <option value="">Select a Plan</option>
             {plans.map((p, i) => (
-              <option key={i} value={p.planName}>
-                {p.planName}
-              </option>
+              <option key={i} value={p.planName}>{p.planName}</option>
             ))}
           </select>
           {errors.plan && <div className="invalid-feedback">{errors.plan}</div>}
         </div>
 
+        {/* Amount and Duration */}
         <div className="mb-3">
-          <label htmlFor="amount" className="form-label">
-            Amount
-          </label>
-          <input
-            id="amount"
-            name="amount"
-            className={`form-control ${errors.amount ? 'is-invalid' : ''}`}
-            value={formData.amount}
-            readOnly
-            placeholder="Auto-calculated amount"
-          />
+          <label className="form-label">Amount</label>
+          <input name="amount" className={`form-control ${errors.amount ? 'is-invalid' : ''}`} value={formData.amount} readOnly />
           {errors.amount && <div className="invalid-feedback">{errors.amount}</div>}
         </div>
 
         <div className="mb-3">
-          <label htmlFor="appointmentDate" className="form-label">
-            Choose a Date
-          </label>
-          <input
-            id="appointmentDate"
-            name="appointmentDate"
-            type="date"
-            className={`form-control form-control-sm ${errors.appointmentDate ? 'is-invalid' : ''}`}
-            value={formData.appointmentDate}
-            onChange={handleDateSelect}
-            min={new Date().toISOString().split('T')[0]}
-          />
-          {errors.appointmentDate && <div className="invalid-feedback">{errors.appointmentDate}</div>}
-        </div>
-
-        {addAppointment && formData.appointmentDate && (
-          <div className="mb-3">
-            <label className="form-label">Available Time Slots</label>
-            {timeSlots.length === 0 ? (
-              <p>No slots available</p>
-            ) : (
-              <div>
-                {timeSlots.length === 0 ? (
-                  <p>No slots available</p>
-                ) : (
-                  <div className="d-flex flex-wrap gap-3">
-                    {timeSlots.map(({ value }, index) => {
-                      // Parse current slot start/end time using your parseTime function
-                      const [startStr, endStr] = value.split('-').map(s => s.trim());
-                      const start = parseTime(startStr);
-                      const end = parseTime(endStr);
-
-                      // Check overlapping with any booked slot (parse booked start/end to Date too)
-                      const isBooked = Array.isArray(bookedTimeSlots) && bookedTimeSlots.some(slot => {
-                        const bookedStart = new Date();
-                        const [bStartH, bStartM, bStartS] = slot.startTime.split(':').map(Number);
-                        bookedStart.setHours(bStartH, bStartM, bStartS, 0);
-
-                        const bookedEnd = new Date();
-                        const [bEndH, bEndM, bEndS] = slot.endTime.split(':').map(Number);
-                        bookedEnd.setHours(bEndH, bEndM, bEndS, 0);
-
-                        return isOverlapping(start, end, bookedStart, bookedEnd) && slot.status === "Scheduled";
-                      });
-
-                      const isSelected = formData.appointmentTime === value;
-
-                      return (
-                        <div key={index}>
-                          <button
-                            type="button"
-                            className={`btn btn-sm w-100 text-truncate px-1 py-1 h-100 
-          ${isBooked ? 'bg-danger text-white' : isSelected ? 'bg-primary text-white' : 'btn-outline-primary'}`}
-                            style={{
-                              fontSize: '0.75rem',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              cursor: isBooked ? 'not-allowed' : 'pointer',
-                              pointerEvents: isBooked ? 'none' : 'auto',
-                              border: isSelected ? '1px solid #0d6efd' : undefined,
-                            }}
-                            disabled={isBooked}
-                            onClick={() => !isBooked && handleTimeSelect(value)}
-                          >
-                            {value}
-                          </button>
-                        </div>
-                      );
-                    })}
-
-
-
-                  </div>
-                )}
-
-              </div>
-            )}
-            {errors.appointmentTime && <div className="text-danger">{errors.appointmentTime}</div>}
-          </div>
-        )}
-
-
-        {/* 👇 Display selected time */}
-        {formData.appointmentTime && (
-          <div className="my-2 btn btn-sm btn-primary">
-            Selected Time: {formData.appointmentTime}
-          </div>
-        )}
-
-        <div className="mb-3">
-          <label htmlFor="duration" className="form-label">
-            Duration (minutes)
-          </label>
-          <input
-            id="duration"
-            name="duration"
-            className={`form-control ${errors.duration ? 'is-invalid' : ''}`}
-            value={formData.duration}
-            readOnly
-            placeholder="Duration will be set automatically"
-          />
+          <label className="form-label">Duration (minutes)</label>
+          <input name="duration" className={`form-control ${errors.duration ? 'is-invalid' : ''}`} value={formData.duration} readOnly />
           {errors.duration && <div className="invalid-feedback">{errors.duration}</div>}
         </div>
 
+        {/* Date Picker */}
         <div className="mb-3">
-          <label htmlFor="details" className="form-label">
-            Additional Details
-          </label>
-          <textarea
-            id="details"
-            name="details"
-            className="form-control"
-            rows={3}
-            value={formData.details}
-            onChange={handleInputChange}
-            placeholder="Add any notes or details (optional)"
-          />
+          <label className="form-label">Appointment Date</label>
+          <input type="date" name="appointmentDate" className={`form-control ${errors.appointmentDate ? 'is-invalid' : ''}`} value={formData.appointmentDate} onChange={handleDateSelect} min={new Date().toISOString().split('T')[0]} />
+          {errors.appointmentDate && <div className="invalid-feedback">{errors.appointmentDate}</div>}
         </div>
 
-        {/* {addAppointment `<button type="submit" className="btn btn-success w-100 mb-3">
-    Book Appointment 
-  </button> `} */}
-        {addAppointment && (
-          <button type="submit" className="btn btn-success w-100 mb-3" >
-            Add Appointment
-          </button>
+        {/* Time Slots */}
+        {addAppointment && formData.appointmentDate && (
+          <div className="mb-3">
+            <label className="form-label">Available Time Slots</label>
+            <div className="d-flex flex-wrap gap-2">
+              {timeSlots.map(({ value }, index) => {
+                const [startStr, endStr] = value.split('-').map(s => s.trim());
+                const start = parseTime(startStr);
+                const end = parseTime(endStr);
+                const isBooked = bookedTimeSlots.some(slot => {
+                  const [bStartH, bStartM, bStartS] = slot.startTime.split(':').map(Number);
+                  const bookedStart = new Date();
+                  bookedStart.setHours(bStartH, bStartM, bStartS, 0);
+
+                  const [bEndH, bEndM, bEndS] = slot.endTime.split(':').map(Number);
+                  const bookedEnd = new Date();
+                  bookedEnd.setHours(bEndH, bEndM, bEndS, 0);
+
+                  return isOverlapping(start, end, bookedStart, bookedEnd) && slot.status === "Scheduled";
+                });
+
+                const isSelected = formData.appointmentTime === value;
+                return (
+                  <button key={index} type="button" className={`btn btn-sm ${isBooked ? 'btn-danger' : isSelected ? 'btn-primary' : 'btn-outline-primary'}`} disabled={isBooked} onClick={() => handleTimeSelect(value)}>
+                    {value}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.appointmentTime && <div className="text-danger mt-1">{errors.appointmentTime}</div>}
+          </div>
         )}
 
+        {/* Notes */}
+        <div className="mb-3">
+          <label className="form-label">Additional Details</label>
+          <textarea name="details" className="form-control" rows="3" value={formData.details} onChange={handleInputChange}></textarea>
+        </div>
+
+        {/* Submit */}
+        {addAppointment && (
+          <button type="submit" className="btn btn-success w-100">Add Appointment</button>
+        )}
       </form>
 
-      <div className="modal fade" id="successModal" tabIndex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+      {/* Modals */}
+      <div className="modal fade" id="successModal" tabIndex="-1">
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content text-center">
             <div className="modal-header">
-              <h5 className="modal-title w-100" id="successModalLabel">Appointment Booked</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 className="modal-title w-100">Appointment Booked</h5>
+              <button className="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div className="modal-body">
-              Your appointment has been successfully booked.
-            </div>
+            <div className="modal-body">Your appointment has been successfully booked.</div>
             <div className="modal-footer justify-content-center">
-              <button type="button" className="btn btn-success" data-bs-dismiss="modal">OK</button>
+              <button className="btn btn-success" data-bs-dismiss="modal">OK</button>
             </div>
           </div>
         </div>
       </div>
 
-
+      <div className="modal fade" id="failureModal" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content text-center">
+            <div className="modal-header">
+              <h5 className="modal-title w-100">Booking Failed</h5>
+              <button className="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div className="modal-body">Something went wrong while booking the appointment.</div>
+            <div className="modal-footer justify-content-center">
+              <button className="btn btn-danger" data-bs-dismiss="modal">Try Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

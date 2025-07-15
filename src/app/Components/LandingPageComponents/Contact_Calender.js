@@ -11,8 +11,6 @@ const Contact_Calender = React.forwardRef((props, ref) => {
   const [formErrors, setFormErrors] = useState({});
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [timeSlots, setTimeSlots] = useState([]);
-
   const [availablePlans, setAvailablePlans] = useState([]);
 
   useEffect(() => {
@@ -135,81 +133,6 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     return `${day}-${month}-${year}`;
   };
 
-  const parseTime = (timeStr) => {
-    const [time, modifier] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-
-    if (modifier === "PM" && hours !== 12) hours += 12;
-    if (modifier === "AM" && hours === 12) hours = 0;
-
-    const date = new Date();
-    date.setHours(hours, minutes, 0, 0);
-    return date;
-  };
-
-  // Overlap check for Date objects
-  const isOverlapping = (start1, end1, start2, end2) => {
-    return start1 < end2 && start2 < end1;
-  };
-
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await axios.get(`https://appointify.coinagesoft.com/api/WorkSession`);
-        if (response.data && response.data.length > 0 && formData.duration) {
-          const session = response.data[0];
-
-          const start = parseTime(session.workStartTime);
-          const end = parseTime(session.workEndTime);
-
-          // Convert to number just in case
-          const durationInMinutes = Number(formData.duration);
-
-          const slots = generateTimeSlots(start, end, durationInMinutes);
-          setTimeSlots(slots);
-        }
-      } catch (err) {
-        console.error("Failed to load session data", err);
-        setError("Unable to load work session data.");
-      }
-    };
-
-    fetchSession();
-  }, [formData.duration]); // 👈 re-run when plan duration changes
-
-  const generateTimeSlots = (startTime, endTime, durationInMinutes) => {
-    const slots = [];
-
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-
-    while (start.getTime() + durationInMinutes * 60000 <= end.getTime()) {
-      const slotEnd = new Date(start.getTime() + durationInMinutes * 60000);
-      const slot = `${formatTime(start)} - ${formatTime(slotEnd)}`;
-
-      slots.push({ label: slot, value: slot });
-      start.setTime(start.getTime() + durationInMinutes * 60000);
-    }
-
-    return slots;
-  };
-
-  const formatTime = (date) => {
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // convert 0 to 12 for 12 AM
-
-    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
-    return `${hours}:${minutesStr} ${ampm}`;
-  };
-
-
-  const handleTimeSelect = (timeSlot) => {
-    setFormData({ ...formData, appointmentTime: timeSlot });
-  };
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -309,7 +232,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
   const verifyPayment = async (paymentResponse) => {
     try {
-      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
+      const response = await fetch(` https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -552,6 +475,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
                 }));
               }}
               selectedSlot={formData.appointmentTime}
+              planId={availablePlans.find(p => p.planName === formData.plan)?.planId}
             />
 
           </div>
