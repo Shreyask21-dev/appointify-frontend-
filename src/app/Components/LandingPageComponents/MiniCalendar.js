@@ -7,6 +7,7 @@ import axios from "axios";
 
 const MiniCalendar = ({ selected, onDateChange, onSlotSelect, duration, bookedTimeSlots = [], selectedSlot, planId }) => {
   const [timeSlots, setTimeSlots] = useState([]);
+const [bookedSlots, setBookedSlots] = useState([]);
 
   const isSameDay = (date1, date2) =>
     date1.getDate() === date2.getDate() &&
@@ -103,11 +104,29 @@ useEffect(() => {
       console.log("Generated Slots:", slots);
 
       setTimeSlots(slots);
+
+      const bookedRes = await axios.get(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetBookedSlots`, {
+  headers: { Authorization: `Bearer ${token}` },
+  params: { date: selected }
+});
+
+const bookedData = bookedRes.data || [];
+console.log("🟠 Booked slots for date:", selected, bookedData);
+
+// Assuming bookedData = array of time strings in "HH:mm" format
+const bookedValues = slots
+  .filter(slot => bookedData.includes(slot.start))
+  .map(slot => slot.value);
+
+setBookedSlots(bookedValues);
+
     } catch (err) {
       console.error("❌ Error fetching shift:", err);
       setTimeSlots([]);
     }
   };
+
+  
 
   fetchShiftAndGenerateSlots();
 }, [selected, duration, planId]);
@@ -133,7 +152,8 @@ useEffect(() => {
               <h6 className="fw-bold text-primary mb-2 mt-3">Available Slots:</h6>
               <div className="row gx-1">
                 {timeSlots.map((slot, index) => {
-                  const isBooked = bookedTimeSlots.includes(slot.value);
+                  const isBooked = bookedSlots.includes(slot.value);
+
                   const isSelected = selectedSlot === slot.value;
 
                   return (
