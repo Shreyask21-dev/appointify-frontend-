@@ -41,24 +41,24 @@ const PrivacyPolicy = () => {
 
       <h4>How We Use Cookies</h4>
       <p>
-        A cookie is a small file placed on your computer's hard drive with your permission. Cookies help analyze web traffic and personalize your online experience.
+        {`A cookie is a small file placed on your computer's hard drive with your permission. Cookies help analyze web traffic and personalize your online experience.`}
       </p>
 
       <p>
-        We use traffic log cookies to identify which pages are being visited. This helps us improve our website and tailor it to user needs. The information is used only for statistical analysis and is then removed from the system.
+        {`We use traffic log cookies to identify which pages are being visited. This helps us improve our website and tailor it to user needs. The information is used only for statistical analysis and is then removed from the system.`}
       </p>
 
       <p>
-        Cookies do not give us access to your computer or any information other than what you choose to share. You can choose to accept or decline cookies in your browser settings.
+        {`Cookies do not give us access to your computer or any information other than what you choose to share. You can choose to accept or decline cookies in your browser settings.`}
       </p>
 
       <h4>Controlling Your Personal Information</h4>
       <ul className="ps-3">
-        <li>You may choose to restrict the use of your information for direct marketing purposes by checking opt-out options on forms.</li>
-        <li>You can revoke your consent at any time by contacting us.</li>
-        <li>We will not sell or lease your personal information to third parties unless required by law or with your permission.</li>
-        <li>We may send you promotional information about third parties if you've agreed to it.</li>
-        <li>If you believe any information we hold is incorrect, contact us and we’ll correct it promptly.</li>
+        <li>{`You may choose to restrict the use of your information for direct marketing purposes by checking opt-out options on forms.`}</li>
+        <li>{`You can revoke your consent at any time by contacting us.`}</li>
+        <li>{`We will not sell or lease your personal information to third parties unless required by law or with your permission.`}</li>
+        <li>{`We may send you promotional information about third parties if you've agreed to it.`}</li>
+        <li>{`If you believe any information we hold is incorrect, contact us and we’ll correct it promptly.`}</li>
       </ul>
 
       <p>
@@ -66,7 +66,7 @@ const PrivacyPolicy = () => {
       </p>
 
       <p className="text-muted">
-        <strong>Disclaimer:</strong> The above content is created at AURA ENTERPRISES's sole discretion. Razorpay shall not be liable for any content provided here and shall not be responsible for any claims or liability arising from the merchant’s non-adherence to it.
+        <strong>Disclaimer:</strong> {`The above content is created at AURA ENTERPRISES's sole discretion. Razorpay shall not be liable for any content provided here and shall not be responsible for any claims or liability arising from the merchant’s non-adherence to it.`}
       </p>
     </section>
   );

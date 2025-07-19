@@ -13,7 +13,7 @@ const ContactUs = () => {
       <p><strong>Email ID:</strong> atul.sardesai@gmail.com</p>
       
       <p className="text-muted mt-4">
-        <strong>Disclaimer:</strong> The above content is created at AURA ENTERPRISES's sole discretion. Razorpay shall not be liable for any content provided here and shall not be responsible for any claims and liability that may arise due to merchant’s non-adherence to it.
+        <strong>Disclaimer:</strong> The above content is created at AURA ENTERPRISES&apos;s sole discretion. Razorpay shall not be liable for any content provided here and shall not be responsible for any claims and liability that may arise due to merchant&rsquo;s non-adherence to it.
       </p>
     </section>
   );
