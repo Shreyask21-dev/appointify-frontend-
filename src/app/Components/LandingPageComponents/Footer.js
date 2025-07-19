@@ -18,7 +18,10 @@ const Footer = () => {
           <p>
             <Link href="/Terms" className="text-light small">Terms and Conditions</Link> |{" "}
             <Link href="/Cancellation" className="text-light small">Cancellation & Refund Policy</Link> |{" "}
-            <Link href="/Shipping" className="text-light small">Shipping & Delivery Policy</Link>
+            <Link href="/Shipping" className="text-light small">Shipping & Delivery Policy</Link> |{" "}
+            <Link href="/PrivacyPolicy" className="text-light small">Privacy Policy</Link> |{" "}
+            <Link href="/Contact" className="text-light small">Contact Us</Link>
+               
           </p>
 
         </div>
