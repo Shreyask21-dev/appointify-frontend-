@@ -51,6 +51,7 @@ const LandingPage = () => {
         <Contact_Calender ref={targetRef} prefillData={selectedPlan} />
         <FAQSection />
         <LeafletMap />
+        
         <Footer />
 
         {/* Scripts */}
