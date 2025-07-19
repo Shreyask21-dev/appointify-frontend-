@@ -21,7 +21,7 @@ const Plan_List = () => {
     description: '',
     features: '',
     bufferMin: '',
-    shiftId: '',
+    shiftIds: [],
   });
   const [errors, setErrors] = useState({
     name: '',
@@ -131,7 +131,11 @@ const Plan_List = () => {
       duration: selectedPlan.planDuration ?? '',
       description: selectedPlan.planDescription ?? '',
       features: selectedPlan.planFeatures ?? '',
-      shiftId: selectedPlan.shiftId ?? '',
+      shiftIds: Array.isArray(selectedPlan.shiftIds)
+        ? selectedPlan.shiftIds
+        : selectedPlan.shiftId
+          ? [selectedPlan.shiftId]
+          : [],
 
     });
 
@@ -204,7 +208,7 @@ const Plan_List = () => {
       planDuration: editedPlan.duration,
       planDescription: editedPlan.description,
       planFeatures: editorRef.current.innerHTML,
-      shiftId: editedPlan.shiftId
+      shiftId: editedPlan.shiftIds
     };
 
     try {
@@ -218,18 +222,21 @@ const Plan_List = () => {
       });
 
       // ✅ Save buffer rule using actual shift ID
-      const res = await fetch(`https://appointify.coinagesoft.com/api/PlanBufferRule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          planId: plan.planId,
-          shiftId: editedPlan.shiftId,
-          bufferInMinutes
-        })
-      });
+      for (const shiftId of editedPlan.shiftIds) {
+        await fetch(`https://appointify.coinagesoft.com/api/PlanBufferRule`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            planId: plan.planId,
+            shiftId,
+            bufferInMinutes
+          })
+        });
+      }
+
 
       if (!res.ok) {
         const err = await res.text();
@@ -242,7 +249,7 @@ const Plan_List = () => {
       }));
       console.log({
         planId: plan.planId,
-        shiftId: editedPlan.shiftId,
+        shiftId: editedPlan.shiftIds,
         bufferInMinutes: bufferInMinutes
       });
       setBufferRules(prev => ({
@@ -253,7 +260,7 @@ const Plan_List = () => {
       const updatedPlans = [...plans];
       updatedPlans[editingIndex] = {
         ...updatedPlan,
-        shiftId: editedPlan.shiftId
+        shiftId: editedPlan.shiftIds
       };
       setPlans(updatedPlans);
 
@@ -302,7 +309,15 @@ const Plan_List = () => {
                   <div className="text-black" dangerouslySetInnerHTML={{ __html: plan.planFeatures }} />
                 </div>
                 <div className="card-body d-flex flex-column align-items-center py-0">
-                  <p>{plan.shiftId ? shiftList.find(s => s.id === plan.shiftId)?.name : 'None'}</p>
+                  <p>
+                    Shifts:{' '}
+                    {Array.isArray(plan.shiftIds)
+                      ? plan.shiftIds
+                        .map((id) => shiftList.find((s) => s.id === id)?.name)
+                        .filter(Boolean)
+                        .join(', ')
+                      : 'None'}
+                  </p>
                   <p>Buffer: {bufferRules[plan.planId] ?? '—'} min</p>
 
 
@@ -357,26 +372,33 @@ const Plan_List = () => {
               </div>
 
               <div className="mt-4">
-                <label>Plan Features</label>
-                <div ref={editorRef} contentEditable className={`form-control p-3 ${errors.features ? 'border-danger' : ''}`} style={{ minHeight: '120px' }} />
-                {errors.features && <div className="text-danger">{errors.features}</div>}
-              </div>
-              <div className="form-floating mt-4">
-                <select
-                  className="form-select"
-                  name="shiftId"
-                  value={editedPlan.shiftId}
-                  onChange={handleChange}
-                >
-                  <option value="">-- Select Shift --</option>
-                  {shiftList.map(s => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.startTime?.slice(0, 5)} - {s.endTime?.slice(0, 5)})
-                    </option>
+                <label className="mb-2 fw-semibold">Select Shifts</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {shiftList.map((shift) => (
+                    <div key={shift.id} className="form-check me-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        value={shift.id}
+                        checked={editedPlan.shiftIds.includes(shift.id)}
+                        onChange={(e) => {
+                          const shiftId = e.target.value;
+                          setEditedPlan((prev) => ({
+                            ...prev,
+                            shiftIds: e.target.checked
+                              ? [...prev.shiftIds, shiftId]
+                              : prev.shiftIds.filter((id) => id !== shiftId),
+                          }));
+                        }}
+                      />
+                      <label className="form-check-label">
+                        {shift.name} ({shift.startTime?.slice(0, 5)} - {shift.endTime?.slice(0, 5)})
+                      </label>
+                    </div>
                   ))}
-                </select>
-                <label>Select Shift</label>
+                </div>
               </div>
+
 
               <div className="form-floating mt-4">
                 <input

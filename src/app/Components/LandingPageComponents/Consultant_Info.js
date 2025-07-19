@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from "react";
-
+import './Consultant_Info.css'
 const Consultant_Info = () => {
 
   const API_URL = process.env.REACT_APP_API_URL;
@@ -22,81 +22,106 @@ const Consultant_Info = () => {
   }, []);
 
   return (
-    <div className="container content-space-2 content-space-lg-3">
-      <div className="row align-items-md-center">
-        <div className="col-md-5 d-none d-md-block">
-          <img
-            className="img-fluid rounded-2"
-            src={
-              consultantData.section2_Image
-                ? `https://appointify.coinagesoft.com${consultantData.section2_Image}`
-                : "/assets/img/160x160/img8.jpg"
-            }
-            alt={consultantData.section2_Image}
-          />
-        </div>
-        {/* End Col */}
-
-        <div className="col-md-7">
-          {/* Consultant Info */}
-          <figure className="pe-md-7">
-            <blockquote className="blockquote blockquote-lg   font-medium pb-2 fs-4 fw-medium" >
-              {consultantData.section2_Tagline}
-            </blockquote>
-
-            <figcaption className="blockquote-footer">
-              <div className="d-flex align-items-center">
-                <div className="flex-grow-1">
-                  <h3 className="text-primary">{consultantData.fullName}</h3>
-                  <p className="blockquote-footer-source mb-0">
-                    {consultantData.experience}
-                  </p>
-                  <p className="blockquote-footer-source mb-6">
-                    {consultantData.role} <br />
-                    {consultantData.certificates === "null" ? "" : consultantData.certificates}
-                  </p>
-
-                  <p className="blockpara text-gray-800 justify-evenly fs-6 lh-base ">
-                    {consultantData.description}
-                  </p>
-
-                </div>
-              </div>
-              <ul className="navbar-nav">
-                {/* Social Media Buttons */}
-                <li className="nav-item">
-                  <ul className="list-inline mb-0 ">
-                    <li className="list-inline-item me-3" key="facebookId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.facebookId}>
-                        <i className={`bi-facebook`}></i>
-                      </a>
-                    </li>
-                    <li className="list-inline-item me-3" key="instagramId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.instagramId}>
-                        <i className={`bi-instagram`}></i>
-                      </a>
-                    </li>
-                    <li className="list-inline-item me-3" key="twitterId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.twitterId}>
-                        <i className={`bi-twitter`}></i>
-                      </a>
-                    </li>
-                    <li className="list-inline-item me-3" key="youtubeId">
-                      <a className="btn btn-soft-dark btn-xs btn-icon bg-light rounded fs-5" target="_blank" href={consultantData.youtubeId}>
-                        <i className={`bi-youtube`}></i>
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </figcaption>
-          </figure>
-          {/* End Consultant Info */}
-        </div>
-        {/* End Col */}
-      </div>
-      {/* End Row */}
+<div className="container py-5 px-3 px-md-4 px-lg-5">
+  <div className="row align-items-center  bg-white shadow-sm rounded-4 py-5">
+    {/* Consultant Image */}
+    <div className="col-md-5 mb-4 mb-md-0">
+      <img
+        className="img-fluid rounded-4 shadow-sm"
+        style={{ transition: 'transform 0.3s ease-in-out' }}
+        onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
+        onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+        src={
+          consultantData.section2_Image
+            ? `https://appointify.coinagesoft.com${consultantData.section2_Image}`
+            : "/assets/img/160x160/img8.jpg"
+        }
+        alt={consultantData.section2_Image}
+      />
     </div>
+
+    {/* Consultant Info */}
+    <div className="col-md-7">
+      <div className="px-md-4">
+        <p className="text-primary fst-italic fs-5 mb-3">
+          <i className="bi-quote me-2 text-secondary"></i>
+          {consultantData.section2_Tagline}
+        </p>
+
+        <h3 className="text-dark fw-bold mb-1">{consultantData.fullName}</h3>
+        <div className="border-top border-2 mb-3" style={{ width: "60px" }}></div>
+
+        <p className="text-primary fw-medium fs-6 mb-1">{consultantData.role}</p>
+        <p className="text-muted small mb-1">{consultantData.experience}</p>
+        {consultantData.certificates !== "null" && (
+          <p className="text-muted small mb-3">{consultantData.certificates}</p>
+        )}
+
+        <p className="text-secondary lh-lg fs-6" style={{ textAlign: "justify" }}>
+          {consultantData.description}
+        </p>
+
+        {/* Social Icons */}
+        <div className="mt-4">
+          <span className="me-2 fw-semibold text-muted">Connect:</span>
+          <ul className="list-inline d-inline">
+            {consultantData.facebookId && (
+              <li className="list-inline-item me-2">
+                <a
+                  className="btn btn-soft-primary btn-sm rounded-circle shadow-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={consultantData.facebookId}
+                >
+                  <i className="bi-facebook"></i>
+                </a>
+              </li>
+            )}
+            {consultantData.instagramId && (
+              <li className="list-inline-item me-2">
+                <a
+                  className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={consultantData.instagramId}
+                >
+                  <i className="bi-instagram"></i>
+                </a>
+              </li>
+            )}
+            {consultantData.twitterId && (
+              <li className="list-inline-item me-2">
+                <a
+                  className="btn btn-soft-info btn-sm rounded-circle shadow-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={consultantData.twitterId}
+                >
+                  <i className="bi-twitter"></i>
+                </a>
+              </li>
+            )}
+            {consultantData.youtubeId && (
+              <li className="list-inline-item me-2">
+                <a
+                  className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={consultantData.youtubeId}
+                >
+                  <i className="bi-youtube"></i>
+                </a>
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
   );
 };
 

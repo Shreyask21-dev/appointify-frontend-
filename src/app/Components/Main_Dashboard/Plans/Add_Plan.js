@@ -16,7 +16,7 @@ const Add_Plan = () => {
   });
 
   const [shiftList, setShiftList] = useState([]);
-  const [selectedShift, setSelectedShift] = useState(null);
+const [selectedShifts, setSelectedShifts] = useState([]);
   const [bufferMin, setBufferMin] = useState('');
 
   const editorRef = useRef(null);
@@ -67,7 +67,7 @@ const Add_Plan = () => {
     return true;
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   if (!validateForm()) return;
 
@@ -79,11 +79,8 @@ const Add_Plan = () => {
     planPrice: parseFloat(formData.planPrice),
     planDuration: formData.planDuration,
     planDescription: formData.planDescription,
-    planFeatures: htmlContent,
-    shiftId: selectedShift?.id || null
+    planFeatures: htmlContent
   };
-
-  console.log("📤 Sending Plan Data:", planData);
 
   try {
     const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultationPlan/add`, {
@@ -95,67 +92,54 @@ const Add_Plan = () => {
       body: JSON.stringify(planData),
     });
 
-    console.log("Plan API Response Status:", response.status);
-
     const result = await response.json();
-    console.log("Plan API Response Data:", result);
 
     if (!response.ok) throw new Error(result.message || 'Failed to add plan.');
 
-   const createdPlanId = result.plan?.planId;
+    const createdPlanId = result.plan?.planId;
 
-if (!createdPlanId) {
-  console.error("Plan ID not found in response", result);
-  toast.error("Failed to extract plan ID after creation.");
-  return;
-}
-console.log("Sending Buffer Data:", {
-  planId: createdPlanId,
-  shiftId: selectedShift.id,
-  bufferInMinutes: parseInt(bufferMin),
-});
-
-
-if (selectedShift && bufferMin && parseInt(bufferMin) > 0) {
-  const bufferPayload = {
-    planId: createdPlanId,
-    shiftId: selectedShift?.id || undefined,
-    bufferInMinutes: parseInt(bufferMin)
-  };
-  console.log("Sending Buffer Data:", bufferPayload);
-
-  await axios.post(`https://appointify.coinagesoft.com/api/PlanBufferRule`, bufferPayload, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+    if (!createdPlanId) {
+      console.error("Plan ID not found in response", result);
+      toast.error("Failed to extract plan ID after creation.");
+      return;
     }
-  });
-} else if (selectedShift && (!bufferMin || parseInt(bufferMin) <= 0)) {
-  console.warn(" Shift selected but buffer minutes missing or invalid.");
-  toast.warn(" Please enter valid buffer minutes if shift is selected.");
-} else if (!selectedShift && bufferMin) {
-  console.warn(" Buffer minutes entered but no shift selected.");
-  toast.warn(" Please select a shift when entering buffer time.");
-} else {
-  console.info(" No buffer rule created — optional step skipped.");
-}
 
+    if (selectedShifts.length > 0 && bufferMin && parseInt(bufferMin) > 0) {
+      for (const shiftId of selectedShifts) {
+        const bufferPayload = {
+          planId: createdPlanId,
+          shiftId,
+          bufferInMinutes: parseInt(bufferMin)
+        };
 
+        await axios.post(`https://appointify.coinagesoft.com/api/PlanBufferRule`, bufferPayload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    } else if (selectedShifts.length > 0 && (!bufferMin || parseInt(bufferMin) <= 0)) {
+      toast.warn("Please enter valid buffer minutes if shift is selected.");
+    } else if (selectedShifts.length === 0 && bufferMin) {
+      toast.warn("Please select at least one shift when entering buffer time.");
+    }
 
     toast.success(result.message || 'Plan and buffer saved successfully!');
     setFormData({ planName: '', planPrice: '', planDuration: '', planDescription: '', planFeatures: '' });
-    setSelectedShift(null);
+    setSelectedShifts([]);
     setBufferMin('');
-    await loadShifts(); // if you want to force reload
+    await loadShifts();
 
     if (editorRef.current) editorRef.current.innerHTML = '';
-
 
   } catch (error) {
     console.error("❌ Error during submission:", error);
     toast.error(error.message || 'An error occurred.');
   }
 };
+
+
 
 
   return (
@@ -211,20 +195,34 @@ if (selectedShift && bufferMin && parseInt(bufferMin) > 0) {
                 <div ref={editorRef} contentEditable className="form-control p-4 rounded-3" style={{ minHeight: '200px', outline: 'none', backgroundColor: '#fff' }}></div>
               </div>
 
-              <div className="form-floating mt-4">
-                <select className="form-select" id="selectShift" value={selectedShift?.id || ''} onChange={(e) => {
-                  const selected = shiftList.find(s => s.id === e.target.value);
-                  setSelectedShift(selected || null);
-                }}>
-                  <option value="">-- Select Shift --</option>
-                  {shiftList.map((shift) => (
-                    <option key={shift.id} value={shift.id}>
-                      {shift.name} ({shift.startTime?.slice(0, 5)} - {shift.endTime?.slice(0, 5)})
-                    </option>
-                  ))}
-                </select>
-                <label htmlFor="selectShift">Select Shift for Buffer</label>
-              </div>
+           <div className="mt-4">
+  <label className="fw-semibold mb-2">Select Shifts for Plans</label>
+  <div className="d-flex flex-column gap-2">
+    {shiftList.map((shift) => (
+      <div key={shift.id} className="form-check">
+        <input
+          className="form-check-input"
+          type="checkbox"
+          value={shift.id}
+          id={`shift-${shift.id}`}
+          checked={selectedShifts.includes(shift.id)}
+          onChange={(e) => {
+            const id = e.target.value;
+            setSelectedShifts((prev) =>
+              e.target.checked
+                ? [...prev, id]
+                : prev.filter((shiftId) => shiftId !== id)
+            );
+          }}
+        />
+        <label className="form-check-label" htmlFor={`shift-${shift.id}`}>
+          {shift.name} ({shift.startTime?.slice(0, 5)} - {shift.endTime?.slice(0, 5)})
+        </label>
+      </div>
+    ))}
+  </div>
+</div>
+
 
               <div className="form-floating mt-4">
                 <input
