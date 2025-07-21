@@ -38,7 +38,7 @@ const ShiftManager = ({ planId }) => {
 
     const loadData = async () => {
       try {
-        const shiftRes = await axios.get(`http://localhost:5056/api/ConsultantShift`, authHeaders);
+        const shiftRes = await axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, authHeaders);
         const shiftData = shiftRes.data;
         setShifts(shiftData);
 
@@ -50,7 +50,7 @@ const ShiftManager = ({ planId }) => {
       }
 
       try {
-        const planRes = await axios.get(` https://appointify.coinagesoft.com/api/ConsultationPlan/get-all`);
+        const planRes = await axios.get(`https://appointify.coinagesoft.com/api/ConsultationPlan/get-all`);
         setPlanList(planRes.data);
       } catch {
         console.log('No plans found.');
