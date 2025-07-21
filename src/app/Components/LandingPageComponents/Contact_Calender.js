@@ -158,7 +158,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
         console.log('Appointment created now:', JSON.stringify(formData));
         // Razorpay integration remains unchanged
         const razorpayOptions = {
-          key: 'rzp_test_G5ZTKDD6ejrInm',
+          key: 'rzp_live_fu6gCr5CFzNvfz',
           amount: appointment.amount, // Ensure amount is in paise if required
           currency: 'INR',
           name: 'Consultation Appointment',
