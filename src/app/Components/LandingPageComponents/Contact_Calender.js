@@ -232,7 +232,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
   const verifyPayment = async (paymentResponse) => {
     try {
-      const response = await fetch(` https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
