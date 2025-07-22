@@ -188,11 +188,7 @@ const Navbar = () => {
                     >
                       <div className="avatar avatar-online">
                         <img
-                            src={
-                              consultantData.profileImage
-                                  ?  `https://appointify.coinagesoft.com/${consultantData.profileImage}`
-                                : '/assets/img/160x160/img6.jpg'
-                            }
+                          src="/assets/img/160x160/img8.jpg"
                           alt="User"
                           className="rounded-circle"
                         />
