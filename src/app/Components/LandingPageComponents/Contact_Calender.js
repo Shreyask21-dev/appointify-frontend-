@@ -158,23 +158,24 @@ const Contact_Calender = React.forwardRef((props, ref) => {
         console.log('Appointment created now:', JSON.stringify(formData));
         // Razorpay integration remains unchanged
         const razorpayOptions = {
-          key: 'rzp_live_fu6gCr5CFzNvfz',
-          amount: appointment.amount, // Ensure amount is in paise if required
-          currency: 'INR',
-          name: 'Consultation Appointment',
-          description: 'Book your appointment',
-          order_id: appointment.orderId,
-          handler: function (response) {
-            console.log('Payment success:', response);
-            setPaymentCompleted(true);
-            verifyPayment(response);
-          },
-          prefill: {
-            name: formData.firstName + ' ' + formData.lastName,
-            email: formData.email,
-            contact: formData.phoneNumber,
-          },
-        };
+  key: appointment.razorpayKey,
+  amount: appointment.amount,
+  currency: 'INR',
+  name: 'Aura Enterprises',
+  description: 'Book your appointment',
+  order_id: appointment.orderId,
+  handler: function (response) {
+    console.log('Payment success:', response);
+    setPaymentCompleted(true);
+    verifyPayment(response);
+  },
+  prefill: {
+    name: appointment.name,
+    email: appointment.email,
+    contact: appointment.contact,
+  },
+};
+
         const rzp1 = new window.Razorpay(razorpayOptions);
         setLoadingPayment(true);
         rzp1.on('payment.failed', function () {
