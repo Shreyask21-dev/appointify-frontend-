@@ -23,7 +23,7 @@ const Consultant_Info = () => {
 
   return (
 <div className="container py-5 px-3 px-md-4 px-lg-5">
-  <div className="row align-items-center  bg-white shadow-sm rounded-4 py-5">
+  <div className="row align-items-center   rounded-4 py-5">
     {/* Consultant Image */}
     <div className="col-md-5 mb-4 mb-md-0">
       <img

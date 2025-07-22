@@ -13,6 +13,7 @@ import Contact_Calender from '../Components/LandingPageComponents/Contact_Calend
 import Footer from '../Components/LandingPageComponents/Footer';
 import LeafletMap from '../Components/LandingPageComponents/LeafletMap';
 import FAQSection from '../Components/LandingPageComponents/FAQSection';
+import './LandingPage.css'
 
 const LandingPage = () => {
   const targetRef = useRef(null);
@@ -39,17 +40,30 @@ const LandingPage = () => {
         <link rel="stylesheet" href="https://fonts.googleapis.com" />
         <link rel="stylesheet" href="https://fonts.gstatic.com" />
       </Head>
-      <div>
+      <div className='bg-white'>
 
         {/* Content */}
         <Header />
         <Hero scrollToSectionHeader={scrollToSectionHeader} />
-        <Consultant_Info />
-        <EmpoweringMinds />
-        <Stats />
-        <Plans scrollToSection={scrollToSection} ref={targetRefHeader} />
-        <Contact_Calender ref={targetRef} prefillData={selectedPlan} />
-        <FAQSection />
+        <div className="section-light">
+          <Consultant_Info />
+        </div>
+        <div className="section-alt">
+          <EmpoweringMinds />
+        </div>
+        <div className="section-light">
+          <Stats />
+        </div>
+        <div className="section-alt">
+          <Plans scrollToSection={scrollToSection} ref={targetRefHeader} />
+        </div>
+        <div className="section-light">
+          <Contact_Calender ref={targetRef} prefillData={selectedPlan} />
+        </div>
+        <div className="section-alt">
+          <FAQSection />
+        </div>
+
         <LeafletMap />
         <Footer />
 

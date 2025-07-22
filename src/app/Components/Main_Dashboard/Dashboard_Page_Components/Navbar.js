@@ -1,8 +1,9 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 const Navbar = () => {
+    const[consultantData,setConsultantData] = useState()
   const router = useRouter();
   const handleLogOut=()=>{
     localStorage.removeItem('token');
@@ -15,6 +16,22 @@ const Navbar = () => {
       router.replace('/'); // or your login page
     }
   }, [router]);
+
+     useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`);
+        if (!response.ok) throw new Error("Failed to fetch consultant data");
+        const result = await response.json();
+        const data = result[0];
+        setConsultantData(data);
+        console.log(data)
+      } catch (error) {
+        console.error("Error fetching consultant data:", error);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <div>
          <nav
@@ -171,7 +188,11 @@ const Navbar = () => {
                     >
                       <div className="avatar avatar-online">
                         <img
-                          src="/assets/img/160x160/img8.jpg"
+                            src={
+                              consultantData.profileImage
+                                  ?  `https://appointify.coinagesoft.com/${consultantData.profileImage}`
+                                : '/assets/img/160x160/img6.jpg'
+                            }
                           alt="User"
                           className="rounded-circle"
                         />

@@ -81,59 +81,74 @@ const Plans = React.forwardRef((props, ref) => {
           </div>
         </div>
 
-        <div className="row justify-content-center">
-          {plans.map((plan) => (
+      <div className="row justify-content-center">
+  {plans.map((plan) => (
+    <div className="col-md-6 col-lg-4 mb-4" key={plan.planId}>
+      <div className="card h-100 bg-primary text-white shadow-sm border-0 d-flex flex-column position-relative">
 
-            <div className="col-md-6 col-lg-4 mb-4" key={plan.planId}>
-              <div className="card h-100 bg-primary text-white shadow-sm border-0 d-flex flex-column">
+        {/* Minutes Badge at Top Center */}
+        <div className="text-center pt-4">
+          <span
+            className="bg-white text-primary fw-bold px-3 py-1 rounded-pill shadow-sm"
+            style={{ fontSize: '0.95rem' }}
+          >
+            ⏱ {plan.planDuration} minutes
+          </span>
+        </div>
 
-                <div className="card-body d-flex flex-column">
-                  {/* Plan Name */}
-                  <h5 className="fw-bold mb-3 text-white">{plan.planName}</h5>
+        {/* Card Body */}
+        <div className="card-body d-flex flex-column pt-3 px-4">
+          {/* Plan Name */}
+          <h5 className="fw-bold mb-2 text-white text-center">{plan.planName}</h5>
 
-                  {/* Plan Duration */}
-                  <div className="small text-white-50 mb-2">{plan.planDuration} minutes</div>
+          {/* Plan Description */}
+          <p className="text-white-75 small mb-3 text-center">{plan.planDescription}</p>
 
-                  {/* Plan Description */}
-                  <p className="text-white-75 small mb-3">{plan.planDescription}</p>
+          {/* Plan Features */}
+          <div
+            className="plan-features px-2 mb-4"
+            dangerouslySetInnerHTML={{ __html: plan.planFeatures }}
+          />
 
-                  {/* Features List */}
-                  <ul
-                    className="plan-features px-3 mb-4"
-                    dangerouslySetInnerHTML={{ __html: plan.planFeatures }}
-                  />
+          <div className="flex-grow-1"></div>
+        </div>
 
-                  {/* Spacer to push footer down if needed */}
-                  <div className="flex-grow-1"></div>
-                </div>
-
-                {/* Footer */}
-                <div className="card-footer bg-transparent border-0 text-center pb-4">
-                  <div className="d-flex justify-content-center gap-2 flex-wrap">
-                    <span className="btn btn-outline-light text-white px-4">
-                      ₹{plan.planPrice}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn-light text-black px-4"
-                      onClick={() =>
-                        props.scrollToSection({
-                          planName: plan.planName,
-                          planPrice: plan.planPrice,
-                          planDuration: plan.planDuration,
-                        })
-                      }
-                    >
-                      Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
+        {/* Card Footer */}
+        <div className="card-footer bg-transparent border-0 text-center pb-4">
+          <div className="d-flex justify-content-center gap-2 flex-wrap">
+            {/* Price */}
+            <div className="bg-white text-primary fw-bold rounded px-4 py-2 fs-5 shadow-sm">
+              ₹{plan.planPrice}
             </div>
 
-
-          ))}
+            {/* Book Now Button */}
+            <button
+              type="button"
+              className="btn fw-semibold text-white px-4 py-2 rounded shadow"
+              style={{
+                backgroundColor: '#7d85f9',
+                border: 'none',
+                boxShadow: '0 0 12px rgba(125,133,249,0.5)',
+                transition: 'all 0.3s ease-in-out',
+              }}
+              onClick={() =>
+                props.scrollToSection({
+                  planName: plan.planName,
+                  planPrice: plan.planPrice,
+                  planDuration: plan.planDuration,
+                })
+              }
+            >
+              Book Now
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
       </div>
 
     </div>
