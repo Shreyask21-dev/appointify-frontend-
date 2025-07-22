@@ -455,31 +455,37 @@ const Contact_Calender = React.forwardRef((props, ref) => {
               </div>
             </div>
           </div>
-          <div className="col-lg-5 col-12 my-auto">
-            {/* <MiniCalendar /> */}
+        <div className="col-lg-5 col-12 my-auto d-flex align-items-stretch">
+  <div className="w-100 bg-white shadow-sm rounded p-3" style={{ minHeight: '35.25rem', maxHeight: '60.25rem' }}>
+    <div className="text-center mb-3">
+      <h5 className="mb-1">Choose Your Slot</h5>
+      <p className="small mb-3">Select a date and time</p>
+      <hr className="bg-dark" />
+    </div>
 
-            <MiniCalendar
-              selected={formData.appointmentDate}
-              duration={formData.duration}
-              bookedTimeSlots={bookedTimeSlots}
-              onDateChange={(date) => {
-                setFormData(prev => ({
-                  ...prev,
-                  appointmentDate: date,
-                  appointmentTime: ''
-                }));
-              }}
-              onSlotSelect={(slot) => {
-                setFormData(prev => ({
-                  ...prev,
-                  appointmentTime: slot
-                }));
-              }}
-              selectedSlot={formData.appointmentTime}
-              planId={availablePlans.find(p => p.planName === formData.plan)?.planId}
-            />
+    <MiniCalendar
+      selected={formData.appointmentDate}
+      duration={formData.duration}
+      bookedTimeSlots={bookedTimeSlots}
+      onDateChange={(date) => {
+        setFormData(prev => ({
+          ...prev,
+          appointmentDate: date,
+          appointmentTime: ''
+        }));
+      }}
+      onSlotSelect={(slot) => {
+        setFormData(prev => ({
+          ...prev,
+          appointmentTime: slot
+        }));
+      }}
+      selectedSlot={formData.appointmentTime}
+      planId={availablePlans.find(p => p.planName === formData.plan)?.planId}
+    />
+  </div>
+</div>
 
-          </div>
         </div>
       </div>
       {/* Modals for Success, Failure, and Cancel */}

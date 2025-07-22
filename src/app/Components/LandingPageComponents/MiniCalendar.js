@@ -151,7 +151,7 @@ useEffect(() => {
 
   return (
     <div className="mx-auto" style={{ maxWidth: "35rem" }}>
-      <div className="card bg-white p-4 mt-5 mt-lg-0" style={{ maxHeight: "40rem" }}>
+      <div className=" bg-white p-4 mt-5 mt-lg-0" style={{ maxHeight: "40rem" }}>
         <div className="calendar-container custom-calendar">
           <DatePicker
             inline
