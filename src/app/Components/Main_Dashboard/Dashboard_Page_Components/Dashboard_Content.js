@@ -118,7 +118,6 @@ const Dashboard_Content = () => {
                   </div>
                   <h3 className="mb-0 fw-bold text-primary">{stats.totalAppointments}</h3>
                 </div>
-                <p className="text-muted">Upcoming consultations</p>
               </div>
             </div>
           </div>
@@ -136,7 +135,6 @@ const Dashboard_Content = () => {
                   </div>
                   <h3 className="mb-0 fw-bold text-warning">{stats.scheduledAppointment}</h3>
                 </div>
-                <p className="text-muted">New appointment requests</p>
               </div>
             </div>
           </div>
@@ -154,7 +152,6 @@ const Dashboard_Content = () => {
                   </div>
                   <h3 className="mb-0 fw-bold text-danger">{stats.completedSessions}</h3>
                 </div>
-                <p className="text-muted">Successful consultations</p>
               </div>
             </div>
           </div>
@@ -172,7 +169,6 @@ const Dashboard_Content = () => {
                   </div>
                   <h3 className="mb-0 fw-bold text-info">{stats.canceled_rescheduledAppointments}</h3>
                 </div>
-                <p className="text-muted">Appointments changed</p>
               </div>
             </div>
           </div>

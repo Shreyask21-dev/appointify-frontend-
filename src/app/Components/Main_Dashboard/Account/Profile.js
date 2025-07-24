@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+
 const API_URL = process.env.REACT_APP_API_URL;
-// Reusable editable field component
+
 const EditableField = ({ label, icon, value, onSave, error }) => {
   const [edit, setEdit] = useState(false);
   const [tempValue, setTempValue] = useState(value);
@@ -17,13 +18,14 @@ const EditableField = ({ label, icon, value, onSave, error }) => {
   };
 
   return (
-    <li className="d-flex align-items-center mb-2">
+    <li className="d-flex align-items-center flex-wrap mb-2 w-100">
       <i className={`me-2 ${icon}`}></i>
-      {label && <span className="fw-medium me-1">{label}</span>}
+      {label && <span className="fw-medium me-2">{label}</span>}
       {edit ? (
         <>
           <input
             className={`form-control d-inline w-auto ${error ? 'is-invalid' : ''}`}
+            style={{ maxWidth: '200px' }}
             value={tempValue}
             onChange={(e) => setTempValue(e.target.value)}
           />
@@ -31,10 +33,17 @@ const EditableField = ({ label, icon, value, onSave, error }) => {
             className="ri-check-line text-success ms-2 cursor-pointer"
             onClick={handleSave}
             title="Save"
+            style={{ fontSize: '1.2rem' }}
           ></i>
         </>
       ) : (
-        <span onClick={() => setEdit(true)} className="cursor-pointer">{value || '—'}</span>
+        <span
+          onClick={() => setEdit(true)}
+          className="cursor-pointer text-muted"
+          style={{ minWidth: '120px' }}
+        >
+          {value || '—'}
+        </span>
       )}
       {error && <div className="invalid-feedback">{error}</div>}
     </li>
@@ -46,12 +55,12 @@ const handleImageUpload = (e, imageType, setUser) => {
   if (file) {
     setUser((prevUser) => ({
       ...prevUser,
-      [imageType]: file, // Store the file itself in state
+      [imageType]: file,
     }));
   }
 };
 
-const ProfileModal = ({ user, setUser, onClose, onSave, onImageUpload }) => {
+const ProfileModal = ({ user, setUser, onClose, onSave }) => {
   const fields = [
     'fullName',
     'role',
@@ -63,17 +72,19 @@ const ProfileModal = ({ user, setUser, onClose, onSave, onImageUpload }) => {
     'joinDate',
   ];
 
-  const [errors, setErrors] = useState({}); // State to hold validation errors
+  const [errors, setErrors] = useState({});
 
   const validate = () => {
     const newErrors = {};
     fields.forEach((field) => {
       if (!user[field]) {
-        newErrors[field] = `${field.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())} is required.`;
+        newErrors[field] = `${field
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (str) => str.toUpperCase())} is required.`;
       }
     });
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Return true if no errors
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveProfile = () => {
@@ -84,16 +95,16 @@ const ProfileModal = ({ user, setUser, onClose, onSave, onImageUpload }) => {
 
   return (
     <div className="modal show d-block" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-      <div className="modal-dialog">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Add Profile</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+      <div className="modal-dialog modal-lg modal-dialog-centered">
+        <div className="modal-content border-0 shadow rounded-4">
+          <div className="modal-header bg-primary text-white rounded-top-4">
+            <h5 className="modal-title">Edit Profile</h5>
+            <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
           </div>
-          <div className="modal-body">
+          <div className="modal-body p-4">
             {fields.map((field) => (
               <div className="form-group mb-3" key={field}>
-                <label>
+                <label className="fw-semibold">
                   {field.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
                 </label>
                 <input
@@ -106,29 +117,20 @@ const ProfileModal = ({ user, setUser, onClose, onSave, onImageUpload }) => {
               </div>
             ))}
             <div className="form-group mb-3">
-              <label>Profile Image</label>
+              <label className="fw-semibold">Profile Image</label>
               <input
                 type="file"
                 className="form-control"
-                onChange={(e) => handleImageUpload(e, 'profileImage', setUser)} // Handle file input change
-              />
-            </div>
-
-            <div className="form-group mb-3">
-              <label>Background Image</label>
-              <input
-                type="file"
-                className="form-control"
-                onChange={(e) => handleImageUpload(e, 'backgroundImage', setUser)} // Handle file input change
+                onChange={(e) => handleImageUpload(e, 'profileImage', setUser)}
               />
             </div>
           </div>
-          <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onClose}>
-              Close
+          <div className="modal-footer px-4 py-3">
+            <button className="btn btn-outline-secondary" onClick={onClose}>
+              Cancel
             </button>
-            <button className="btn btn-primary" onClick={handleSaveProfile}>
-              Save Profile
+            <button className="btn btn-success" onClick={handleSaveProfile}>
+              Save Changes
             </button>
           </div>
         </div>
@@ -148,7 +150,6 @@ const Profile = () => {
         .get(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
           },
         })
         .then((res) => {
@@ -182,43 +183,43 @@ const Profile = () => {
   const handleSaveProfile = async (newData) => {
     const formData = new FormData();
 
-    // Append text fields (non-image data)
     Object.keys(newData).forEach((key) => {
-      if (key !== 'profileImage' && key !== 'backgroundImage') {
+      if (key !== 'profileImage') {
         formData.append(key, newData[key]);
       }
     });
 
-    // Append the profile and background image (as files)
     if (user.profileImage) {
-      formData.append('profileImage', user.profileImage); // Image file for profile
-    }
-
-    if (user.backgroundImage) {
-      formData.append('backgroundImage', user.backgroundImage); // Image file for background
+      formData.append('profileImage', user.profileImage);
     }
 
     try {
       const res = await axios.get(`https://appointify.coinagesoft.com/api/ConsultantProfile/getConsultantProfile`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.data.length > 0) {
-        await axios.patch(`https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`, newData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        await axios.patch(
+          `https://appointify.coinagesoft.com/api/ConsultantProfile/updateConsultantProfile`,
+          newData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
       } else {
-        await axios.post(`https://appointify.coinagesoft.com/api/ConsultantProfile/addConsultantProfile`, newData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+        await axios.post(
+          `https://appointify.coinagesoft.com/api/ConsultantProfile/addConsultantProfile`,
+          newData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
       }
 
       setUser(newData);
@@ -230,9 +231,8 @@ const Profile = () => {
 
   return (
     <main className="container-xxl flex-grow-1 container-p-y">
-      <section className="row mb-6">
-        <div className="col-md-12">
-          {/* Navigation Tabs */}
+      <section className="row mb-5">
+        <div className="col-12">
           <div className="nav-align-top mb-4">
             <ul className="nav nav-pills flex-column flex-md-row mb-4 gap-2 gap-lg-0">
               <li className="nav-item">
@@ -241,7 +241,7 @@ const Profile = () => {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link " href="/Dashboard/Security">
+                <Link className="nav-link" href="/Dashboard/Security">
                   <i className="ri-lock-line me-2"></i> Security
                 </Link>
               </li>
@@ -252,78 +252,72 @@ const Profile = () => {
               </li>
             </ul>
           </div>
-          <div className="card">
-            <div className="user-profile-header-banner position-relative">
-              <img
-                src={user.backgroundImage && `https://appointify.coinagesoft.com${user.backgroundImage}`}
-                alt="Banner"
-                className="rounded-top w-100"
-                style={{ height: '180px' }}
-              />
-            </div>
 
-            <div className="user-profile-header d-flex flex-column flex-sm-row text-sm-start text-center p-4">
-              <div className="position-relative mx-auto mx-sm-4 mt-2">
+          <div className="card shadow border-0 rounded-4">
+            <div className="user-profile-header d-flex flex-column flex-md-row align-items-center p-4 gap-4">
+              <div className="text-center">
                 <img
                   src={user.profileImage && `https://appointify.coinagesoft.com${user.profileImage}`}
                   alt="Profile"
-                  className="rounded-4 user-profile-img"
-                  style={{ width: '150px', height: '150px' }}
+                  className="rounded-circle border shadow"
+                  style={{ width: '150px', height: '150px', objectFit: 'cover' }}
                 />
               </div>
-              <div className="flex-grow-1 mt-4 mt-sm-0">
-                <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                  <div>
-                    <h4 className="mb-2">{user.fullName}</h4>
-                    <ul className="list-inline mb-0 d-flex flex-wrap gap-3">
-                      <EditableField
-                        label="Role:"
-                        icon="ri-palette-line"
-                        value={user.role}
-                        onSave={(val) => handleFieldUpdate('role', val)}
-                      />
-                      <EditableField
-                        label="Join Date:"
-                        icon="ri-calendar-line"
-                        value={user.joinDate}
-                        onSave={(val) => handleFieldUpdate('joinDate', val)}
-                      />
-                      <EditableField
-                        label="Languages:"
-                        icon="ri-chat-voice-line"
-                        value={user.languages}
-                        onSave={(val) => handleFieldUpdate('languages', val)}
-                      />
-                      <EditableField
-                        label="Hospital/Clinic Address:"
-                        icon="ri-hospital-line"
-                        value={user.hospitalClinicAddress}
-                        onSave={(val) => handleFieldUpdate('hospitalClinicAddress', val)}
-                      />
-                      <EditableField
-                        label="Email:"
-                        icon="ri-mail-line"
-                        value={user.email}
-                        onSave={(val) => handleFieldUpdate('email', val)}
-                      />
-                      <EditableField
-                        label="Countries:"
-                        icon="ri-globe-line"
-                        value={user.countries}
-                        onSave={(val) => handleFieldUpdate('countries', val)}
-                      />
-                    </ul>
-                  </div>
-                </div>
+              <div className="flex-grow-1">
+                <h4 className="fw-bold mb-3">{user.fullName || 'Your Name'}</h4>
+                <ul className="list-unstyled">
+                  <EditableField
+                    label="Role:"
+                    icon="ri-palette-line"
+                    value={user.role}
+                    onSave={(val) => handleFieldUpdate('role', val)}
+                  />
+                  <EditableField
+                    label="Join Date:"
+                    icon="ri-calendar-line"
+                    value={user.joinDate}
+                    onSave={(val) => handleFieldUpdate('joinDate', val)}
+                  />
+                  <EditableField
+                    label="Languages:"
+                    icon="ri-chat-voice-line"
+                    value={user.languages}
+                    onSave={(val) => handleFieldUpdate('languages', val)}
+                  />
+                  <EditableField
+                    label="Hospital/Clinic Address:"
+                    icon="ri-hospital-line"
+                    value={user.hospitalClinicAddress}
+                    onSave={(val) => handleFieldUpdate('hospitalClinicAddress', val)}
+                  />
+                  <EditableField
+                    label="Email:"
+                    icon="ri-mail-line"
+                    value={user.email}
+                    onSave={(val) => handleFieldUpdate('email', val)}
+                  />
+                  <EditableField
+                    label="Countries:"
+                    icon="ri-globe-line"
+                    value={user.countries}
+                    onSave={(val) => handleFieldUpdate('countries', val)}
+                  />
+                </ul>
               </div>
             </div>
+          </div>
+
+          <div className="text-end mt-4">
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm"
+            >
+              <i className="fas fa-edit me-2"></i> Edit Profile
+            </button>
           </div>
         </div>
       </section>
 
-      <button onClick={() => setShowModal(true)}>Edit Profile</button>
-
-      {/* Modal for Profile Edit */}
       {showModal && (
         <ProfileModal
           user={user}

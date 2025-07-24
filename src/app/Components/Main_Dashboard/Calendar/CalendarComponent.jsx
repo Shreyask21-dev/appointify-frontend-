@@ -164,28 +164,35 @@ useEffect(() => {
   setSlotStartTime(start);
   setSlotEndTime(end);
 }, [shifts, selectedShiftId]);
+const scheduledAppointments = appointments
+  .filter(
+    (a) =>
+      a.appointmentStatus === 0 || a.appointmentStatus === 3 &&
+      selectedPlans.includes(a.plan?.toLowerCase())
+  )
+  .map((a) => {
+    const [startStr, endStr] = a.appointmentTime.split(' - ');
+    const start = new Date(`${a.appointmentDate} ${startStr}`);
+    const end = new Date(`${a.appointmentDate} ${endStr}`);
 
-  const scheduledAppointments = appointments
-    .filter(a => a.appointmentStatus === 0)
-    .map(a => {
-      const [startStr, endStr] = a.appointmentTime.split(' - ');
-      const start = new Date(`${a.appointmentDate} ${startStr}`);
-      const end = new Date(`${a.appointmentDate} ${endStr}`);
-      return {
-        title: `${a.firstName} ${a.lastName}`,
-        start,
-        end,
-        className: getColorClass(
-          plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())
-        ),
-        extendedProps: {
-          planName: a.plan?.toLowerCase() || 'unknown',
-          status: a.appointmentStatus,
-          appointmentTime: a.appointmentTime,
-          id: a.id
-        }
-      };
-    });
+    return {
+      title: `${a.firstName} ${a.lastName}`,
+      start,
+      end,
+      className: getColorClass(
+        plans.findIndex(
+          (p) => p.planName?.toLowerCase() === a.plan?.toLowerCase()
+        )
+      ),
+      extendedProps: {
+        planName: a.plan?.toLowerCase() || 'unknown',
+        status: a.appointmentStatus,
+        appointmentTime: a.appointmentTime,
+        id: a.id,
+      },
+    };
+  });
+
 
   const handleEventClick = (info) => {
     const clickedTitle = info.event.title;

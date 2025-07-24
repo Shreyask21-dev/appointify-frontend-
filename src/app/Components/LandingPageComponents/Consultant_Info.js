@@ -101,7 +101,7 @@ const Consultant_Info = () => {
                 </a>
               </li>
             )}
-            {consultantData.youtubeId && (
+            {/* {consultantData.youtubeId && (
               <li className="list-inline-item me-2">
                 <a
                   className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
@@ -112,7 +112,7 @@ const Consultant_Info = () => {
                   <i className="bi-youtube"></i>
                 </a>
               </li>
-            )}
+            )} */}
           </ul>
         </div>
       </div>
