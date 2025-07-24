@@ -28,7 +28,7 @@ Chart.register(
   BarController,
   LineController
 );
-const API_URL = process.env.REACT_APP_API_URL;
+
 const ChartComponent = () => {
   const revenueChartRef = useRef(null);
   const revenueBarChartRef = useRef(null);
@@ -38,16 +38,15 @@ const ChartComponent = () => {
   const revenueBarChartInstance = useRef(null);
   const growthChartInstance = useRef(null);
 
-  // State to hold fetched data
   const [appointments, setAppointments] = useState([]);
 
-  // Fetch data from backend
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments`); // your backend endpoint
+        const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments`);
         const data = await response.json();
         setAppointments(data);
+        console.log("Fetched Appointments:", data.map(a => a.plan));
       } catch (error) {
         console.error('Error fetching appointments:', error);
       }
@@ -55,57 +54,30 @@ const ChartComponent = () => {
     fetchData();
   }, []);
 
-  // Update charts whenever appointments data changes
   useEffect(() => {
     if (!appointments.length) return;
 
-    // Destroy old instances
+    // Destroy old charts
     if (revenueChartInstance.current) revenueChartInstance.current.destroy();
     if (revenueBarChartInstance.current) revenueBarChartInstance.current.destroy();
     if (growthChartInstance.current) growthChartInstance.current.destroy();
 
-    // ========== Prepare data for Pie Chart (Revenue by Month) ==========
-    // Aggregate revenue by month (e.g. May, June)
-    const revenueByMonth = appointments.reduce((acc, appt) => {
-      const month = new Date(appt.appointmentDate).toLocaleString('default', { month: 'short' });
-      acc[month] = (acc[month] || 0) + appt.amount;
+    // ========== Pie Chart: Revenue by Plan ==========
+    const revenueByPlan = appointments.reduce((acc, appt) => {
+      const plan = (appt.plan || 'Unknown Plan').trim();
+      acc[plan] = (acc[plan] || 0) + appt.amount;
       return acc;
     }, {});
+    const pieLabels = Object.keys(revenueByPlan);
+    const pieData = Object.values(revenueByPlan);
 
-    const pieLabels = Object.keys(revenueByMonth);
-    const pieData = Object.values(revenueByMonth);
-
-    // ========== Prepare data for Bar Chart (Monthly Revenue) ==========
-    // Sort months in calendar order for bar chart
-    const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const barLabels = monthOrder.filter(m => pieLabels.includes(m));
-    const barData = barLabels.map(m => revenueByMonth[m]);
-
-    // ========== Prepare data for Line Chart (Weekly Growth in Appointments) ==========
-    // Count appointments per week in the current month (assuming May 2025)
-    // Weeks: Week 1: 1-7, Week 2: 8-14, Week 3: 15-21, Week 4: 22-28, Week 5: 29-31
-    const appointmentsByWeek = [0, 0, 0, 0, 0];
-    appointments.forEach(appt => {
-      const date = new Date(appt.appointmentDate);
-      if (date.getMonth() === 4) { // May is 4 (0-based)
-        const day = date.getDate();
-        if (day <= 7) appointmentsByWeek[0]++;
-        else if (day <= 14) appointmentsByWeek[1]++;
-        else if (day <= 21) appointmentsByWeek[2]++;
-        else if (day <= 28) appointmentsByWeek[3]++;
-        else appointmentsByWeek[4]++;
-      }
-    });
-    const lineLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
-
-    // ========== Create Pie Chart ==========
     revenueChartInstance.current = new Chart(revenueChartRef.current, {
       type: 'pie',
       data: {
         labels: pieLabels,
         datasets: [
           {
-            label: 'Revenue ($)',
+            label: 'Revenue by Plan (₹)',
             data: pieData,
             backgroundColor: pieLabels.map((_, i) => `hsl(${(i * 60) % 360}, 70%, 60%)`),
             borderWidth: 1,
@@ -115,46 +87,157 @@ const ChartComponent = () => {
       options: {
         responsive: true,
         plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const label = context.label || '';
+                const value = context.parsed || 0;
+                return `${label}: ₹${value}`;
+              },
+            },
+          },
           legend: { display: true },
         },
       },
     });
 
-    // ========== Create Bar Chart ==========
+    // ========== Bar Chart: Monthly Revenue ==========
+    const monthlyRevenueMap = {};
+
+    appointments.forEach(appt => {
+      const date = new Date(appt.appointmentDate);
+      const year = date.getFullYear();
+      const month = date.getMonth(); // 0 = Jan
+      const key = `${year}-${month}`;
+      if (!monthlyRevenueMap[key]) {
+        monthlyRevenueMap[key] = { total: 0, date };
+      }
+      monthlyRevenueMap[key].total += appt.amount;
+    });
+
+    const sortedMonths = Object.entries(monthlyRevenueMap).sort(
+      (a, b) => a[1].date - b[1].date
+    );
+
+    const barLabels = sortedMonths.map(([_, { date }]) =>
+      date.toLocaleString('default', { month: 'short', year: 'numeric' })
+    );
+// ✅ FIX HERE:
+const barData = sortedMonths.map(([_, { total }]) => total);
+
     revenueBarChartInstance.current = new Chart(revenueBarChartRef.current, {
       type: 'bar',
       data: {
         labels: barLabels,
         datasets: [
           {
-            label: 'Monthly Revenue ($)',
+            label: 'Monthly Revenue (₹)',
             data: barData,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            borderColor: '#36A2EB',
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
           },
         ],
       },
-    });
-
-    // ========== Create Line Chart ==========
-    growthChartInstance.current = new Chart(growthChartRef.current, {
-      type: 'line',
-      data: {
-        labels: lineLabels,
-        datasets: [
-          {
-            label: 'Appointment Count',
-            data: appointmentsByWeek,
-            borderColor: '#FF6384',
-            fill: false,
-            tension: 0.3,
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            callbacks: {
+               label: function (context) {
+      const value = context.raw; // ✅ Use raw, not parsed
+      return `₹${value.toLocaleString('en-IN')}`;
+              },
+            },
           },
-        ],
+          legend: {
+            display: true,
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Revenue in ₹',
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Month',
+            },
+          },
+        },
       },
     });
 
-    // Cleanup on unmount
+    // ========== Line Chart: Weekly Appointments ==========
+   const appointmentsByWeek = [0, 0, 0, 0, 0]; // for 5 possible weeks
+const currentMonth = new Date().getMonth(); // dynamically get current month
+const currentYear = new Date().getFullYear();
+
+appointments.forEach(appt => {
+  const date = new Date(appt.appointmentDate);
+  if (date.getMonth() === currentMonth && date.getFullYear() === currentYear) {
+    const day = date.getDate();
+    const weekIndex = Math.floor((day - 1) / 7); // divide days into weeks
+    if (weekIndex >= 0 && weekIndex < 5) {
+      appointmentsByWeek[weekIndex]++;
+    }
+  }
+});
+
+// Destroy previous instance if exists
+if (growthChartInstance.current) {
+  growthChartInstance.current.destroy();
+}
+
+growthChartInstance.current = new Chart(growthChartRef.current, {
+  type: 'line',
+  data: {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+    datasets: [
+      {
+        label: 'Appointments This Week',
+        data: appointmentsByWeek,
+        borderColor: '#FF6384',
+        backgroundColor: 'rgba(255,99,132,0.2)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Appointments',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Weeks',
+        },
+      },
+    },
+  },
+});
+
+
     return () => {
       if (revenueChartInstance.current) revenueChartInstance.current.destroy();
       if (revenueBarChartInstance.current) revenueBarChartInstance.current.destroy();
@@ -166,7 +249,7 @@ const ChartComponent = () => {
     <div className="charts-wrapper mt-5 ms-5">
       <div className="d-flex ms-5">
         <div className="chart-container" style={{ width: "400px", height: "300px" }}>
-          <h4>Revenue (Pie)</h4>
+          <h4>Revenue by Plan (Pie)</h4>
           <canvas ref={revenueChartRef}></canvas>
         </div>
         <div className="chart-container" style={{ width: "400px" }}>

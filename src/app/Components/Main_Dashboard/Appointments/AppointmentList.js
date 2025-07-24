@@ -187,7 +187,7 @@ const handleViewInvoice = async (apptId) => {
                 <th>Payment Status</th>
                 <th>Appointment Status</th>
                 <th>Actions</th>
-                <th>View Invoice</th> 
+                {/* <th>View Invoice</th>  */}
               </tr>
             </thead>
             <tbody>
@@ -235,11 +235,11 @@ const handleViewInvoice = async (apptId) => {
                       </button>
                     </div>
                   </td>
-                  <td>
+                  {/* <td>
                     <button className="btn btn-sm btn-outline-info" onClick={() => handleViewInvoice(appt.id)}>
                       <i className="ri-file-list-line me-1"></i>View Invoice
                     </button>
-                  </td> 
+                  </td>  */}
                 </tr>
               ))}
             </tbody>
