@@ -111,13 +111,11 @@ const Page = () => {
                 <Link href="/SignUp"><span> Create an account</span></Link>
               </p> */}
 
-              <div className="divider my-5">
+              {/* <div className="divider my-5">
                 <div className="divider-text">or</div>
-              </div>
+              </div> */}
 
-              <div className="d-flex justify-content-center gap-2">
-                {/* Social login buttons can go here */}
-              </div>
+          
             </div>
           </div>
         </div>
