@@ -106,10 +106,10 @@ const Page = () => {
                 </div>
               </form>
 
-              <p className="text-center">
+              {/* <p className="text-center">
                 <span>New on our platform?</span>
                 <Link href="/SignUp"><span> Create an account</span></Link>
-              </p>
+              </p> */}
 
               <div className="divider my-5">
                 <div className="divider-text">or</div>
