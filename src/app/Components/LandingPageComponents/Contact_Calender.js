@@ -147,7 +147,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     setFormErrors({});
     try {
       // Submit appointment to backend
-      const response = await fetch(`http://localhost:5056/api/CustomerAppointment/CreateAppointment`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/CreateAppointment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -233,7 +233,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
 
   const verifyPayment = async (paymentResponse) => {
     try {
-      const response = await fetch(`http://localhost:5056/api/CustomerAppointment/VerifyPayment`, {
+      const response = await fetch(`https://appointify.coinagesoft.com/api/CustomerAppointment/VerifyPayment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
