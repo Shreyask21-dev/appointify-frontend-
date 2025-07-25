@@ -1,12 +1,8 @@
-// CalendarComponent.jsx
 'use client';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import DatePicker from 'react-datepicker';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'react-datepicker/dist/react-datepicker.css';
 import './Calendar.css';
 import AppointmentForm from './AppointmentForm';
 import ShiftManager from './ShiftManager';
@@ -18,39 +14,48 @@ export default function CalendarComponent() {
   const [plans, setPlans] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [selectedPlans, setSelectedPlans] = useState([]);
-  const [slotStartTime, setSlotStartTime] = useState(new Date());
-  const [slotEndTime, setSlotEndTime] = useState(new Date());
-  const [startHour, setStartHour] = useState("10");
-  const [startMinute, setStartMinute] = useState("00");
-  const [startPeriod, setStartPeriod] = useState("AM");
-  const [addAppointment, setAddAppointment] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [selectedShiftId, setSelectedShiftId] = useState(null);
   const [shifts, setShifts] = useState([]);
+  const [slotStartTime, setSlotStartTime] = useState(new Date());
+  const [slotEndTime, setSlotEndTime] = useState(new Date());
   const [bufferInMinutes, setBufferInMinutes] = useState(0);
-  const [endHour, setEndHour] = useState("11");
-  const [endMinute, setEndMinute] = useState("00");
-  const [endPeriod, setEndPeriod] = useState("AM");
 
   const getColorClass = (index) => {
-    const colors = ['form-check-primary', 'form-check-success', 'form-check-warning', 'form-check-danger', 'form-check-info'];
+    const colors = ['primary', 'success', 'warning', 'danger', 'info'];
     return colors[index % colors.length];
+  };
+
+  const getStatusColorClass = (status) => {
+    switch (status) {
+      case 0: return 'primary';
+      case 1: return 'success';
+      case 2: return 'danger';
+      case 3: return 'warning';
+      case 4: return 'info';
+      default: return 'secondary';
+    }
   };
 
   const fetchAppointments = () => {
     const token = localStorage.getItem('token');
-    axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-      .then(response => {
-        const sortedAppointments = [...response.data].sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
+    axios
+      .get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then((response) => {
+        const sortedAppointments = [...response.data].sort(
+          (a, b) => new Date(a.createdDate) - new Date(b.createdDate)
+          
+        );
+        
         setAppointments(sortedAppointments);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching appointments:', error);
       });
   };
@@ -58,15 +63,12 @@ export default function CalendarComponent() {
   useEffect(() => {
     const offcanvasElement = offcanvasRef.current;
     const handleOffcanvasHidden = () => {
-      setAddAppointment(false);
       setSelectedAppointment(null);
-      fetchAppointments(); // refresh after closing form
+      fetchAppointments();
     };
-
     if (offcanvasElement) {
       offcanvasElement.addEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
     }
-
     return () => {
       if (offcanvasElement) {
         offcanvasElement.removeEventListener('hidden.bs.offcanvas', handleOffcanvasHidden);
@@ -83,14 +85,10 @@ export default function CalendarComponent() {
       const token = localStorage.getItem('token');
       try {
         const response = await fetch('https://appointify.coinagesoft.com/api/ConsultationPlan/get-all', {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!response.ok) throw new Error('Failed to fetch plans');
-
         const data = await response.json();
-        if (Array.isArray(data)) setPlans(data);
-        else setPlans([]);
+        setPlans(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching plans:', error);
         setPlans([]);
@@ -100,320 +98,187 @@ export default function CalendarComponent() {
   }, []);
 
   useEffect(() => {
-    setSelectedPlans(plans.map(p => p.planName?.toLowerCase()));
+    setSelectedPlans(plans.map((p) => p.planName?.toLowerCase()));
   }, [plans]);
 
   useEffect(() => {
-  console.log("📌 Updated selectedPlanId:", selectedPlanId);
-}, [selectedPlanId]);
+    const token = localStorage.getItem('token');
+    if (!selectedPlanId) return;
 
-useEffect(() => {
-  const token = localStorage.getItem('token');
-  console.log("planId={selectedPlanId}",selectedPlanId)
-  if (!selectedPlanId) return;
+    axios
+      .get(`https://appointify.coinagesoft.com/api/ConsultantShift`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setShifts(res.data))
+      .catch((err) => {
+        console.error('❌ Error fetching shifts:', err);
+        setShifts([]);
+      });
 
-  // Fetch all consultant shifts
-  axios.get(` https://appointify.coinagesoft.com/api/ConsultantShift`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  .then((res) => {
-    console.log("🟢 ConsultantShift Response:", res);
-    setShifts(res.data);
-  })
-  .catch((err) => {
-    console.error("❌ Error fetching shifts:", err);
-    setShifts([]);
-  });
+    axios
+      .get(`https://appointify.coinagesoft.com/api/PlanBufferRule`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { planId: selectedPlanId },
+      })
+      .then((res) => setBufferInMinutes(res.data.bufferInMinutes))
+      .catch(() => setBufferInMinutes(0));
+  }, [selectedPlanId]);
 
-  // Fetch buffer time using only planId (shiftId removed from params)
-  axios.get(` https://appointify.coinagesoft.com/api/PlanBufferRule`, {
-    headers: { Authorization: `Bearer ${token}` },
-    params: { planId: selectedPlanId }  // ✅ shiftId removed
-  })
-  .then((res) => {
-    console.log("🟢 PlanBufferRule Response:", res.data);
-    setBufferInMinutes(res.data.bufferInMinutes);
-  })
-  .catch((err) => {
-    console.error("❌ Error fetching buffer:", err);
-    setBufferInMinutes(0);
-  });
+  useEffect(() => {
+    if (!shifts.length || !selectedShiftId) return;
+    const shift = shifts.find((s) => s.id === selectedShiftId);
+    if (!shift) return;
 
-}, [selectedPlanId]);  // ✅ Removed selectedShiftId from dependency
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0];
+    const start = new Date(`${dateStr}T${shift.startTime}`);
+    let end = new Date(`${dateStr}T${shift.endTime}`);
+    if (end <= start) end.setDate(end.getDate() + 1);
 
-useEffect(() => {
-  if (!shifts.length || !selectedShiftId) return;
-  const shift = shifts.find(s => s.id === selectedShiftId);
+    setSlotStartTime(start);
+    setSlotEndTime(end);
+  }, [shifts, selectedShiftId]);
 
-  if (!shift) return;
+  const parseTime = (timeStr) => {
+    const [time, modifier] = timeStr.trim().split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
+  };
 
-  const today = new Date();
-  const dateStr = today.toISOString().split('T')[0];
+  const scheduledAppointments = appointments
+    .filter((a) => selectedPlans.includes(a.plan?.toLowerCase()))
+   .map((a) => {
+  if (!a.appointmentTime || !a.appointmentDate) return null;
 
-  const start = new Date(`${dateStr}T${shift.startTime}`);
-  let end = new Date(`${dateStr}T${shift.endTime}`);
+  const [startTime, endTime] = a.appointmentTime.split(" - ");
+  if (!startTime || !endTime) return null;
 
-  // 🛠 Fix: if end time is less than start time, it means it goes past midnight
-  if (end <= start) {
-    end.setDate(end.getDate() + 1); // move end to next day
-  }
+  const start = `${a.appointmentDate}T${parseTime(startTime)}`;
+  const end = `${a.appointmentDate}T${parseTime(endTime)}`;
 
-  console.log("🟢 Shift Start:", start);
-  console.log("🟢 Shift End:", end);
-
-  setSlotStartTime(start);
-  setSlotEndTime(end);
-}, [shifts, selectedShiftId]);
-const scheduledAppointments = appointments
-  .filter(
-    (a) =>
-      a.appointmentStatus === 0 || a.appointmentStatus === 3 &&
-      selectedPlans.includes(a.plan?.toLowerCase())
-  )
-  .map((a) => {
-    const [startStr, endStr] = a.appointmentTime.split(' - ');
-    const start = new Date(`${a.appointmentDate} ${startStr}`);
-    const end = new Date(`${a.appointmentDate} ${endStr}`);
-
-    return {
-      title: `${a.firstName} ${a.lastName}`,
-      start,
-      end,
-      className: getColorClass(
-        plans.findIndex(
-          (p) => p.planName?.toLowerCase() === a.plan?.toLowerCase()
-        )
-      ),
-      extendedProps: {
-        planName: a.plan?.toLowerCase() || 'unknown',
-        status: a.appointmentStatus,
-        appointmentTime: a.appointmentTime,
-        id: a.id,
-      },
-    };
-  });
+  return {
+    id: a.id,
+    title: `${a.firstName} ${a.lastName}`,
+    start,
+    end,
+    className: `bg-${getStatusColorClass(a.appointmentStatus)}`,
+    extendedProps: {
+      planName: a.plan?.toLowerCase(),
+      status: a.appointmentStatus,
+      appointmentTime: a.appointmentTime,
+      id: a.id,
+    },
+  };
+}).filter(Boolean); // remove nulls
 
 
   const handleEventClick = (info) => {
-    const clickedTitle = info.event.title;
-    const clickedDate = info.event.start;
-    const clickedTime = info.event.extendedProps.appointmentTime;
-
-    const matchingAppointment = appointments.find(
+    const { title, start, extendedProps } = info.event;
+    const match = appointments.find(
       (a) =>
-        `${a.firstName} ${a.lastName}` === clickedTitle &&
-        a.appointmentDate === clickedDate.toISOString().slice(0, 10) &&
-        a.appointmentTime === clickedTime
+        `${a.firstName} ${a.lastName}` === title &&
+        a.appointmentDate === start.toISOString().slice(0, 10) &&
+        a.appointmentTime === extendedProps.appointmentTime
     );
-
-    if (matchingAppointment) {
-      setSelectedAppointment(matchingAppointment);
+    if (match) {
+      setSelectedAppointment(match);
       const offcanvasEl = document.getElementById('addEventSidebar');
       const bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
       bsOffcanvas.show();
     }
   };
 
-  const buildDateTime = (hour, minute, period) => {
-    let hr = parseInt(hour);
-    if (period === 'PM' && hr !== 12) hr += 12;
-    if (period === 'AM' && hr === 12) hr = 0;
-    const now = new Date();
-    const datePart = now.toISOString().split('T')[0];
-    const timePart = `${hr.toString().padStart(2, '0')}:${minute}:00`;
-    return `${datePart}T${timePart}`;
-  };
+  useEffect(() => {
+    console.log("📅 Final Events Passed to Calendar:", scheduledAppointments);
+            console.log("✅ Raw Appointments from API:", appointments);
 
-  const minTime = buildDateTime(startHour, startMinute, startPeriod);
-  const maxTime = buildDateTime(endHour, endMinute, endPeriod);
+  }, [scheduledAppointments,appointments]);
 
   return (
-    <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
-   
-      <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: "white" }}>
-
-        <div className="card app-calendar-wrapper">
-          <div className="row g-0">
-            <div className="col app-calendar-sidebar border-end" id="app-calendar-sidebar">
-              <div className="p-5 my-sm-0 mb-4 border-bottom">
-                <button
-                  onClick={() => setAddAppointment(true)}
-                  className="btn btn-primary btn-toggle-sidebar w-100"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#addEventSidebar"
-                  aria-controls="addEventSidebar">
-                  <i className="ri-add-line ri-16px me-1_5"></i>
-                  <span className="align-middle"> Add Appointment</span>
-                </button>
+    <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: 'white' }}>
+      <div className="card app-calendar-wrapper">
+        <div className="row g-0">
+          <div className="col app-calendar-sidebar border-end" id="app-calendar-sidebar">
+            <div className="p-4 border-bottom">
+              <button className="btn btn-primary w-100" data-bs-toggle="offcanvas" data-bs-target="#addEventSidebar" aria-controls="addEventSidebar">
+                + Add Appointment
+              </button>
+            </div>
+            <div className="px-4">
+              <hr className="mb-5 mx-n4 mt-3" />
+              <h5 className="mb-3">Event Filters</h5>
+              <div className="form-check form-check-secondary mb-3 ms-2">
+                <input className="form-check-input" type="checkbox" id="selectAll" checked={selectedPlans.length === plans.length} onChange={(e) => setSelectedPlans(e.target.checked ? plans.map((p) => p.planName?.toLowerCase()) : [])} />
+                <label className="form-check-label" htmlFor="selectAll">View All</label>
               </div>
-              <div className="px-4">
+              {plans.map((plan, index) => (
+                <div className={`form-check form-check-${getColorClass(index)} mb-2 ms-2`} key={index}>
+                  <input className="form-check-input" type="checkbox" id={`plan-${index}`} checked={selectedPlans.includes(plan.planName?.toLowerCase())} onChange={(e) => {
+                    const val = plan.planName?.toLowerCase();
+                    setSelectedPlans((prev) => e.target.checked ? [...prev, val] : prev.filter((p) => p !== val));
+                  }} />
+                  <label className="form-check-label" htmlFor={`plan-${index}`}>{plan.planName}</label>
+                </div>
+              ))}
+            </div>
+          </div>
 
-                <DatePicker
-                  inline
-
+          <div className="col app-calendar-content">
+            <div className=" border-0">
+              <div className=" ps-0 pb-0">
+                <FullCalendar
+                  plugins={[dayGridPlugin, interactionPlugin]}
+                  initialView="dayGridMonth"
+                  events={scheduledAppointments}
+                  eventClick={handleEventClick}
+                  headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
+                  buttonText={{ today: 'Today', month: 'Month' }}
+                  eventContent={(info) => {
+                    return {
+                      html: `
+                        <div class="badge rounded-pill ${info.event.classNames.join(' ')} text-white" 
+                             style="font-size: 0.75rem; padding: 4px 8px;">
+                          ${info.event.title}
+                        </div>
+                        `,
+                    };
+                  }}
                 />
-
-                <hr className="mb-5 mx-n4 mt-3" />
-                <div className="mb-4 ms-1">
-                  <h5>Event Filters</h5>
-                </div>
-                <div className="form-check form-check-secondary mb-5 ms-3">
-                  <input
-                    className="form-check-input select-all"
-                    type="checkbox"
-                    id="selectAll"
-                    checked={selectedPlans.length === plans.length}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedPlans(plans.map(p => p.planName?.toLowerCase()));
-                      } else {
-                        setSelectedPlans([]);
-                      }
-                    }}
-                  />
-
-                  <label className="form-check-label" htmlFor="selectAll">View All</label>
-                </div>
-
-                <div className="app-calendar-events-filter text-heading">
-                  {plans.map((plan, index) => (
-                    <div className={`form-check ${getColorClass(index)} mb-3 ms-3`} key={index}>
-                      <input
-                        className="form-check-input input-filter"
-                        type="checkbox"
-                        id={`select-${plan.planName?.toLowerCase() || 'unknown'}`}
-                        data-value={plan.planName?.toLowerCase() || 'unknown'}
-                        checked={selectedPlans.includes(plan.planName?.toLowerCase())}
-
-
-                        onChange={(e) => {
-                          const planValue = plan.planName?.toLowerCase();
-                          if (e.target.checked) {
-                            setSelectedPlans(prev => [...prev, planValue]);
-                          } else {
-                            setSelectedPlans(prev => prev.filter(p => p !== planValue));
-                          }
-                          console.log("Changed Plan:", planValue);
-                          console.log("Selected Plans:", selectedPlans);
-                        }}
-
-                      />
-
-                      <label
-                        className="form-check-label"
-                        htmlFor={`select-${plan.planName?.toLowerCase() || 'unknown'}`}
-                      >
-                        {plan.planName || 'Unnamed Plan'}
-                      </label>
-                    </div>
-                  ))}
-
-                </div>
-
-
               </div>
             </div>
-
-            <div className="col app-calendar-content">
-              <div className="card shadow-none border-0">
-                <div className="card-body pb-0 ps-0">
-                  <FullCalendar
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    initialView="dayGridMonth"
-                    initialDate={appointments.length > 0 ? new Date(appointments[0].appointmentDate) : new Date()}
-                    events={scheduledAppointments}
-                    slotMinTime={minTime}
-                    slotMaxTime={maxTime}
-                    eventClick={(info) => handleEventClick(info)}
-                    dateClick={(info) => {
-                      setAddAppointment(false);
-                      console.log("Date clicked, addAppointment:", addAppointment);
-                    }}
-                    headerToolbar={{
-                      left: 'prev,next today',
-                      center: 'title',
-                      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                    }}
-                    buttonText={{
-                      today: 'Today',
-                      dayGridMonth: 'Month',
-                      timeGridWeek: 'Week',
-                      timeGridDay: 'Day'
-                    }}
-
-                    eventContent={(info) => {
-                      return {
-                        html: `<div class="custom-event ${info.event.classNames.join(' ')}">
-               ${info.event.title}
-             </div>`
-                      };
-                    }}
-                  />
-
-
-
-
-
-                </div>
+            <div ref={offcanvasRef} className="offcanvas offcanvas-end" id="addEventSidebar">
+              <div className="offcanvas-header border-bottom">
+                <h5 className="offcanvas-title">{selectedAppointment ? 'View Appointment' : 'Add Appointment'}</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" onClick={() => setSelectedAppointment(null)}></button>
               </div>
-              <div className="app-overlay"  ></div>
-              <div
-                ref={offcanvasRef}
-                className="offcanvas offcanvas-end event-sidebar"
-                tabIndex="-1"
-                id="addEventSidebar"
-                aria-labelledby="addEventSidebarLabel">
-                <div className="offcanvas-header border-bottom">
-                  <h5 className="offcanvas-title" id="addEventSidebarLabel"> {selectedAppointment ? 'View Appointment' : 'Add Appointment'}</h5>
-                  <button
-                    type="button"
-                    className="btn-close text-reset"
-                    data-bs-dismiss="offcanvas"
-                    aria-label="Close"
-                    onClick={() => {
-                      setAddAppointment(false);
-                      setSelectedAppointment(null);
-                    }}
-                  ></button>
-                </div>
-                <div className="offcanvas-body">
-                 <AppointmentForm
-        plans={plans}
-        slotStartTime={slotStartTime}
-        slotEndTime={slotEndTime}
-        setSlotStartTime={setSlotStartTime}
-        setSlotEndTime={setSlotEndTime}
-        startHour={startHour}
-        startMinute={startMinute}
-        startPeriod={startPeriod}
-        endHour={endHour}
-        endMinute={endMinute}
-        endPeriod={endPeriod}
-        addAppointment={addAppointment}
-        selectedAppointment={selectedAppointment}
-        setAddAppointment={setAddAppointment}
-        shiftStart={slotStartTime}
-        shiftEnd={slotEndTime}
-        bufferInMinutes={bufferInMinutes}
-        refreshAppointments={fetchAppointments} 
-         setSelectedShiftId={setSelectedShiftId}
-         setBufferInMinutes={setBufferInMinutes}
-           selectedPlanId={selectedPlanId} // ✅ new
-           setSelectedPlanId={setSelectedPlanId} /// ✅ added refresh
-      />
-
-                </div>
+              <div className="offcanvas-body">
+                <AppointmentForm
+                  plans={plans}
+                  slotStartTime={slotStartTime}
+                  slotEndTime={slotEndTime}
+                  setSlotStartTime={setSlotStartTime}
+                  setSlotEndTime={setSlotEndTime}
+                  addAppointment={!selectedAppointment}
+                  selectedAppointment={selectedAppointment}
+                  setAddAppointment={() => {}}
+                  shiftStart={slotStartTime}
+                  shiftEnd={slotEndTime}
+                  bufferInMinutes={bufferInMinutes}
+                  refreshAppointments={fetchAppointments}
+                  setSelectedShiftId={setSelectedShiftId}
+                  setBufferInMinutes={setBufferInMinutes}
+                  selectedPlanId={selectedPlanId}
+                  setSelectedPlanId={setSelectedPlanId}
+                />
               </div>
             </div>
           </div>
         </div>
-
-     
-
-     
-         <div className="row mb-1 mx-2 mt-5 justify-between ">
-          <ShiftManager planId={selectedPlanId} />
-        </div>
+      </div>
+      <div className="row mt-4 p-4">
+        <ShiftManager planId={selectedPlanId} />
       </div>
     </div>
   );
