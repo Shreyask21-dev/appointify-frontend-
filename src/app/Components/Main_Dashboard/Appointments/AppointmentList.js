@@ -174,7 +174,7 @@ const handleViewInvoice = async (apptId) => {
             <thead className="table-light">
               <tr>
                 <th>Sr. No</th>
-                <th>Patient Name</th>
+                <th>Customer Name</th>
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Duration</th>
