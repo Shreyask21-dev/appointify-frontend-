@@ -62,59 +62,96 @@ const Consultant_Info = () => {
         </p>
 
         {/* Social Icons */}
-        <div className="mt-4">
-          <span className="me-2 fw-semibold text-muted">Connect:</span>
-          <ul className="list-inline d-inline">
-            {consultantData.facebookId && (
-              <li className="list-inline-item me-2">
-                <a
-                  className="btn btn-soft-primary btn-sm rounded-circle shadow-sm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={consultantData.facebookId}
-                >
-                  <i className="bi-facebook"></i>
-                </a>
-              </li>
-            )}
-            {consultantData.instagramId && (
-              <li className="list-inline-item me-2">
-                <a
-                  className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={consultantData.instagramId}
-                >
-                  <i className="bi-instagram"></i>
-                </a>
-              </li>
-            )}
-            {consultantData.twitterId && (
-              <li className="list-inline-item me-2">
-                <a
-                  className="btn btn-soft-info btn-sm rounded-circle shadow-sm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={consultantData.twitterId}
-                >
-                  <i className="bi-twitter"></i>
-                </a>
-              </li>
-            )}
-            {/* {consultantData.youtubeId && (
-              <li className="list-inline-item me-2">
-                <a
-                  className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={consultantData.youtubeId}
-                >
-                  <i className="bi-youtube"></i>
-                </a>
-              </li>
-            )} */}
-          </ul>
-        </div>
+       <div className="mt-4">
+  <span className="me-2 fw-semibold text-muted">Connect:</span>
+  <ul className="list-inline d-inline">
+    {consultantData.facebookId && (
+      <li className="list-inline-item me-2">
+        <a
+          className="btn btn-soft-primary btn-sm rounded-circle shadow-sm"
+          target="_blank"
+          rel="noopener noreferrer"
+          href={consultantData.facebookId}
+          style={{
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            fontSize: '18px',
+          }}
+        >
+          <i className="bi-facebook"></i>
+        </a>
+      </li>
+    )}
+    {consultantData.instagramId && (
+      <li className="list-inline-item me-2">
+        <a
+          className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
+          target="_blank"
+          rel="noopener noreferrer"
+          href={consultantData.instagramId}
+          style={{
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            fontSize: '18px',
+          }}
+        >
+          <i className="bi-instagram"></i>
+        </a>
+      </li>
+    )}
+    {consultantData.twitterId && (
+      <li className="list-inline-item me-2">
+        <a
+          className="btn btn-soft-info btn-sm rounded-circle shadow-sm"
+          target="_blank"
+          rel="noopener noreferrer"
+          href={consultantData.twitterId}
+          style={{
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            fontSize: '18px',
+          }}
+        >
+          <i className="bi-twitter"></i>
+        </a>
+      </li>
+    )}
+    {/* {consultantData.youtubeId && (
+      <li className="list-inline-item me-2">
+        <a
+          className="btn btn-soft-danger btn-sm rounded-circle shadow-sm"
+          target="_blank"
+          rel="noopener noreferrer"
+          href={consultantData.youtubeId}
+          style={{
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            fontSize: '18px',
+          }}
+        >
+          <i className="bi-youtube"></i>
+        </a>
+      </li>
+    )} */}
+  </ul>
+</div>
+
       </div>
     </div>
   </div>

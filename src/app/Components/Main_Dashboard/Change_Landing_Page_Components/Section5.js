@@ -6,7 +6,7 @@ const Section5 = () => {
   const [formData, setFormData] = useState({
     tagline: '',
     mainDescription: '',
-    mainHeading: '',
+    // mainHeading: '',
   });
 
   const [editedData, setEditedData] = useState({ ...formData });
@@ -16,7 +16,7 @@ const Section5 = () => {
 
   const [isTaglineValid, setIsTaglineValid] = useState(true);
   const [isDescriptionValid, setIsDescriptionValid] = useState(true);
-  const [isHeadingValid, setIsHeadingValid] = useState(true);
+  // const [isHeadingValid, setIsHeadingValid] = useState(true);
 
   // Fetch Section 5 data on mount
   useEffect(() => {
@@ -69,12 +69,12 @@ const Section5 = () => {
       setIsDescriptionValid(true);
     }
 
-    if (!editedData.mainHeading.trim()) {
-      setIsHeadingValid(false);
-      isValid = false;
-    } else {
-      setIsHeadingValid(true);
-    }
+    // if (!editedData.mainHeading.trim()) {
+    //   setIsHeadingValid(false);
+    //   isValid = false;
+    // } else {
+    //   setIsHeadingValid(true);
+    // }
 
     return isValid;
   };
@@ -138,7 +138,7 @@ const Section5 = () => {
           {!isDescriptionValid && <div className="invalid-feedback">Description cannot be empty.</div>}
         </div>
 
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <label className="form-label fw-semibold">Heading</label>
           <input
             type="text"
@@ -148,7 +148,7 @@ const Section5 = () => {
             onChange={e => handleChange('mainHeading', e.target.value)}
           />
           {!isHeadingValid && <div className="invalid-feedback">Heading cannot be empty.</div>}
-        </div>
+        </div> */}
 
         <div className="d-flex justify-content-end gap-2 mt-4">
           <button

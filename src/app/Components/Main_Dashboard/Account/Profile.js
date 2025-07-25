@@ -245,11 +245,11 @@ const Profile = () => {
                   <i className="ri-lock-line me-2"></i> Security
                 </Link>
               </li>
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <Link className="nav-link" href="/Dashboard/Billing">
                   <i className="ri-bookmark-line me-2"></i> Billing & Plans
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -312,7 +312,7 @@ const Profile = () => {
               onClick={() => setShowModal(true)}
               className="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm"
             >
-              <i className="fas fa-edit me-2"></i> Edit Profile
+               Edit Profile
             </button>
           </div>
         </div>

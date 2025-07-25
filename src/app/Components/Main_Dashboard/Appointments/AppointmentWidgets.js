@@ -126,7 +126,6 @@ const AppointmentWidgets = () => {
                       {widget.change ? `(${widget.change})` : ''}
                     </p>
                   </div>
-                  <small className="text-muted">{widget.subLabel}</small>
                 </div>
                 <div className="avatar">
                   <div className={`avatar-initial bg-label-${widget.color} rounded-3`}>

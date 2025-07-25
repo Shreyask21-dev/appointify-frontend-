@@ -8,9 +8,10 @@ const Footer = () => {
     
         {/* Copyright */}
         <div className="w-md-85 text-lg-center mx-lg-auto">
-           <p className="text-white">
-            &copy; 2025 Coinage Inc. All rights reserved.
-          </p>
+          <p className="text-white">
+  &copy; 2025 <a href="https://coinage.in" className="underline text-blue-300 hover:text-blue-500" target="_blank" rel="noopener noreferrer">Coinage Inc.</a> All rights reserved.
+</p>
+
 
 
           <p>

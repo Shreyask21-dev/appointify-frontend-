@@ -57,11 +57,10 @@ const UsersWidgets = () => {
           <div className="card-body mb-5">
             <div className="d-flex justify-content-between">
               <div className="me-1">
-                <p className="text-heading mb-1">Total Patients</p>
+                <p className="text-heading mb-1">Total Users</p>
                 <div className="d-flex align-items-center mb-2">
                   <h4 className="mb-1 me-2">{stats.totalPatients}</h4>
                 </div>
-                <small className="mt-5">All registered patients</small>
               </div>
               <div className="avatar">
                 <div className="avatar-initial bg-label-primary rounded-3">
@@ -83,7 +82,6 @@ const UsersWidgets = () => {
                 <div className="d-flex align-items-center mb-2">
                   <h4 className="mb-1 me-1">{stats.activeAppointments}</h4>
                 </div>
-                <small className="mb-0">Currently scheduled</small>
               </div>
               <div className="avatar">
                 <div className="avatar-initial bg-label-success rounded-3">
@@ -105,7 +103,6 @@ const UsersWidgets = () => {
                 <div className="d-flex align-items-center mb-2">
                   <h4 className="mb-1 me-1">{stats.completedAppointments}</h4>
                 </div>
-                <small className="mb-0">Past appointments</small>
               </div>
               <div className="avatar">
                 <div className="avatar-initial bg-label-info rounded-3">
@@ -127,7 +124,6 @@ const UsersWidgets = () => {
                 <div className="d-flex align-items-center mb-2">
                   <h4 className="mb-1 me-1">{stats.pendingAppointments}</h4>
                 </div>
-                <small className="mb-0">Awaiting confirmation</small>
               </div>
               <div className="avatar">
                 <div className="avatar-initial bg-label-warning rounded-3">

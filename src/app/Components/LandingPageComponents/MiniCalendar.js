@@ -197,7 +197,7 @@ useEffect(() => {
             type="button"
             className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${
               isBooked
-                ? "btn-danger"
+                ? "btn-secondary"
                 : isSelected
                 ? "btn-primary"
                 : "btn-outline-primary"

@@ -51,7 +51,7 @@ const Plan_Widget = () => {
               <div className="me-2">
                 <p className="text-heading mb-1">Total Plans</p>
                 <h4 className="mb-1">{stats.totalPlans}</h4>
-                <small className="text-muted">All available plans</small>
+                {/* <small className="text-muted">All available plans</small> */}
               </div>
               <div className="avatar">
                 <div className={`avatar-initial bg-label-primary rounded-3`}>
@@ -70,7 +70,7 @@ const Plan_Widget = () => {
               <div className="me-2">
                 <p className="text-heading mb-1">Latest Plans</p>
                 <h4 className="mb-1">{stats.latestPlanCount}</h4>
-                <small className="text-muted">Plans added in the last 30 days</small>
+                {/* <small className="text-muted">Plans added in the last 30 days</small> */}
               </div>
               <div className="avatar">
                 <div className={`avatar-initial bg-label-info rounded-3`}>
@@ -89,7 +89,7 @@ const Plan_Widget = () => {
               <div className="me-2">
                 <p className="text-heading mb-1">Popular Plans</p>
                 <h4 className="mb-1">{stats.popularPlanCount}</h4>
-                <small className="text-muted">Plans with price above 1000</small>
+                {/* <small className="text-muted">Plans with price above 1000</small> */}
               </div>
               <div className="avatar">
                 <div className={`avatar-initial bg-label-warning rounded-3`}>

@@ -56,12 +56,18 @@ export default function RootLayout({ children }) {
 
         {children}
         {/* Essential JS */}
-        <Script src="https://checkout.razorpay.com/v1/checkout.js"  strategy="beforeInteractive"/>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
+      
+
         <Script src="/materialize/assets/vendor/libs/jquery/jquery.js" strategy="beforeInteractive" />
         <Script src="/materialize/assets/vendor/libs/popper/popper.js" strategy="beforeInteractive" />
         <Script src="/materialize/assets/vendor/js/bootstrap.js" strategy="beforeInteractive" />
         <Script src="/materialize/assets/vendor/libs/typeahead-js/typeahead.js" strategy="beforeInteractive" />
-
+  <Script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-..."
+          crossOrigin="anonymous"
+        />
 
         {/* After DOM Load */}
         <Script src="/materialize/assets/vendor/libs/node-waves/node-waves.js" strategy="afterInteractive" />

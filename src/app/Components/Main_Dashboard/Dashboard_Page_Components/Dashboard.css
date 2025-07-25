@@ -1,0 +1,18 @@
+.menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu-icon {
+  min-width: 20px;
+  text-align: center;
+  font-size: 18px;
+}
+.sidebar-logo {
+  width: 150px;
+  height: 40px;
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
