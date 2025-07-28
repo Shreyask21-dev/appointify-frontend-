@@ -2,6 +2,9 @@
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
+
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './Calendar.css';
 import AppointmentForm from './AppointmentForm';
@@ -50,9 +53,9 @@ export default function CalendarComponent() {
       .then((response) => {
         const sortedAppointments = [...response.data].sort(
           (a, b) => new Date(a.createdDate) - new Date(b.createdDate)
-          
+
         );
-        
+
         setAppointments(sortedAppointments);
       })
       .catch((error) => {
@@ -147,36 +150,36 @@ export default function CalendarComponent() {
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
   };
 
- const scheduledAppointments = appointments
-  .filter(
-    (a) =>
-      selectedPlans.includes(a.plan?.toLowerCase()) &&
-      (a.appointmentStatus === 0 || a.appointmentStatus === 3) // Only Scheduled or Rescheduled
-  )
-  .map((a) => {
-    if (!a.appointmentTime || !a.appointmentDate) return null;
+  const scheduledAppointments = appointments
+    .filter(
+      (a) =>
+        selectedPlans.includes(a.plan?.toLowerCase()) &&
+        (a.appointmentStatus === 0 || a.appointmentStatus === 3) // Only Scheduled or Rescheduled
+    )
+    .map((a) => {
+      if (!a.appointmentTime || !a.appointmentDate) return null;
 
-    const [startTime, endTime] = a.appointmentTime.split(" - ");
-    if (!startTime || !endTime) return null;
+      const [startTime, endTime] = a.appointmentTime.split(" - ");
+      if (!startTime || !endTime) return null;
 
-    const start = `${a.appointmentDate}T${parseTime(startTime)}`;
-    const end = `${a.appointmentDate}T${parseTime(endTime)}`;
+      const start = `${a.appointmentDate}T${parseTime(startTime)}`;
+      const end = `${a.appointmentDate}T${parseTime(endTime)}`;
 
-    return {
-      id: a.id,
-      title: `${a.firstName} ${a.lastName}`,
-      start,
-      end,
-      className: `bg-${getStatusColorClass(a.appointmentStatus)}`,
-      extendedProps: {
-        planName: a.plan?.toLowerCase(),
-        status: a.appointmentStatus,
-        appointmentTime: a.appointmentTime,
+      return {
         id: a.id,
-      },
-    };
-  })
-  .filter(Boolean);
+        title: `${a.firstName} ${a.lastName}`,
+        start,
+        end,
+        className: `bg-${getColorClass(a.appointmentStatus)}`,
+        extendedProps: {
+          planName: a.plan?.toLowerCase(),
+          status: a.appointmentStatus,
+          appointmentTime: a.appointmentTime,
+          id: a.id,
+        },
+      };
+    })
+    .filter(Boolean);
 
 
   const handleEventClick = (info) => {
@@ -197,9 +200,9 @@ export default function CalendarComponent() {
 
   useEffect(() => {
     console.log("📅 Final Events Passed to Calendar:", scheduledAppointments);
-            console.log("✅ Raw Appointments from API:", appointments);
+    console.log("✅ Raw Appointments from API:", appointments);
 
-  }, [scheduledAppointments,appointments]);
+  }, [scheduledAppointments, appointments]);
 
   return (
     <div className="container-xxl flex-grow-1 container-p-y" style={{ backgroundColor: 'white' }}>
@@ -234,12 +237,22 @@ export default function CalendarComponent() {
             <div className=" border-0">
               <div className=" ps-0 pb-0">
                 <FullCalendar
-                  plugins={[dayGridPlugin, interactionPlugin]}
+                  plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
                   initialView="dayGridMonth"
                   events={scheduledAppointments}
                   eventClick={handleEventClick}
-                  headerToolbar={{ left: 'prev,next today', center: 'title', right: '' }}
-                  buttonText={{ today: 'Today', month: 'Month' }}
+                  headerToolbar={{
+                    left: 'prev,next',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                  }}
+                  buttonText={{
+                    // today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    day: 'Day',
+                    list: 'List'
+                  }}
                   eventContent={(info) => {
                     return {
                       html: `
@@ -267,7 +280,7 @@ export default function CalendarComponent() {
                   setSlotEndTime={setSlotEndTime}
                   addAppointment={!selectedAppointment}
                   selectedAppointment={selectedAppointment}
-                  setAddAppointment={() => {}}
+                  setAddAppointment={() => { }}
                   shiftStart={slotStartTime}
                   shiftEnd={slotEndTime}
                   bufferInMinutes={bufferInMinutes}
