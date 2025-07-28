@@ -132,6 +132,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
   },
   options: {
     responsive: true,
+      maintainAspectRatio: false, 
     plugins: {
       tooltip: {
         callbacks: {
@@ -181,6 +182,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
       },
       options: {
         responsive: true,
+          maintainAspectRatio: false, 
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -229,6 +231,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
       },
       options: {
         responsive: true,
+          maintainAspectRatio: false, 
         plugins: {
           legend: { position: 'top' }
         },
@@ -311,32 +314,38 @@ return (
 
 
 
-
-  {/* Monthly Revenue - BAR CHART */}
-  <div className="card mb-4">
-    <div className="card-body">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="mb-0">Monthly Revenue</h5>
-        <select
-          value={range}
-          onChange={e => setRange(e.target.value)}
-          className="form-select form-select-sm w-auto"
-        >
-          <option value="6m">Last 6 Months</option>
-          <option value="12m">Last 12 Months</option>
-        </select>
-      </div>
-      <canvas ref={revenueBarChartRef} style={{ height: '150px' }} />
+{/* Monthly Revenue - BAR CHART */}
+<div className="card mb-4">
+  <div className="card-body">
+    <div className="d-flex justify-content-between align-items-center mb-3">
+      <h5 className="mb-0">Monthly Revenue</h5>
+      <select
+        value={range}
+        onChange={e => setRange(e.target.value)}
+        className="form-select form-select-sm w-auto"
+      >
+        <option value="6m">Last 6 Months</option>
+        <option value="12m">Last 12 Months</option>
+      </select>
+    </div>
+    {/* ✅ Wrap canvas in height-fixed div */}
+    <div style={{ height: '300px' }}>
+      <canvas ref={revenueBarChartRef} />
     </div>
   </div>
+</div>
 
-  {/* Appointments Growth - LINE CHART */}
-  <div className="card mb-4">
-    <div className="card-body">
-      <h5 className="text-center mb-3">Appointments Growth (This Month)</h5>
-      <canvas ref={growthChartRef} style={{ height: '150px' }} />
+{/* Appointments Growth - LINE CHART */}
+<div className="card mb-4">
+  <div className="card-body">
+    <h5 className="text-center mb-3">Appointments Growth (This Month)</h5>
+    {/* ✅ Wrap canvas in height-fixed div */}
+    <div style={{ height: '300px' }}>
+      <canvas ref={growthChartRef} />
     </div>
   </div>
+</div>
+
 </>
 
 );
