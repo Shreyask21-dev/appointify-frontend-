@@ -74,40 +74,75 @@ const ChartComponent = () => {
     growthChartInstance.current?.destroy();
 
     // === PIE CHART ===
-    const revenueMap = {};
-    planNames.forEach(plan => revenueMap[plan] = 0);
-    appointments.forEach(appt => {
-      const plan = (appt.plan || 'Unknown Plan').trim();
-      revenueMap[plan] = (revenueMap[plan] || 0) + appt.amount;
-    });
-    setRevenueByPlan(revenueMap);
+const revenueMap = {};
+planNames.forEach(plan => revenueMap[plan] = 0);
 
-    const pieLabels = Object.keys(revenueMap);
-    const pieData = Object.values(revenueMap);
-    const pieColors = pieLabels.map((_, i) => colorPalette[i % colorPalette.length]);
+// ✅ Normalize function to handle whitespace
+const normalizePlan = (plan) => plan?.trim() || '';
 
-    revenueChartInstance.current = new Chart(revenueChartRef.current, {
-      type: 'pie',
-      data: {
-        labels: pieLabels,
-        datasets: [{
-          label: 'Revenue by Plan',
-          data: pieData,
-          backgroundColor: pieColors,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: ctx => `${ctx.label}: ₹${ctx.parsed.toLocaleString('en-IN')}`
-            }
-          },
-          legend: { display: false }
+// ✅ Today's date (used to filter past appointments)
+const today = new Date().toISOString().split('T')[0];
+
+// ✅ Filter only past and completed appointments
+const pastCompletedAppointments = appointments.filter(appt => {
+  const isCompleted = appt.appointmentStatus === 1;
+  const isPastDate = new Date(appt.appointmentDate) < new Date(today);
+  return isCompleted && isPastDate;
+});
+
+console.log("Past Completed Appointments:", pastCompletedAppointments);
+
+// ✅ Sum revenue by normalized plan name
+pastCompletedAppointments.forEach(appt => {
+  const plan = normalizePlan(appt.plan);
+  const amount = parseFloat(appt.amount) || 0;
+
+  if (!planNames.includes(plan)) {
+    console.warn(`Skipping unknown plan: "${plan}"`);
+    return;
+  }
+
+  revenueMap[plan] += amount;
+  console.log(`Adding ₹${amount} to ${plan}`);
+});
+
+// ✅ Set state for chart rendering
+setRevenueByPlan(revenueMap);
+
+// ✅ Prepare chart data
+const pieLabels = Object.keys(revenueMap);
+const pieData = Object.values(revenueMap);
+const pieColors = pieLabels.map((_, i) => colorPalette[i % colorPalette.length]);
+
+// ✅ Destroy previous chart instance (if any)
+if (revenueChartInstance.current) {
+  revenueChartInstance.current.destroy();
+}
+
+// ✅ Create Chart.js pie chart
+revenueChartInstance.current = new Chart(revenueChartRef.current, {
+  type: 'pie',
+  data: {
+    labels: pieLabels,
+    datasets: [{
+      label: 'Revenue by Plan (Past Completed)',
+      data: pieData,
+      backgroundColor: pieColors,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.label}: ₹${ctx.parsed.toLocaleString('en-IN')}`
         }
-      }
-    });
+      },
+      legend: { display: false }
+    }
+  }
+});
+
 
     // === BAR CHART ===
     const monthCount = range === "12m" ? 12 : 6;

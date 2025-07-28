@@ -147,31 +147,36 @@ export default function CalendarComponent() {
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
   };
 
-  const scheduledAppointments = appointments
-    .filter((a) => selectedPlans.includes(a.plan?.toLowerCase()))
-   .map((a) => {
-  if (!a.appointmentTime || !a.appointmentDate) return null;
+ const scheduledAppointments = appointments
+  .filter(
+    (a) =>
+      selectedPlans.includes(a.plan?.toLowerCase()) &&
+      (a.appointmentStatus === 0 || a.appointmentStatus === 3) // Only Scheduled or Rescheduled
+  )
+  .map((a) => {
+    if (!a.appointmentTime || !a.appointmentDate) return null;
 
-  const [startTime, endTime] = a.appointmentTime.split(" - ");
-  if (!startTime || !endTime) return null;
+    const [startTime, endTime] = a.appointmentTime.split(" - ");
+    if (!startTime || !endTime) return null;
 
-  const start = `${a.appointmentDate}T${parseTime(startTime)}`;
-  const end = `${a.appointmentDate}T${parseTime(endTime)}`;
+    const start = `${a.appointmentDate}T${parseTime(startTime)}`;
+    const end = `${a.appointmentDate}T${parseTime(endTime)}`;
 
-  return {
-    id: a.id,
-    title: `${a.firstName} ${a.lastName}`,
-    start,
-    end,
-    className: `bg-${getStatusColorClass(a.appointmentStatus)}`,
-    extendedProps: {
-      planName: a.plan?.toLowerCase(),
-      status: a.appointmentStatus,
-      appointmentTime: a.appointmentTime,
+    return {
       id: a.id,
-    },
-  };
-}).filter(Boolean); // remove nulls
+      title: `${a.firstName} ${a.lastName}`,
+      start,
+      end,
+      className: `bg-${getStatusColorClass(a.appointmentStatus)}`,
+      extendedProps: {
+        planName: a.plan?.toLowerCase(),
+        status: a.appointmentStatus,
+        appointmentTime: a.appointmentTime,
+        id: a.id,
+      },
+    };
+  })
+  .filter(Boolean);
 
 
   const handleEventClick = (info) => {
