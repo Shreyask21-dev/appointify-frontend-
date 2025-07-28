@@ -57,7 +57,7 @@ const UsersWidgets = () => {
           <div className="card-body mb-5">
             <div className="d-flex justify-content-between">
               <div className="me-1">
-                <p className="text-heading mb-1">Total Users</p>
+                <p className="text-heading mb-1">Total Clients</p>
                 <div className="d-flex align-items-center mb-2">
                   <h4 className="mb-1 me-2">{stats.totalPatients}</h4>
                 </div>
