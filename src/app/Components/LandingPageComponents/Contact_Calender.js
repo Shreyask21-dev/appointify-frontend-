@@ -113,6 +113,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
     const selectedDate = e.target.value; // this is in yyyy-mm-dd format
     // Optional: block past dates
     const today = new Date().toISOString().split('T')[0];
+       
     if (selectedDate < today) {
       alert("Please select a future date.");
       return;

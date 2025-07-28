@@ -155,7 +155,7 @@ useEffect(() => {
         <div className="calendar-container custom-calendar">
           <DatePicker
             inline
-            selected={selected ? new Date(selected) : null}
+            selected={selected ? new Date(selected) : new Date()}
             onChange={(dateObj) => {
               if (!duration || !planId) {
                 alert("Please select a plan first.");
@@ -163,6 +163,7 @@ useEffect(() => {
               }
               onDateChange && onDateChange(dateObj.toISOString().split("T")[0]);
             }}
+             minDate={new Date()} 
           />
 {timeSlots.length > 0 && (
   <>
