@@ -158,7 +158,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
     }
 
     appointments.forEach(appt => {
-      const d = new Date(appt.appointmentDate);
+     const d = new Date(appt.createdDate); // ✅ use payment timestamp
       const key = `${d.getFullYear()}-${d.getMonth()}`;
       if (monthlyRevenueMap[key]) {
         monthlyRevenueMap[key].total += appt.amount;
