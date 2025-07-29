@@ -90,7 +90,7 @@ const Sidebar = ({ mobileSidebarVisible, setMobileSidebarVisible }) => {
           <li className="menu-item">
             <Link href="/Dashboard/Change_Landing_Page" className="menu-link">
               <i className="menu-icon tf-icons ri-pages-line me-2"></i>
-              <div>Change Landing Page</div>
+              <div>Manage Landing Page</div>
             </Link>
           </li>
           <li className="menu-item">
