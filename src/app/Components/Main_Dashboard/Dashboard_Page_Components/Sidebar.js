@@ -54,7 +54,7 @@ const Sidebar = ({ mobileSidebarVisible, setMobileSidebarVisible }) => {
 
           {/* Desktop toggle (md and up) */}
           <button
-            className="layout-menu-toggle d-none d-block ms-auto"
+            className="layout-menu-toggle d-none d-md-block ms-auto"
             style={{
               background: 'none',
               border: 'none',
