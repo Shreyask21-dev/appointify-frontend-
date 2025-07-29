@@ -150,7 +150,7 @@ const totalDuration = group.paid.reduce((sum, item) => {
             <div key={idx} className="col-sm-6 col-lg-3">
               <div className={`card card-border-shadow-${item.color} h-100`}>
                 <div className="card-body d-flex flex-column justify-content-between">
-                  <h6 className="text-muted">{item.title}</h6>
+                  <h6 className="text-heading">{item.title}</h6>
                   <div className="d-flex align-items-center mb-3">
                     <div className="avatar me-3">
                       <span className={`avatar-initial rounded-circle bg-label-${item.color} p-3`}>
