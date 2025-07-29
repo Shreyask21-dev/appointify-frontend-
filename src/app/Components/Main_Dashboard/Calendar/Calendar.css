@@ -21,8 +21,8 @@ h2#fc-dom-86,
 
 /* ✅ Calendar event base style */
 .fc-event.form-check-primary {
-  background-color: #7367f0 !important;
-  border-color: #7367f0 !important;
+  background-color: #696cff !important;
+  border-color: #696cff !important;
 }
 .fc-event:hover {
   filter: brightness(1.1);
@@ -74,8 +74,8 @@ h2#fc-dom-86,
 /* ✅ FullCalendar buttons (prev, next, today, views) */
 .fc .fc-button {
   background-color: white !important;
-  color: #5e35b1 !important; /* Material Purple */
-  border: 1px solid #5e35b1 !important;
+  color: #696cff!important; /* Material Purple */
+  border: 1px solid #696cff !important;
   border-radius: 8px !important;
   font-weight: 500;
   box-shadow: 0 2px 4px rgba(94, 53, 177, 0.15);
@@ -83,22 +83,22 @@ h2#fc-dom-86,
   margin: 0 5px;
 }
 .fc .fc-button:hover {
-  background-color: #ede7f6 !important;
-  border-color: #5e35b1 !important;
+  /* background-color: #ede7f6 !important; */
+  border-color: #696cff !important;
 }
 .fc .fc-button:focus,
 .fc .fc-button:active {
   outline: none !important;
   box-shadow: 0 0 0 2px rgba(94, 53, 177, 0.3) !important;
-  border-color: #5e35b1 !important;
-  background-color: #d1c4e9 !important;
-  color: #5e35b1 !important;
+  border-color: #696cff !important;
+  /* background-color: #ede7f6 !important; */
+  color: #696cff !important;
 }
 .fc .fc-button.fc-button-active {
-  background-color: #5e35b1 !important;
-  color: #5e35b1 !important;
-  border-color: #5e35b1 !important;
-  box-shadow: 0 2px 6px rgba(94, 53, 177, 0.25);
+  /* background-color: #696cff !important; */
+  color: #696cff !important;
+  border-color: #696cff !important;
+  box-shadow: 0 2px 6px rgba(76, 53, 177, 0.25);
 }
 .fc .fc-button:disabled {
   opacity: 0.5;

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import './Appointments.css'
 export const appointmentStatusMap = {
   0: 'Scheduled',
   1: 'Completed',
@@ -161,13 +162,36 @@ const handleViewInvoice = async (apptId) => {
   }
 };
 
+const getPaymentBadgeColor = (status) => {
+  return status === 0 ? 'secondary' :
+         status === 1 ? 'success' :
+         status === 2 ? 'danger' :
+         status === 3 ? 'warning' : 'dark';
+};
+
+const getAppointmentBadgeColor = (status) => {
+  return status === 0 ? 'secondary' :
+         status === 1 ? 'success' :
+         status === 2 ? 'danger' :
+         status === 3 ? 'warning' :
+         status === 4 ? 'danger' : 'dark';
+};
 
 
   return (
     <>
       <div className="card p-3 rounded-4 mt-5">
         <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Appointments</h5>
+{/* Mobile (centered) */}
+<div className="d-block d-md-none mx-auto mb-3">
+  <h5 className="mb-0">Appointments</h5>
+</div>
+
+{/* Desktop (left aligned) */}
+<div className="d-none d-md-block mb-3">
+  <h5 className="mb-0">Appointments</h5>
+</div>
+
         </div>
         <div className="table-responsive">
          {/* Table for medium and large screens */}
@@ -239,53 +263,72 @@ const handleViewInvoice = async (apptId) => {
 </div>
 
 {/* Cards for mobile screens */}
+
 <div className="d-block d-md-none">
   {appointments.map((appt, index) => (
-    <div className="card mb-3 shadow-sm" key={appt.id || index}>
-      <div className="card-body">
-        <h6 className="card-title">
-          {index + 1}. {appt.firstName} {appt.lastName}
-        </h6>
-        <p className="mb-1"><strong>Email:</strong> {appt.email}</p>
-        <p className="mb-1"><strong>Phone:</strong> {appt.phoneNumber}</p>
-        <p className="mb-1"><strong>Duration:</strong> {appt.duration}</p>
-        <p className="mb-1"><strong>Plan:</strong> {appt.plan}</p>
-        <p className="mb-1"><strong>Amount:</strong> ₹{appt.amount}</p>
-        <p className="mb-1"><strong>Date:</strong> {appt.appointmentDate}</p>
-        <p className="mb-1"><strong>Time:</strong> {appt.appointmentTime}</p>
-        <p className="mb-1"><strong>Payment Method:</strong> {appt.paymentMethod}</p>
-        <p className="mb-1"><strong>Payment ID:</strong> {appt.paymentId || "None"}</p>
-        <p className="mb-1">
-          <strong>Payment Status:</strong>{" "}
-          <span className={`badge bg-${appt.paymentStatus === 0 ? 'primary' :
-              appt.paymentStatus === 1 ? 'success' :
-              appt.paymentStatus === 2 ? 'danger' :
-              appt.paymentStatus === 3 ? 'warning' : 'secondary'}`}>
+    <div
+      className="card mb-4 shadow-sm border border-secondary rounded-lg"
+      key={appt.id || index}
+      style={{ backgroundColor: "#f8f9fa" }}
+    >
+      <div className="card-header bg-primary text-white py-2 px-3 rounded-top">
+        <strong>#{index + 1} - {appt.firstName} {appt.lastName}</strong>
+      </div>
+
+      <div className="card-body py-3 px-3">
+       <div className="mb-3">
+  {[
+    ["Email", appt.email],
+    ["Phone", appt.phoneNumber],
+    ["Date", appt.appointmentDate],
+    ["Time", appt.appointmentTime],
+    ["Duration", appt.duration],
+    ["Plan", appt.plan],
+    ["Amount", `₹${appt.amount}`],
+    ["Payment Mode", appt.paymentMethod],
+    ["Payment ID", appt.paymentId || 'N/A']
+  ].map(([label, value], i) => (
+    <div className="row mb-2" key={i}>
+      <div className="col-5 fw-medium text-secondary small">{label}</div>
+      <div className="col-7 fw-semibold text-dark text-break small">{value}</div>
+    </div>
+  ))}
+</div>
+
+
+        {/* Status Badges */}
+        <div className="mb-3 d-flex justify-content-between">
+          <span className={`badge badge-pill badge-${getPaymentBadgeColor(appt.paymentStatus)}`}>
             {paymentStatusMap[appt.paymentStatus]}
           </span>
-        </p>
-        <p className="mb-1">
-          <strong>Appointment Status:</strong>{" "}
-          <span className={`badge bg-${appt.appointmentStatus === 0 ? 'primary' :
-              appt.appointmentStatus === 1 ? 'success' :
-              appt.appointmentStatus === 2 ? 'danger' :
-              appt.appointmentStatus === 3 ? 'warning' :
-              appt.appointmentStatus === 4 ? 'danger' : 'secondary'}`}>
+          <span className={`badge badge-pill badge-${getAppointmentBadgeColor(appt.appointmentStatus)}`}>
             {appointmentStatusMap[appt.appointmentStatus]}
           </span>
-        </p>
-        <div className="d-flex gap-2 mt-2">
-          <button className="btn btn-sm btn-outline-primary w-100" onClick={() => handleEdit(appt)}>
-            <i className="ri-edit-line me-1"></i>Edit
+        </div>
+
+        {/* Buttons */}
+        <div className="d-flex justify-content-between">
+          <button className="btn btn-sm btn-outline-primary w-48" onClick={() => handleEdit(appt)}>
+            <FaEdit className="mr-1" /> Edit
           </button>
-          <button className="btn btn-sm btn-outline-danger w-100" onClick={() => handleDelete(appt.id)}>
-            <i className="ri-delete-bin-line me-1"></i>Delete
+          <button className="btn btn-sm btn-outline-danger w-48" onClick={() => handleDelete(appt.id)}>
+            <FaTrash className="mr-1" /> Delete
           </button>
         </div>
       </div>
     </div>
   ))}
 </div>
+
+
+
+
+
+
+
+
+
+
 
         </div>
       </div>

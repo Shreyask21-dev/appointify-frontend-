@@ -2,6 +2,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import './users.css'
 const API_URL = process.env.REACT_APP_API_URL;
 const UsersList = () => {
   const [showForm, setShowForm] = useState(false);
@@ -146,10 +147,19 @@ console.log("patients",patients)
   };
 
   return (
-    <div className="card p-3 shadow-sm mb-5">
-     <div className="table-responsive mb-5">
+    <div className="card p-3  shadow-sm mb-5">
+     <div className="table-responsive mb-5 d-none d-md-block">
+      {/* Mobile (centered) */}
+
+
+{/* Desktop (left aligned) */}
+<div className="d-none d-md-block mb-3 ms-5">
+  <h5 className="mb-0">Users</h5>
+</div>
   <table className="table table-bordered align-middle table-hover text-nowrap responsive-table">
+    
     <thead className="table-light">
+      
       <tr>
         <th>#</th>
         <th>Name</th>
@@ -178,6 +188,59 @@ console.log("patients",patients)
     </tbody>
   </table>
 </div>
+
+{/* Responsive cards for mobile */}
+{/* ✅ Card View for Mobile */}
+{/* ✅ Responsive Card View - Mobile */}
+<div className="d-block d-md-none mb-4">
+ <div className="d-block d-md-none mx-auto mb-3">
+  <h5 className="mb-0 text-center">Users</h5>
+</div>
+  {patients.map((patient, index) => (
+    <div
+      key={patient.userId}
+      className="card mb-4 shadow-sm border border-secondary rounded-lg"
+      style={{ backgroundColor: "#f8f9fa" }}
+    >
+      <div className="card-header bg-primary text-white py-2 px-3 rounded-top">
+        <strong>#{index + 1} - {patient.firstName} {patient.lastName}</strong>
+      </div>
+
+      <div className="card-body py-3 px-3">
+        <div className="mb-3">
+          {[
+            ["Email", patient.email],
+            ["Phone", patient.phoneNumber],
+            ["Appointments", patient.totalAppointments],
+            ["Last Visit", patient.lastAppointment]
+          ].map(([label, value], i) => (
+            <div className="row mb-2" key={i}>
+              <div className="col-6 fw-medium text-muted small">{label}</div>
+              <div className="col-6 fw-semibold text-dark text-break small">{value}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="d-flex justify-content-between">
+          <button
+            className="btn btn-sm btn-outline-primary w-48"
+            onClick={() => handleEdit(patient)}
+          >
+            <FaEdit className="me-1" /> Edit
+          </button>
+          <button
+            className="btn btn-sm btn-outline-danger w-48"
+            onClick={() => handleDelete(patient.userId)}
+          >
+            <FaTrash className="me-1" /> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
 
 
       {/* Add/Update Patient Modal */}
