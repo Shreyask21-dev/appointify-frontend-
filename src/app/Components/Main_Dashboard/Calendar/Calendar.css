@@ -9,6 +9,9 @@
 .react-datepicker {
   border: none !important;
 }
+.card {
+  box-shadow: none !important;
+}
 
 /* ✅ FullCalendar title and header */
 h2#fc-dom-86,
@@ -40,12 +43,10 @@ h2#fc-dom-86,
   line-height: 1.2;
   white-space: nowrap;
 }
-
 .plan-name {
   font-size: 10px;
   color: #ddd;
 }
-
 .status-dot {
   width: 8px;
   height: 8px;
@@ -79,14 +80,12 @@ h2#fc-dom-86,
   font-weight: 500;
   box-shadow: 0 2px 4px rgba(94, 53, 177, 0.15);
   transition: all 0.3s ease;
-  margin:0 5px;
+  margin: 0 5px;
 }
-
 .fc .fc-button:hover {
   background-color: #ede7f6 !important;
   border-color: #5e35b1 !important;
 }
-
 .fc .fc-button:focus,
 .fc .fc-button:active {
   outline: none !important;
@@ -95,15 +94,71 @@ h2#fc-dom-86,
   background-color: #d1c4e9 !important;
   color: #5e35b1 !important;
 }
-
 .fc .fc-button.fc-button-active {
   background-color: #5e35b1 !important;
   color: #5e35b1 !important;
   border-color: #5e35b1 !important;
   box-shadow: 0 2px 6px rgba(94, 53, 177, 0.25);
 }
-
 .fc .fc-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ✅ Responsive FullCalendar Toolbar (Mobile-Friendly) */
+.fc .fc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.fc .fc-toolbar .fc-toolbar-chunk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.fc .fc-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.fc .fc-toolbar-title {
+  font-size: 1.1rem;
+  text-align: center;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+/* ✅ Mobile Optimization */
+@media (max-width: 576px) {
+  .fc .fc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fc .fc-toolbar .fc-toolbar-chunk {
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  .fc .fc-button-group {
+    justify-content: center;
+    width: 100%;
+  }
+  .fc .fc-button {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    margin-left: 0 !important;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
 }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-
+import { FaEdit, FaTrash } from 'react-icons/fa';
 export const appointmentStatusMap = {
   0: 'Scheduled',
   1: 'Completed',
@@ -165,85 +165,128 @@ const handleViewInvoice = async (apptId) => {
 
   return (
     <>
-      <div className="card rounded-4 mt-5">
+      <div className="card p-3 rounded-4 mt-5">
         <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Appointments</h5>
         </div>
         <div className="table-responsive">
-          <table className="table align-middle table-hover mb-0 text-nowrap">
-            <thead className="table-light">
-              <tr>
-                <th>Sr. No</th>
-                <th>Client Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Duration</th>
-                <th>Plan</th>
-                <th>Amount</th>
-                <th>Time</th>
-                <th>Date</th>
-                <th>Payment Method</th>
-                <th>Payment ID</th>
-                <th>Payment Status</th>
-                <th>Appointment Status</th>
-                <th>Actions</th>
-                {/* <th>View Invoice</th>  */}
-              </tr>
-            </thead>
-            <tbody>
-              {appointments.map((appt, index) => (
-                <tr key={appt.id || index}>
-                  <td>{index + 1}</td>
-                  <td>{appt.firstName} {appt.lastName}</td>
-                  <td>{appt.email}</td>
-                  <td>{appt.phoneNumber}</td>
-                  <td>{appt.duration}</td>
-                  <td>{appt.plan}</td>
-                  <td>{appt.amount}</td>
-                  <td>{appt.appointmentTime}</td>
-                  <td>{appt.appointmentDate}</td>
-                  <td>{appt.paymentMethod}</td>
-                  <td>{appt.paymentId === null ? "None" : appt.paymentId }</td>
-                  <td>
-                    <span className={`badge bg-${appt.paymentStatus === 0 ? 'primary' :
-                        appt.paymentStatus === 1 ? 'success' :
-                          appt.paymentStatus === 2 ? 'danger' :
-                            appt.paymentStatus === 3 ? 'warning' : 'secondary'
-                      }`}>
-                      {paymentStatusMap[appt.paymentStatus]}
-                    </span>
+         {/* Table for medium and large screens */}
+<div className="table-responsive d-none d-md-block">
+  <table className="table align-middle table-bordered  table-hover mb-0 text-nowrap">
+    <thead className="table-light">
+      <tr>
+        <th>Sr. No</th>
+        <th>Client Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Duration</th>
+        <th>Plan</th>
+        <th>Amount</th>
+        <th>Time</th>
+        <th>Date</th>
+        <th>Payment Method</th>
+        <th>Payment ID</th>
+        <th>Payment Status</th>
+        <th>Appointment Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {appointments.map((appt, index) => (
+        <tr key={appt.id || index}>
+          <td>{index + 1}</td>
+          <td>{appt.firstName} {appt.lastName}</td>
+          <td>{appt.email}</td>
+          <td>{appt.phoneNumber}</td>
+          <td>{appt.duration}</td>
+          <td>{appt.plan}</td>
+          <td>{appt.amount}</td>
+          <td>{appt.appointmentTime}</td>
+          <td>{appt.appointmentDate}</td>
+          <td>{appt.paymentMethod}</td>
+          <td>{appt.paymentId || "None"}</td>
+          <td>
+            <span className={`badge bg-${appt.paymentStatus === 0 ? 'primary' :
+                appt.paymentStatus === 1 ? 'success' :
+                appt.paymentStatus === 2 ? 'danger' :
+                appt.paymentStatus === 3 ? 'warning' : 'secondary'}`}>
+              {paymentStatusMap[appt.paymentStatus]}
+            </span>
+          </td>
+          <td>
+            <span className={`badge bg-${appt.appointmentStatus === 0 ? 'primary' :
+                appt.appointmentStatus === 1 ? 'success' :
+                appt.appointmentStatus === 2 ? 'danger' :
+                appt.appointmentStatus === 3 ? 'warning' :
+                appt.appointmentStatus === 4 ? 'danger' : 'secondary'}`}>
+              {appointmentStatusMap[appt.appointmentStatus]}
+            </span>
+          </td>
+          <td>
+            <div className="d-flex gap-2">
+              <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(appt)}>
+                <FaEdit />
+              </button>
+              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(appt.id)}>
+              <FaTrash />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
-                  </td>
-                  <td>
-                   
-                     <span className={`badge bg-${appt.appointmentStatus === 0 ? 'primary' :
-                        appt.appointmentStatus === 1 ? 'success' :
-                          appt.appointmentStatus === 2 ? 'danger' :
-                            appt.appointmentStatus === 3 ? 'warning' :
-                             appt.appointmentStatus === 4 ? 'danger' : 'secondary'
-                      }`}>
-                      {appointmentStatusMap[appt.appointmentStatus]}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-primary" onClick={() => handleEdit(appt)}>
-                        <i className="ri-edit-line me-1"></i>Edit
-                      </button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(appt.id)}>
-                        <i className="ri-delete-bin-line me-1"></i>Delete
-                      </button>
-                    </div>
-                  </td>
-                  {/* <td>
-                    <button className="btn btn-sm btn-outline-info" onClick={() => handleViewInvoice(appt.id)}>
-                      <i className="ri-file-list-line me-1"></i>View Invoice
-                    </button>
-                  </td>  */}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+{/* Cards for mobile screens */}
+<div className="d-block d-md-none">
+  {appointments.map((appt, index) => (
+    <div className="card mb-3 shadow-sm" key={appt.id || index}>
+      <div className="card-body">
+        <h6 className="card-title">
+          {index + 1}. {appt.firstName} {appt.lastName}
+        </h6>
+        <p className="mb-1"><strong>Email:</strong> {appt.email}</p>
+        <p className="mb-1"><strong>Phone:</strong> {appt.phoneNumber}</p>
+        <p className="mb-1"><strong>Duration:</strong> {appt.duration}</p>
+        <p className="mb-1"><strong>Plan:</strong> {appt.plan}</p>
+        <p className="mb-1"><strong>Amount:</strong> ₹{appt.amount}</p>
+        <p className="mb-1"><strong>Date:</strong> {appt.appointmentDate}</p>
+        <p className="mb-1"><strong>Time:</strong> {appt.appointmentTime}</p>
+        <p className="mb-1"><strong>Payment Method:</strong> {appt.paymentMethod}</p>
+        <p className="mb-1"><strong>Payment ID:</strong> {appt.paymentId || "None"}</p>
+        <p className="mb-1">
+          <strong>Payment Status:</strong>{" "}
+          <span className={`badge bg-${appt.paymentStatus === 0 ? 'primary' :
+              appt.paymentStatus === 1 ? 'success' :
+              appt.paymentStatus === 2 ? 'danger' :
+              appt.paymentStatus === 3 ? 'warning' : 'secondary'}`}>
+            {paymentStatusMap[appt.paymentStatus]}
+          </span>
+        </p>
+        <p className="mb-1">
+          <strong>Appointment Status:</strong>{" "}
+          <span className={`badge bg-${appt.appointmentStatus === 0 ? 'primary' :
+              appt.appointmentStatus === 1 ? 'success' :
+              appt.appointmentStatus === 2 ? 'danger' :
+              appt.appointmentStatus === 3 ? 'warning' :
+              appt.appointmentStatus === 4 ? 'danger' : 'secondary'}`}>
+            {appointmentStatusMap[appt.appointmentStatus]}
+          </span>
+        </p>
+        <div className="d-flex gap-2 mt-2">
+          <button className="btn btn-sm btn-outline-primary w-100" onClick={() => handleEdit(appt)}>
+            <i className="ri-edit-line me-1"></i>Edit
+          </button>
+          <button className="btn btn-sm btn-outline-danger w-100" onClick={() => handleDelete(appt.id)}>
+            <i className="ri-delete-bin-line me-1"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
         </div>
       </div>
 

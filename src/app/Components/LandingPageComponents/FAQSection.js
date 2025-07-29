@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Accordion, Spinner, Row, Col } from 'react-bootstrap';
 import { FaQuestionCircle } from 'react-icons/fa';
+import './FAQ.css'
 const API_URL = process.env.REACT_APP_API_URL;
 const FAQSection = () => {
   const [faqs, setFaqs] = useState([]);
@@ -28,7 +29,7 @@ const FAQSection = () => {
 
   return (
     <section className="py-5 my-5" >
-      <div className="container" style={{ maxWidth: '1600px' }}>
+      <div className="container px-3 px-md-5" style={{ maxWidth: '1600px' }}>
         <div className="text-center mb-7">
           <h2 >
             {/* <FaQuestionCircle className="me-2 text-primary" /> */}
@@ -45,7 +46,7 @@ const FAQSection = () => {
           <>
             {faqs.length > 0 ? (
               <Row >
-                <Col md={6} sm={12}>
+                <Col  md={6} xs={12} className="mb-4">
                   <Accordion defaultActiveKey="0" alwaysOpen>
                     {column1.map((faq, index) => (
                       <Accordion.Item
@@ -65,7 +66,7 @@ const FAQSection = () => {
                     ))}
                   </Accordion>
                 </Col>
-                <Col md={6} sm={12}>
+                <Col  md={6} xs={12} className="mb-4">
                   <Accordion defaultActiveKey="0" alwaysOpen>
                     {column2.map((faq, index) => (
                       <Accordion.Item

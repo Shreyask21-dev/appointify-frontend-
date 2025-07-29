@@ -285,9 +285,9 @@ export default function CalendarComponent() {
               </div>
           </div>
 
-          <div className="col app-calendar-content">
+          <div className="col app-calendar-content overflow-auto ">
             <div className=" border-0">
-              <div className=" ps-0 pb-0">
+              <div className=" ps-0 pb-0 ">
                 <FullCalendar
                   plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
                   initialView="dayGridMonth"

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import './ShiftManager.css'
 
 
 const API = process.env.REACT_APP_API_URL;
@@ -186,7 +187,7 @@ if (planId) {
     }
   };
   return (
-    <Container className="p-4 bg-white rounded shadow-sm">
+    <Container className="p-4 bg-white rounded shadow-md-sm">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h4 className="mb-0">Manage Shifts </h4>
         <Button

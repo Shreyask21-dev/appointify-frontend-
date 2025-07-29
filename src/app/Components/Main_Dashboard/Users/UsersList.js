@@ -147,39 +147,38 @@ console.log("patients",patients)
 
   return (
     <div className="card p-3 shadow-sm mb-5">
-      <div className="table-responsive mb-5">
-        <table className="table table-bordered align-middle text-nowrap">
-          <thead className="table-light">
-            <tr>
-              <th style={{ minWidth: '50px' }}>#</th>
-              <th style={{ minWidth: '150px' }}>Name</th>
-              <th style={{ minWidth: '180px' }}>Email</th>
-              <th style={{ minWidth: '140px' }}>Phone</th>
-              <th style={{ minWidth: '100px' }}>Total Appointments</th>
-              <th style={{ minWidth: '130px' }}>Last Appointment Date</th>
-              <th style={{ minWidth: '120px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((patient, index) => (
-             <tr key={patient.userId}> 
-                <td>{index + 1}</td>
-                <td>{patient.firstName} {patient.lastName}</td>
-                <td>{patient.email}</td>
-                <td>{patient.phoneNumber}</td>
-                <td>{patient.totalAppointments}</td>
-                <td>{patient.lastAppointment}</td>
+     <div className="table-responsive mb-5">
+  <table className="table table-bordered align-middle table-hover text-nowrap responsive-table">
+    <thead className="table-light">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Total Appointments</th>
+        <th>Last Appointment Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {patients.map((patient, index) => (
+        <tr key={patient.userId}>
+          <td data-label="#"> {index + 1} </td>
+          <td data-label="Name"> {patient.firstName} {patient.lastName} </td>
+          <td data-label="Email"> {patient.email} </td>
+          <td data-label="Phone"> {patient.phoneNumber} </td>
+          <td data-label="Total Appointments"> {patient.totalAppointments} </td>
+          <td data-label="Last Appointment"> {patient.lastAppointment} </td>
+          <td data-label="Actions">
+            <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit(patient)}><FaEdit /></button>
+            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(patient.userId)} ><FaTrash /></button>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
 
-
-                <td>
-                  <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit(patient)}><FaEdit /></button>
-                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(patient.userId)} ><FaTrash /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
 
       {/* Add/Update Patient Modal */}
       {showForm && (
@@ -187,7 +186,7 @@ console.log("patients",patients)
           <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content border-0 shadow-lg">
               <div className="modal-header">
-                <h5 className="modal-title">{isEditMode ? "Update Patient Data" : "Add New Patient"}</h5>
+                <h5 className="modal-title">{isEditMode ? "Update Client Info" : "Add New Client"}</h5>
                 <button type="button" className="btn-close" onClick={handleCloseModal}></button>
               </div>
               <div className="modal-body">

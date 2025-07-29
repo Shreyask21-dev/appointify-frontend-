@@ -116,7 +116,7 @@ const Dashboard_Content = () => {
 
   return (
     <div className="content-wrapper">
-      <div className="container-xxl container-p-y">
+      <div className="container-md-xxl container-p-y responsive-container">
         <div className="row g-4 mb-4">
           {[
             { title: 'Total Appointments', icon: 'ri-calendar-check-line', color: 'primary', value: stats.totalAppointments },
