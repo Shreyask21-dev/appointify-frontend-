@@ -26,20 +26,23 @@ export default function CalendarComponent() {
   const [bufferInMinutes, setBufferInMinutes] = useState(0);
 
   const getColorClass = (index) => {
-    const colors = ['primary', 'success', 'warning', 'danger', 'info'];
+   const colors = [
+  'form-check-primary',
+  'form-check-success',
+  'form-check-warning',
+  'form-check-danger',
+  'form-check-info',
+  // 'form-check-secondary',
+  'form-check-dark',
+  'form-check-light',
+  'form-check-muted',
+  'form-check-teal'
+];
+
     return colors[index % colors.length];
   };
 
-  const getStatusColorClass = (status) => {
-    switch (status) {
-      case 0: return 'primary';
-      case 1: return 'success';
-      case 2: return 'danger';
-      case 3: return 'warning';
-      case 4: return 'info';
-      default: return 'secondary';
-    }
-  };
+
 
   const fetchAppointments = () => {
     const token = localStorage.getItem('token');
@@ -214,23 +217,72 @@ export default function CalendarComponent() {
                 + Add Appointment
               </button>
             </div>
-            <div className="px-4">
-              <hr className="mb-5 mx-n4 mt-3" />
-              <h5 className="mb-3">Event Filters</h5>
-              <div className="form-check form-check-secondary mb-3 ms-2">
-                <input className="form-check-input" type="checkbox" id="selectAll" checked={selectedPlans.length === plans.length} onChange={(e) => setSelectedPlans(e.target.checked ? plans.map((p) => p.planName?.toLowerCase()) : [])} />
-                <label className="form-check-label" htmlFor="selectAll">View All</label>
-              </div>
-              {plans.map((plan, index) => (
-                <div className={`form-check form-check-${getColorClass(index)} mb-2 ms-2`} key={index}>
-                  <input className="form-check-input" type="checkbox" id={`plan-${index}`} checked={selectedPlans.includes(plan.planName?.toLowerCase())} onChange={(e) => {
-                    const val = plan.planName?.toLowerCase();
-                    setSelectedPlans((prev) => e.target.checked ? [...prev, val] : prev.filter((p) => p !== val));
-                  }} />
-                  <label className="form-check-label" htmlFor={`plan-${index}`}>{plan.planName}</label>
+              <div className="px-4">
+
+                {/* <DatePicker
+                  inline
+
+                /> */}
+
+                <hr className="mb-5 mx-n4 mt-3" />
+                <div className="mb-4 ms-1">
+                  <h5>Event Filters</h5>
                 </div>
-              ))}
-            </div>
+                <div className="form-check form-check-secondary mb-5 ms-3">
+                  <input
+                    className="form-check-input select-all"
+                    type="checkbox"
+                    id="selectAll"
+                    checked={selectedPlans.length === plans.length}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPlans(plans.map(p => p.planName?.toLowerCase()));
+                      } else {
+                        setSelectedPlans([]);
+                      }
+                    }}
+                  />
+
+                  <label className="form-check-label" htmlFor="selectAll">View All</label>
+                </div>
+
+                <div className="app-calendar-events-filter text-heading">
+                  {plans.map((plan, index) => (
+                    <div className={`form-check ${getColorClass(index)} mb-3 ms-3`} key={index}>
+                      <input
+                        className="form-check-input input-filter"
+                        type="checkbox"
+                        id={`select-${plan.planName?.toLowerCase() || 'unknown'}`}
+                        data-value={plan.planName?.toLowerCase() || 'unknown'}
+                        checked={selectedPlans.includes(plan.planName?.toLowerCase())}
+
+
+                        onChange={(e) => {
+                          const planValue = plan.planName?.toLowerCase();
+                          if (e.target.checked) {
+                            setSelectedPlans(prev => [...prev, planValue]);
+                          } else {
+                            setSelectedPlans(prev => prev.filter(p => p !== planValue));
+                          }
+                          console.log("Changed Plan:", planValue);
+                          console.log("Selected Plans:", selectedPlans);
+                        }}
+
+                      />
+
+                      <label
+                        className="form-check-label"
+                        htmlFor={`select-${plan.planName?.toLowerCase() || 'unknown'}`}
+                      >
+                        {plan.planName || 'Unnamed Plan'}
+                      </label>
+                    </div>
+                  ))}
+
+                </div>
+
+
+              </div>
           </div>
 
           <div className="col app-calendar-content">
@@ -255,13 +307,10 @@ export default function CalendarComponent() {
                   }}
                   eventContent={(info) => {
                     return {
-                      html: `
-                        <div class="badge rounded-pill ${info.event.classNames.join(' ')} text-white" 
-                             style="font-size: 0.75rem; padding: 4px 8px;">
-                          ${info.event.title}
-                        </div>
-                        `,
-                    };
+                        html: `<div class="custom-event ${info.event.classNames.join(' ')}">
+               ${info.event.title}
+             </div>`
+                      };
                   }}
                 />
               </div>

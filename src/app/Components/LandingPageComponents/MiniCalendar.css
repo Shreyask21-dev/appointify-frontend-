@@ -94,6 +94,13 @@ h2#fc-dom-86 {
   font-size: 0.875rem; /* Smaller font for long text */
   border-radius: 50px; /* pill shape */
 }
+.react-datepicker__day--disabled {
+  color: #ccc !important;
+  /* background-color: #f8f9fa !important; */
+  /* text-decoration: line-through; */
+  cursor: not-allowed;
+  border-radius: 0.3rem;
+}
 
 
 

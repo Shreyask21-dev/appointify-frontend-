@@ -449,7 +449,7 @@ const Contact_Calender = React.forwardRef((props, ref) => {
                       </button>
                     </div>
                     <div className="text-center">
-                      <p className="form-text text-muted small">We&apos;ll respond in 1–2 business days.</p>
+                      {/* <p className="form-text text-muted small">We&apos;ll respond in 1–2 business days.</p> */}
                     </div>
                   </form>
                 </div>
