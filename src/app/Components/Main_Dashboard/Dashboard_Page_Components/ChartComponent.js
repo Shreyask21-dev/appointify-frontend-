@@ -210,7 +210,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
     const thisYear = new Date().getFullYear();
 
     appointments.forEach(appt => {
-      const d = new Date(appt.appointmentDate);
+      const d = new Date(appt.createdDate);
       if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
         const week = Math.floor((d.getDate() - 1) / 7);
         if (week >= 0 && week < 5) weeks[week]++;
@@ -222,7 +222,7 @@ revenueChartInstance.current = new Chart(revenueChartRef.current, {
       data: {
         labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
         datasets: [{
-          label: 'Appointments This Month',
+          label: 'Appointments This Week',
           data: weeks,
           borderColor: '#FF6384',
           backgroundColor: 'rgba(255,99,132,0.2)',

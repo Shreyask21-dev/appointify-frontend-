@@ -150,7 +150,7 @@ useEffect(() => {
 }, [selected, duration, planId]);
 
   return (
-    <div className="mx-auto  mt-sm-0" style={{ maxWidth: "35rem" }}>
+    <div className="mx-auto mt-5  mt-sm-0" style={{ maxWidth: "35rem" }}>
       <div className=" bg-white p-4 mt-5 mt-lg-0" style={{maxHeight: '40rem', minHeight: '30rem'  }}>
         <div className="calendar-container custom-calendar">
           <DatePicker
