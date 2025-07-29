@@ -85,10 +85,11 @@ const today = new Date().toISOString().split('T')[0];
 
 // ✅ Filter only past and completed appointments
 const pastCompletedAppointments = appointments.filter(appt => {
-  const isCompleted = appt.appointmentStatus === 1;
-  const isPastDate = new Date(appt.appointmentDate) < new Date(today);
-  return isCompleted && isPastDate;
+  const isPaid = appt.paymentStatus === 1;
+  return isPaid ;
 });
+
+
 
 console.log("Past Completed Appointments:", pastCompletedAppointments);
 

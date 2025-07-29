@@ -7,14 +7,23 @@ import axios from 'axios';
 const Dashboard_Content = () => {
   const [stats, setStats] = useState({
     totalAppointments: 0,
-    scheduledAppointment: 0,
+    scheduled_rescheduledAppointment: 0,
     completedSessions: 0,
-    canceled_rescheduledAppointments: 0,
+    paymentReceived: 0,
     totalRevenue: 0,
-    avgDuration: '0 min'
+    avgDuration: '0h 0m'
   });
 
   const [appointmentData, setAppointmentData] = useState([]);
+
+  // ✅ Helper: Convert minutes → hh:mm
+const formatMinutesToHHMM = (minutes) => {
+  if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 10000) return '0h 0m';
+  const hrs = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return `${hrs}h ${mins}m`;
+};
+
 
   useEffect(() => {
     axios.get('https://appointify.coinagesoft.com/api/CustomerAppointment/GetAllAppointments')
@@ -26,7 +35,6 @@ const Dashboard_Content = () => {
           'July', 'August', 'September', 'October', 'November', 'December'
         ];
 
-        // Build month-wise data
         const sorted = [...data].sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
         const startDate = new Date(sorted[0].createdDate);
         const endDate = new Date();
@@ -44,16 +52,15 @@ const Dashboard_Content = () => {
             pending: 0,
             completed: [],
             canceled: 0,
-            rescheduled: 0
+            rescheduled: 0,
+            paid: [] // ✅ add paid appointments per month
           });
           cursor.setMonth(cursor.getMonth() + 1);
         }
 
-        // Aggregate data by month
         data.forEach(item => {
           const date = new Date(item.createdDate);
           const key = `${monthNames[date.getMonth()]}-${date.getFullYear()}`;
-
           const group = monthYearMap.get(key);
           if (!group) return;
 
@@ -73,36 +80,52 @@ const Dashboard_Content = () => {
               group.rescheduled += 1;
               break;
           }
+
+          // ✅ collect paid appointments
+          if (item.paymentStatus === 1) {
+            group.paid.push(item);
+          }
         });
 
         const monthlyData = [];
         monthYearMap.forEach((group, key) => {
-          const completedCount = group.completed.length;
-          const revenue = group.completed.reduce((sum, item) => sum + (item.amount || 0), 0);
-          const totalDuration = group.completed.reduce((sum, item) => sum + (item.duration || 0), 0);
-          const avgDuration = completedCount > 0 ? `${Math.round(totalDuration / completedCount)} min` : '0 min';
+          const paidCount = group.paid.length;
+          const revenue = group.paid.reduce((sum, item) => sum + (item.amount || 0), 0);
+const totalDuration = group.paid.reduce((sum, item) => {
+  const duration = parseFloat(item.duration);
+  return (Number.isFinite(duration) && duration > 0 && duration < 10000)
+    ? sum + duration
+    : sum;
+}, 0);
+
+          const avgDuration = paidCount > 0
+            ? formatMinutesToHHMM(Math.round(totalDuration / paidCount))
+            : '0h 0m';
 
           monthlyData.push({
             month: key,
             revenue: `₹${revenue}`,
             totalAppointments: group.totalAppointments,
             pending: group.pending,
-            completed: completedCount,
-            canceled: group.canceled + group.rescheduled,
+            completed: group.completed.length,
+            canceled: group.canceled,
             avgTime: avgDuration
           });
         });
 
-        const allCompleted = data.filter(item => item.appointmentStatus === 1);
-        const totalRevenue = allCompleted.reduce((sum, item) => sum + (item.amount || 0), 0);
-        const totalDuration = allCompleted.reduce((sum, item) => sum + (item.duration || 0), 0);
-        const avgDuration = allCompleted.length > 0 ? `${Math.round(totalDuration / allCompleted.length)} min` : '0 min';
+        // ✅ Global paid appointments only
+        const paidAppointments = data.filter(item => item.paymentStatus === 1);
+        const totalRevenue = paidAppointments.reduce((sum, item) => sum + (item.amount || 0), 0);
+        const totalDuration = paidAppointments.reduce((sum, item) => sum + (item.duration || 0), 0);
+        const avgDuration = paidAppointments.length > 0
+          ? formatMinutesToHHMM(Math.round(totalDuration / paidAppointments.length))
+          : '0h 0m';
 
         setStats({
           totalAppointments: data.length,
-          scheduledAppointment: data.filter(item => item.appointmentStatus === 0).length,
-          completedSessions: allCompleted.length,
-          canceled_rescheduledAppointments: data.filter(item => [2, 3].includes(item.appointmentStatus)).length,
+          scheduled_rescheduledAppointment: data.filter(item => [0, 3].includes(item.appointmentStatus)).length,
+          completedSessions: data.filter(item => item.appointmentStatus === 1).length,
+          paymentReceived: totalRevenue,
           totalRevenue,
           avgDuration
         });
@@ -120,9 +143,9 @@ const Dashboard_Content = () => {
         <div className="row g-4 mb-4">
           {[
             { title: 'Total Appointments', icon: 'ri-calendar-check-line', color: 'primary', value: stats.totalAppointments },
-            { title: 'Scheduled Appointment', icon: 'ri-time-line', color: 'warning', value: stats.scheduledAppointment },
+            { title: 'Scheduled/Rescheduled Appointments', icon: 'ri-time-line', color: 'warning', value: stats.scheduled_rescheduledAppointment },
             { title: 'Completed Sessions', icon: 'ri-check-double-line', color: 'danger', value: stats.completedSessions },
-            { title: 'Canceled/Rescheduled', icon: 'ri-refresh-line', color: 'info', value: stats.canceled_rescheduledAppointments }
+            { title: 'Payment Received', icon: 'ri-refresh-line', color: 'info', value: `Rs.${stats.paymentReceived}` }
           ].map((item, idx) => (
             <div key={idx} className="col-sm-6 col-lg-3">
               <div className={`card card-border-shadow-${item.color} h-100`}>
@@ -142,65 +165,62 @@ const Dashboard_Content = () => {
           ))}
         </div>
 
-        {/* Chart and Table Section - Consistent Width */}
-       <div className="row g-4">
-  {/* Chart Section */}
-  <div className="">
-    <div className=" ">
-      <ChartComponent />
+        {/* Chart and Table Section */}
+        <div className="row g-4">
+          {/* Chart */}
+          <div className="">
+            <ChartComponent />
+          </div>
+
+          {/* Table */}
+          <div className="col-12">
+            <div className="card">
+              <div className="card-header d-flex align-items-center justify-content-between">
+                <div className="card-title mb-0">
+                  <h5 className="m-0 me-2">Revenue & Appointments Overview</h5>
+                  <p className="text-muted small m-0">* All consultations are prepaid online</p>
+                </div>
+              </div>
+              <div className="card-body pb-2">
+                <div className="table-responsive">
+                  <table className="table card-table">
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+                        <th>Revenue</th>
+                        <th>Total Appointments</th>
+                        <th>Pending</th>
+                        <th>Completed</th>
+                        <th>Canceled</th>
+                        <th>Avg. Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointmentData.map((data, index) => (
+                        <tr key={index}>
+                          <td>{data.month}</td>
+                          <td>{data.revenue}</td>
+                          <td>{data.totalAppointments}</td>
+                          <td>{data.pending}</td>
+                          <td>{data.completed}</td>
+                          <td>{data.canceled}</td>
+                          <td>{data.avgTime}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Padding if fewer rows */}
+                {appointmentData.length < 5 && (
+                  <div style={{ height: `${(5 - appointmentData.length) * 40}px` }} />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  {/* Table Section */}
-  <div className="col-12">
-    <div className="card">
-      <div className="card-header d-flex align-items-center justify-content-between">
-        <div className="card-title mb-0">
-          <h5 className="m-0 me-2">Revenue & Appointments Overview</h5>
-          <p className="text-muted small m-0">* All consultations are prepaid online</p>
-        </div>
-      </div>
-      <div className="card-body pb-2">
-        <div className="table-responsive">
-          <table className="table card-table">
-            <thead>
-              <tr>
-                <th>Month</th>
-                <th>Revenue</th>
-                <th>Total Appointments</th>
-                <th>Pending</th>
-                <th>Completed</th>
-                <th>Canceled</th>
-                <th>Avg. Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {appointmentData.map((data, index) => (
-                <tr key={index}>
-                  <td>{data.month}</td>
-                  <td>{data.revenue}</td>
-                  <td>{data.totalAppointments}</td>
-                  <td>{data.pending}</td>
-                  <td>{data.completed}</td>
-                  <td>{data.canceled}</td>
-                  <td>{data.avgTime}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Padding if fewer rows */}
-        {appointmentData.length < 5 && (
-          <div style={{ height: `${(5 - appointmentData.length) * 40}px` }} />
-        )}
-      </div>
-    </div>
-  </div>
-</div>
-
-        </div>
-      </div>
   );
 };
 
