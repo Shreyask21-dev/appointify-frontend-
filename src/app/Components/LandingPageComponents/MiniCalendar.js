@@ -150,8 +150,8 @@ useEffect(() => {
 }, [selected, duration, planId]);
 
   return (
-    <div className="mx-auto" style={{ maxWidth: "35rem" }}>
-      <div className=" bg-white p-4 mt-5 mt-lg-0" style={{maxHeight: '40rem', minHeight: '32.60rem'  }}>
+    <div className="mx-auto  mt-sm-0" style={{ maxWidth: "35rem" }}>
+      <div className=" bg-white p-4 mt-5 mt-lg-0" style={{maxHeight: '40rem', minHeight: '30rem'  }}>
         <div className="calendar-container custom-calendar">
           <DatePicker
             inline
@@ -167,8 +167,8 @@ useEffect(() => {
           />
 {timeSlots.length > 0 && (
   <>
-    <h6 className="fw-semibold mb-3 text-secondary">Available Slots</h6>
-    <div className="slot-grid">
+    <h6 className="fw-semibold mb-3  text-secondary">Available Slots</h6>
+    <div className="slot-grid px-2 px-sm-0">
       {timeSlots.map(({ value }, index) => {
         const [startStr, endStr] = value.split("-").map((s) => s.trim());
         const start = parseTime(startStr);
