@@ -15,6 +15,7 @@
   margin: 0 auto;
   object-fit: contain;
 }
+
 .avatar {
   width: 40px;
   height: 40px;
@@ -54,8 +55,6 @@
   height: 300px;
   position: relative;
 }
-
-
 
 /* === Table Section === */
 .table-responsive {
@@ -114,27 +113,32 @@
 
 }
 
-/* Mobile behavior */
+
+
+
+/* Mobile Sidebar: show menu normally on mobile */
 @media (max-width: 767.98px) {
-  .layout-menu {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    width: 250px;
-    height: 100%;
-    background-color: #fff;
-    z-index: 1050;
-    transition: left 0.3s ease-in-out;
+  .layout-menu.mobile-sidebar-show {
+    width: 250px !important;
+    transform: translateX(0);
+    transition: all 0.3s ease-in-out;
   }
 
-  .mobile-sidebar-show {
-    left: 0 !important;
+  .layout-menu.mobile-sidebar-hide {
+    transform: translateX(-100%);
+    width: 0 !important;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
   }
 
-  .mobile-sidebar-hide {
-    left: -50px !important;
+  /* Ensure all menu items are visible on mobile */
+  .layout-menu.mobile-sidebar-show .menu-item .menu-link div,
+  .layout-menu.mobile-sidebar-show .menu-item .menu-link i,
+  .layout-menu.mobile-sidebar-show .menu-sub {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }
-
 
 

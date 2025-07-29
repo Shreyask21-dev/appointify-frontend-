@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import './Dashboard.css'
 // import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // ✅ Only JS
 
 
 
-const Navbar = () => {
+const Navbar = ({ onToggleSidebar }) => {
   const [consultantData, setConsultantData] = useState(null);
   const [isClient, setIsClient] = useState(false); // for hydration issues
   const router = useRouter();
@@ -50,9 +51,18 @@ const Navbar = () => {
   return (
     <nav className="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme" id="layout-navbar">
       <div className="layout-menu-toggle navbar-nav align-items-xl-center me-xl-0 d-xl-none">
-        <a className="nav-item nav-link px-0 me-xl-6 ms-0" href="#">
-          <i className="ri-menu-fill ri-22px"></i>
-        </a>
+         <button
+  className="layout-menu-toggle nav-item nav-link px-0 me-xl-6 ms-0"
+ onClick={() => {
+  console.log('📱 Mobile toggle clicked');
+  onToggleSidebar();
+}}
+
+  style={{ background: 'none', border: 'none' }}
+>
+  <i className="ri-menu-fill ri-22px"></i>
+</button>
+
       </div>
 
       <div className="navbar-nav-right d-flex justify-content-end align-items-center" id="navbar-collapse">
