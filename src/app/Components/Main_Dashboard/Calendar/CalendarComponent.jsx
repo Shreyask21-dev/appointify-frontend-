@@ -159,30 +159,33 @@ export default function CalendarComponent() {
         selectedPlans.includes(a.plan?.toLowerCase()) &&
         (a.appointmentStatus === 0 || a.appointmentStatus === 3) // Only Scheduled or Rescheduled
     )
-    .map((a) => {
-      if (!a.appointmentTime || !a.appointmentDate) return null;
+   .map((a) => {
+  if (!a.appointmentTime || !a.appointmentDate) return null;
 
-      const [startTime, endTime] = a.appointmentTime.split(" - ");
-      if (!startTime || !endTime) return null;
+  const [startTime, endTime] = a.appointmentTime.split(" - ");
+  if (!startTime || !endTime) return null;
 
-      const start = `${a.appointmentDate}T${parseTime(startTime)}`;
-      const end = `${a.appointmentDate}T${parseTime(endTime)}`;
+  const start = `${a.appointmentDate}T${parseTime(startTime)}`;
+  const end = `${a.appointmentDate}T${parseTime(endTime)}`;
 
-      return {
-        id: a.id,
-        title: `${a.firstName} ${a.lastName}`,
-        start,
-        end,
-        className: `bg-${getColorClass(a.appointmentStatus)}`,
-        extendedProps: {
-          planName: a.plan?.toLowerCase(),
-          status: a.appointmentStatus,
-          appointmentTime: a.appointmentTime,
-          id: a.id,
-        },
-      };
-    })
-    .filter(Boolean);
+
+  return {
+    id: a.id,
+    title: `${a.firstName} ${a.lastName}`,
+    start,
+    end,
+    className: getColorClass(
+          plans.findIndex(p => p.planName?.toLowerCase() === a.plan?.toLowerCase())
+        ),
+    extendedProps: {
+      planName: a.plan?.toLowerCase(),
+      status: a.appointmentStatus,
+      appointmentTime: a.appointmentTime,
+      id: a.id,
+    },
+  };
+})
+.filter(Boolean);
 
 
   const handleEventClick = (info) => {
