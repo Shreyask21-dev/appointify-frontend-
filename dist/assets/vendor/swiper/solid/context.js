@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'solid-js';
+import { createContext, useContext } from 'react';
 export const SwiperSlideContext = createContext(null);
 export const useSwiperSlide = () => {
   return useContext(SwiperSlideContext);
