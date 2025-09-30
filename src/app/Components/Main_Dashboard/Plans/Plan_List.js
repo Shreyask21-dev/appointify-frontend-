@@ -52,7 +52,7 @@ const Plan_List = () => {
 
         const plansData = await plansRes.json();
         const shiftData = await shiftsRes.json();
-
+console.log("plansData",plansData)
         setPlans(Array.isArray(plansData) ? plansData : []);
         setShiftList(Array.isArray(shiftData) ? shiftData : []);
 

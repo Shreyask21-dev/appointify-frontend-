@@ -85,10 +85,11 @@ useEffect(() => {
       });
 
       const bufferData = bufferRes.data;
-      console.log("🟢 PlanBufferRule Response:", bufferData);
+      console.log("🟢 bufferRes Response:", bufferRes);
 
       const shiftId = bufferData.shiftId;
       const buffer = bufferData.bufferInMinutes || 0;
+console.log("🟢 shiftid Response:",shiftId );
 
       if (!shiftId) {
         console.warn("⛔ No shiftId found.");
@@ -101,7 +102,7 @@ useEffect(() => {
       });
 
       const allShifts = shiftRes.data;
-      console.log("🟢 All Shifts:", allShifts);
+      console.log("🟢 All Shifts:", shiftRes);
 
       const shift = allShifts.find(s => s.id === shiftId);
 
